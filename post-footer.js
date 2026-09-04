@@ -78,7 +78,8 @@ function generateCustomFooters() {
         var encUrl = encodeURIComponent(cleanUrl);
         var encTitle = encodeURIComponent(postTitle);
         
-        var isSingleArticle = document.body.classList.contains('item-page');
+        var isSingleArticle = document.body.classList.contains('item-page')
+            && window.location.pathname.indexOf('/p/') !== 0;
 
         var footer = document.createElement('div');
         footer.className = 'rt-footer';
