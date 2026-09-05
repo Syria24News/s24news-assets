@@ -1,0 +1,835 @@
+/* ============================================================
+   S24News — main stylesheet (منقول من <b:skin>)
+   النقل يجري من أسفل القالب إلى أعلاه، لذلك كل جزء جديد
+   يُلصق مباشرة أسفل هذا التعليق.
+   ============================================================ */
+
+/* ========================================================================== */
+/* 🚀 النظام الشامل الموحد لتضمين (فيديو، يوتيوب، وتواصل اجتماعي) - S24News */
+/* ========================================================================== */
+
+/* =========================================================
+   🛠️ النظام الشامل لتنظيف الرئيسية وإظهار الصورة الأولى فقط 🛠️
+   ========================================================= */
+
+/* 1. تصفير الحاوية الأم لمنع الفراغات الجانبية والسفلية */
+body:not(.item-page) .post-body {
+    line-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+
+/* 2. الإعدام الشامل: إخفاء كل العناصر (نصوص، فراغات، تواصل اجتماعي، فيديوهات، وأي صور مكررة) */
+body:not(.item-page) .post-body > *:not(.s24-list-thumb),
+body:not(.item-page) .post-body p,
+body:not(.item-page) .post-body br,
+body:not(.item-page) .post-body span,
+body:not(.item-page) .post-body iframe,
+body:not(.item-page) .post-body video,
+body:not(.item-page) .post-body embed,
+body:not(.item-page) .post-body object,
+body:not(.item-page) .post-body blockquote,
+body:not(.item-page) .post-body .twitter-tweet,
+body:not(.item-page) .post-body .instagram-media,
+body:not(.item-page) .post-body .tiktok-embed,
+body:not(.item-page) .post-body .fb-post,
+body:not(.item-page) .post-body .fb-video,
+body:not(.item-page) .post-body .twitter-tweet-rendered,
+body:not(.item-page) .post-body iframe[src*="facebook.com"],
+body:not(.item-page) .post-body iframe[src*="instagram.com"],
+body:not(.item-page) .post-body iframe[src*="tiktok.com"],
+body:not(.item-page) .post-body iframe[id^="twitter-widget-"],
+body:not(.item-page) .post-body img,
+body:not(.item-page) .post-body .separator,
+body:not(.item-page) .note-box,
+body:not(.item-page) .rt-album-parent {
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    opacity: 0 !important;
+    overflow: hidden !important;
+    line-height: 0 !important;
+}
+
+/* 3. الاستثناء الذهبي: إجبار الصورة الأولى فقط على الظهور وتنسيق أبعادها بدقة */
+body:not(.item-page) .post-body .s24-list-thumb,
+body:not(.item-page) .post-body .s24-list-thumb img {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    width: 100% !important;
+    height: auto !important;
+    max-height: 405px !important;
+    aspect-ratio: 16 / 9 !important;
+    object-fit: cover !important;
+    margin: 0 auto 1px !important;
+    border-radius: 0px !important;
+}
+/* ========================================================= */
+
+/* --------------------------------------------------------------------------
+   2. تفعيل التفاعل والنقر داخل صفحة المقالة
+----------------------------------------------------------------------------- */
+body.item-page .post-body .separator, 
+body.item-page .post-body iframe, 
+body.item-page .post-body video,
+body.item-page .post-body object.BLOG_video_class {
+    pointer-events: auto !important;
+    cursor: auto !important;
+    padding: 0 !important;
+}
+
+/* --------------------------------------------------------------------------
+   3. القاعدة الأساسية للفيديوهات واليوتيوب (كمبيوتر)
+   أبعاد 16:9 | عرض 75% | محاذاة للوسط
+----------------------------------------------------------------------------- */
+.post-body iframe:not([id^="twitter-widget-"]):not([src*="platform.twitter.com"]), 
+.post-body video, 
+.post-body embed,
+.post-body object.BLOG_video_class {
+    width: 75% !important;               
+    max-width: 750px !important;         
+    aspect-ratio: 16 / 9 !important; 
+    height: auto !important;
+    margin: 25px auto !important;        
+    display: block !important;
+    position: relative !important;
+    clear: both;
+    border-radius: 8px; 
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+}
+
+.post-body object.BLOG_video_class {
+    background: #000;
+}
+.post-body object.BLOG_video_class > * {
+    width: 100% !important;
+    height: 100% !important;
+}
+
+/* --------------------------------------------------------------------------
+   4. 🔴 الاستثناء الأهم: شبكات التواصل الاجتماعي (كمبيوتر)
+   عرض 70% | محاذاة للوسط 
+----------------------------------------------------------------------------- */
+
+/* أ) تويتر (يحتاج ارتفاع تلقائي ليتمدد حسب طول النص) */
+body.item-page .post-body iframe[id^="twitter-widget-"],      
+body.item-page .post-body iframe[src^="https://platform.twitter.com"],
+body.item-page .post-body .twitter-tweet,
+body.item-page .post-body .twitter-tweet-rendered {
+    width: 60% !important;               
+    max-width: 420px !important;         
+    margin: 25px auto !important;        
+    min-height: 250px !important;       
+    max-height: none !important;        
+    overflow: visible !important;       
+    border: none !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+    clear: both;
+}
+
+
+/* أ-2) طيّ التغريدات الطويلة: تحديد ارتفاع أقصى + تعتيم تدريجي + زر "عرض التغريدة كاملة" */
+/* يُضاف تلقائياً بالجافاسكربت فقط عندما يتجاوز ارتفاع التغريدة الفعلي الحد المسموح */
+.s24n-tweet-wrapper.s24n-tweet-collapsed {
+    position: relative;
+    max-height: 380px;
+    overflow: hidden;
+    -webkit-mask-image: linear-gradient(to bottom, #000 70%, transparent 100%);
+    mask-image: linear-gradient(to bottom, #000 70%, transparent 100%);
+}
+
+.s24n-tweet-expand-btn {
+    display: block;
+    margin: 8px auto 20px;
+    padding: 10px 28px;
+    background-color: #f9f9f9;
+    color: #333;
+    border: 2px solid #ddd;
+    border-radius: 30px;
+    font-size: 14px;
+    font-weight: bold;
+    font-family: inherit;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    outline: none;
+}
+
+.s24n-tweet-expand-btn:hover {
+    background-color: var(--bg-body);
+    color: var(--sy-green);
+    border-color: var(--sy-green);
+}
+
+[data-theme="dark"] .s24n-tweet-expand-btn {
+    background-color: var(--color-black);
+    color: #ffffff;
+    border: 2px solid #ffffff;
+}
+
+[data-theme="dark"] .s24n-tweet-expand-btn:hover {
+    background-color: var(--color-black);
+    color: var(--sy-green);
+    border-color: var(--sy-green);
+}
+
+/* ب-1) فيسبوك (فيديو/منشور) */
+body.item-page .post-body iframe[src*="facebook.com"],
+body.item-page .post-body .fb-post,
+body.item-page .post-body .fb-video {
+    width: 70% !important;
+    max-width: 550px !important;
+    margin: 25px auto !important;
+    display: block !important;
+    
+    /* السر لعدم القص: إزالة تقييد الارتفاع */
+    height: unset !important;            
+    aspect-ratio: unset !important;      
+    min-height: 500px !important;       
+    max-height: none !important;
+    
+    /* السر للوضع الليلي: خلفية شفافة وإزالة الإطار */
+    background: transparent !important;  
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    overflow: hidden !important;
+    clear: both;
+    color-scheme: light dark;
+}
+
+/* ب-2) انستغرام وتيك توك (لا يوجد تحذير موثّق مماثل من منصاتهما، تبقى بنفس المنطق السابق) */
+body.item-page .post-body iframe[src*="instagram.com"],
+body.item-page .post-body iframe[src*="tiktok.com"] {
+    width: 70% !important;               
+    max-width: 550px !important;         
+    margin: 25px auto !important;        
+    display: block !important;
+    
+    height: unset !important;            
+    aspect-ratio: unset !important;      
+    min-height: 500px !important;       
+    max-height: none !important;
+    
+    background: transparent !important;  
+    background-color: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    overflow: hidden !important;
+    clear: both;
+    color-scheme: light dark;
+}
+
+/* حماية إضافية لإطارات فيسبوك الداخلية لكي تأخذ عرض الحاوية الأب
+   (أُعيد فرض width: 100% هنا — تبيّن أنه ضروري فعلياً رغم تحذير فيسبوك، لأن
+   إزالته أدّت إلى محتوى داخلي صغير مشوَّه داخل حاوية خارجية فارغة) */
+body.item-page .post-body .fb-post span,
+body.item-page .post-body .fb-post iframe,
+body.item-page .post-body .fb-video span,
+body.item-page .post-body .fb-video iframe {
+    width: 100% !important;
+    height: unset !important;
+    min-height: unset !important;
+    max-height: none !important;
+    margin: 0 auto !important;           
+    background-color: transparent !important;
+}
+
+
+
+
+/* --------------------------------------------------------------------------
+   5. الاستثناء 2: التأكيد الإجباري على إبقاء يوتيوب 16:9
+----------------------------------------------------------------------------- */
+.post-body iframe[src*="youtube.com"],
+.post-body iframe[src*="youtu.be"] {
+    aspect-ratio: 16 / 9 !important;
+    height: auto !important;
+    min-height: 0 !important;
+}
+
+
+/* --- التنسيق العام للخطوط --- */
+
+/* 1. الخط الأساسي للموقع ونصوص المقالات (Readex Pro) */
+body, p, .post-body, .post-snippet, .sy-section-desc, .s24n-cookie-text, .result-stats { font-family: 'Readex Pro', sans-serif !important; font-weight: 400; line-height: 1.8; }
+/* حجم خط صفحة المقال أصبح مصدره الوحيد القسم "ب. صفحة المقالة (Item Page) - النسخة النظيفة" (19px)
+   بالإضافة لمتغير JS الديناميكي (نفس القيمة الافتراضية 19px) — إزالة "18px !important" هنا
+   يمنع القفزة البصرية اللحظية عند تحميل شريط أدوات المقال (sy-article-tools) */
+
+/* 2. خط IBM Plex Sans Arabic للعناوين (الهوية الرصينة) */
+h1, h2, h3, h4, .post-title, .post-title a, .sy-section-title-text, .grid-title, .theme-main-title, .stories-card__title, .live-title, .sy-news-link { font-family: 'IBM Plex Sans Arabic', sans-serif !important; font-weight: 700 !important; line-height: 1.4; }
+
+/* أحجام مخصصة للعناوين لتبرز هويتها */
+.post-title, .post-title a { font-size: 24px !important; /* عناوين الرئيسية */ }
+.item-page .post-title { font-size: 30px !important; /* العنوان الداخلي الرئيسي */ }
+.sy-section-title-text { font-size: 21px !important; /* عناوين الأقسام */ }
+
+/* 3. إصلاح القائمة الجانبية اليسرى واليمنى والكبسولات */
+.main-layout__column a, .main-layout__column a, #force-left-sidebar a, .dropdown-btn, .sy-standard-pill,.sy-label-text { font-family: 'Readex Pro', sans-serif !important; font-weight: 700 !important; /* جعل أسماء الأقسام بارزة */ font-size: 14.5px !important; /* حجم متناسق مع القوائم الجانبية */ }
+.sy-standard-pill { font-family: 'Readex Pro', sans-serif !important; font-weight: normal !important; /* جعل أسماء الأقسام بارزة */ font-size: 13px !important; /* حجم متناسق مع القوائم الجانبية */ }
+
+/* 4. إصلاح فني لتوقيت دمشق والبيانات الثابتة */
+.sy-t-city, .sy-t-ampm, .sy-t-num, .sy-date-only, .sy-static-text { font-family: 'Readex Pro', sans-serif !important; font-size: 13.5px !important; font-weight: 400; opacity: 0.9; }
+
+/* 5. أزرار التحكم وتحميل المزيد */
+#load-more-btn, .home-link, .sy-more-btn, .poll__submit-button { font-family: 'IBM Plex Sans Arabic', sans-serif !important; font-weight: 700; font-size: 15px !important; text-transform: none; }
+
+
+/* --- نهاية التنسيق العام للخطوط --- */
+
+
+
+
+
+
+/* == أولاً: القواعد الهيكلية الأساسية للقالب (لا تحذف محتوياتها) (هذه هي القياسات القديمة الموجودة في قالبك وتتحكم في الهيكل العام) ================================ */
+
+
+
+/* == min-width: 1024px |أجهزة الكمبيوتر (شاشات أكبر من 1023) ================================================================================================================================= */
+
+@media only screen and (min-width: 1024px) {
+
+/* 1. إعدادات الصفحة العامة والهيدر */
+body { padding-top: 140px; }
+.menu-toggle, #sidebar-toggle-btn, .mobile-search-icon { display: none; }
+header { position: fixed; top: 40px; width: 100%; z-index: 1000; background-color: var(--color-main-header-bg); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+
+/* الشريط العلوي (التاريخ والتواصل الإجتماعي) */
+.top-date-bar { position: fixed; top: 0; left: 0; width: 100%; z-index: 1002; }
+
+
+/* 3. القوائم الجانبية (Sticky Sidebars) */
+.main-layout__column:first-child, .main-layout__column:last-child { position: -webkit-sticky !important; position: sticky !important; top: 200px !important; height: calc(100vh - 220px) !important; max-height: calc(100vh - 220px) !important; overflow-y: auto !important; overscroll-behavior: contain !important; align-self: flex-start !important; width: auto; min-width: 312px; flex-grow: 0; flex-shrink: 0; display: flex; flex-direction: column; gap: 0; scrollbar-width: none !important; -ms-overflow-style: none !important;}
+
+.main-layout__column:first-child { padding-inline-start: 1.125rem; }
+
+.main-layout__column:last-child { padding-inline-end: 1.125rem; }
+
+
+
+/* إخفاء شريط التمرير للمتصفحات المختلفة */
+.main-layout__column::-webkit-scrollbar, .main-layout__column::-webkit-scrollbar, #force-left-sidebar::-webkit-scrollbar { display: none !important; width: 0 !important; background: transparent !important; }
+
+/* 4. تنسيق الروابط والعناوين داخل القائمة الجانبية */
+#force-left-sidebar a, .main-layout__column a { display: flex; align-items: center; gap: 12px; font-weight: bold; color: var(--text-main); font-size: 15px; text-decoration: none; justify-content: flex-start; font-family: inherit; padding: 14px 16px 16px 8px; border-bottom: 1px solid rgba(0,0,0,0.05); } 
+#force-left-sidebar a:hover, .main-layout__column a:hover { opacity: 0.7; color: var(--text-main); }
+#force-left-sidebar a::after, .main-layout__column a::after { content: none; }
+#force-left-sidebar h3.title, .main-layout__column h3.title { display: none; }
+
+/* 5. تنسيقات صفحة المقال (Item Page) */
+/* تنسيق صورة الغلاف بالكامل موجود الآن فقط في القسم [42] "الصورة الأولى (غلاف المقال)" — كان هذا المقطع مكرراً وميتاً تماماً */
+
+ 
+body.item-page h1.post-title,
+body.item-page h3.post-title,
+body.item-page .post-body > *:not(.separator):not(img) { padding-right: 65px; padding-left: 65px; }
+body.item-page h1.post-title,
+body.item-page h3.post-title { font-size: 31px; margin-bottom: 20px; margin-top: 10px; }
+
+/* 6. إضافات الفيديو والحاويات */
+.video-container { top: 142px !important; }
+
+/* --- شريط التنقل --- */
+.sy-breadcrumb { padding: 12px 10px; }
+
+
+}
+
+/* == End min-width: 1024px ========================================================================================================================================================= */
+
+
+/* == max-width: 1023px |التابلت والموبايل (شاشات 1023 وأصغر) ================================================================================================================================ */
+
+@media only screen and (max-width: 1023px) {
+  
+/* --- الهيدر والقوائم العلوية --- */
+header { position: fixed; inset-block-start: 0; inset-inline-end: 0; width: 100%; height: 80px; padding-block: 0 !important; padding-inline-start: 1px !important; padding-inline-end: 0 !important; background: var(--header-bg); z-index: 10000; box-shadow: 0 2px 5px rgba(0,0,0,0.1); box-sizing: border-box; }
+body {  padding-top: 80px; overflow-x: hidden; }
+.header-inner { display: flex; flex-wrap: nowrap; justify-content: space-between; align-items: center; width: 100%; padding: 0; gap: 0 !important;}
+.right-area { width: auto; order: 1; display: flex; align-items: center; gap: 20px; height: 100%; }
+.center-area { width: auto; order: 3; margin: 0 !important; padding: 0 !important; justify-content: flex-end; }
+.left-area { width: auto; order: 2; display: flex; align-items: center; margin-inline-start: 40px; }
+
+/* --- إخفاء العناصر غير الضرورية --- */
+.top-date-bar, .desktop-search-container, .icon-satellite, .language-selector, .sidebar-left, .main-layout__column, #force-left-sidebar, #HTML505, .live-tv-widget { display: none !important; }
+
+/* --- عناصر الموبايل الظاهرة --- */
+.menu-toggle, #sidebar-toggle-btn { display: block; font-size: 26px; cursor: pointer; margin-inline-start: 15px !important; }
+.mobile-search-icon { display: block; font-size: 24px; padding-block: .5rem !important; padding-inline-start: .625rem !important; padding-inline-end: 0 !important; margin-inline-end: 16px; }
+.logo-sy { width: 80px !important; height: 100% !important; background-color: var(--sy-green); display: flex; align-items: center; justify-content: center; margin: 0 !important; font-size: 18px; line-height: 55px; } 
+.logo-sy img { inline-size: 90% !important; block-size: auto !important; object-fit: contain; max-height: 90%; }
+.theme-toggle-wrapper { display: flex; }
+
+/* --- القوائم الجانبية (Logic) --- */
+#main-right-sidebar { display: none; position: fixed; top: 80px; bottom: 0; left: 0; right: 0; width: 100%; height: auto; background: var(--bg-card); z-index: 99999; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 20px 20px 100px 20px; flex-direction: column; border-top: 1px solid var(--border-color); }
+body.sidebar-toggled #main-right-sidebar { display: flex !important; }
+body.sidebar-toggled { overflow: hidden !important; }
+body.sidebar-toggled::after { display: none; }
+
+
+/* إصلاح الصفحات الخاصة (الأكثر قراءة + المحفوظات) */
+body.most-read-page.sidebar-toggled #main-right-sidebar, body.saved-page-mode.sidebar-toggled #main-right-sidebar { width: 100% !important; position: fixed !important; top: 80px !important; left: 0 !important; bottom: 0 !important; z-index: 99999 !important; }
+
+/* إخفاء العناصر عند فتح القائمة */
+body.sidebar-toggled .mini-live__wrapper, body.sidebar-toggled #miniLiveWidget, body.sidebar-toggled .nav-arrow { display: none !important; }
+body.sidebar-toggled .btn-live, body.sidebar-toggled .mobile-search-icon, body.sidebar-toggled #themeToggle { display: none !important; }
+body.sidebar-toggled .main-layout, body.sidebar-toggled .rt-footer, body.sidebar-toggled .ad-banner-wrapper, body.sidebar-toggled .important-sections { z-index: 1; position: relative; }
+
+.breaking-news-container, #breakingNewsContainer { z-index: 990 !important; }
+body.sidebar-toggled .breaking-news-container, body.sidebar-toggled #breakingNewsContainer { opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; z-index: -1 !important; }
+
+/* القائمة المنقولة للموبايل */
+.mobile-moved-sidebar {  margin-top: 20px;  border-top: 1px solid #eee; padding-top: 10px; }
+.mobile-moved-sidebar a { display: flex; align-items: center; padding: 15px 5px; font-size: 16px; border: none; border-bottom: 1px solid rgba(0,0,0,0.05) !important; color: var(--text-main); text-decoration: none; width: 100%; box-sizing: border-box; background-color: transparent !important; }
+.mobile-moved-sidebar ul, .mobile-moved-sidebar li { list-style: none; padding: 0; margin: 0; width: 100%; }
+
+/* --- التخطيط العام (Layout) --- */
+.main-layout { flex-direction: column; width: 100%; padding: 0; margin-top: 10px; }
+
+/* --- شريط الأخبار العاجلة --- */
+.breaking-news-container { inset-block-start: var(--sticky-top-offset); }
+.breaking-news-container .widget-content, .breaking-news-container .widget-content a, .breaking-news-container .widget-content span { font-size: 0.875rem !important; padding-inline: 10px; padding-block: 0; }
+
+/* --- تنسيق المقال الداخلي وإصلاح الصور للموبايل --- */
+body.item-page h1.post-title, body.item-page h3.post-title, body.item-page .post-body > *:not(.separator):not(img) { padding-right: 20px; padding-left: 20px; }
+
+/* --- فيديو البث المباشر --- */
+.video-container { top: 80px !important; }
+
+/* --- أيقونات التواصل الاجتماعي للموبايل --- */
+#Mobile_Social_Section { display: block !important; order: 999 !important; margin-top: 20px; border-top: 1px solid #eee; padding-top: 20px; text-align: center; background-color: transparent; width: 100%; }
+
+#Mobile_Social_Section h2 { display: none !important; }
+
+.mobile-social-custom ul { list-style: none; padding: 0; margin: 0; display: flex; justify-content: center; flex-wrap: wrap; gap: 15px; }
+
+.mobile-social-custom a { display: flex !important; align-items: center; justify-content: center; width: 33px; height: 33px; background-color: #f0f0f0; border-radius: 50%; text-decoration: none; transition: background-color 0.3s; border: none !important; padding: 0 !important; }
+
+.mobile-social-custom svg { width: 18px; height: 18px; fill: #333; display: block; transition: fill 0.3s; }
+
+.mobile-social-custom a:hover { background-color: var(--sy-green); }
+  
+.mobile-social-custom a:hover svg { fill: #fff; }
+
+
+
+}
+
+/* == End max-width: 1023px ============================================================================================================================================================== */
+
+
+
+/* == max-width: 768px |الهواتف (شاشات 768 وأصغر) ============================================================================================================================================ */
+
+@media only screen and (max-width: 768px) {
+
+
+/* شبكة الأخبار المميزة (الرئيسية والأقسام) */
+#special-news-grid,#category-special-grid,#special-news-grid .sub-grid,#category-special-grid .sub-grid{display:flex;flex-direction:column;gap:0}
+#special-news-grid .grid-item,#category-special-grid .grid-item{display:flex !important;flex-direction:row !important;align-items:flex-start;justify-content:space-between;gap:15px;padding:15px 0;margin-bottom:0 !important;border-bottom:1px solid var(--border-color);height:auto !important}
+#special-news-grid .grid-item.main-story,#category-special-grid .grid-item.main-story{padding-bottom:15px !important;border-bottom:1px solid var(--border-color) !important}
+#special-news-grid .grid-item:last-child,#special-news-grid .sub-grid .grid-item:last-child,#category-special-grid .grid-item:last-child,#category-special-grid .sub-grid .grid-item:last-child{border-bottom:none;padding-bottom:0}
+#special-news-grid .grid-item img,#category-special-grid .grid-item img{width:190px !important;height:125px !important;object-fit:cover;transition:all .4s ease;filter:brightness(100%);border-radius:8px !important;flex-shrink:0;display:block;margin:0 !important}
+#special-news-grid .grid-item:hover img,#category-special-grid .grid-item:hover img{filter:brightness(110%); transform: none !important;}
+#special-news-grid .grid-item .grid-content,#category-special-grid .grid-item .grid-content{flex-grow:1;display:flex;flex-direction:column;justify-content:center}
+#special-news-grid .grid-item .grid-title,#category-special-grid .grid-item .grid-title{font-size:14px !important;font-weight:bold;line-height:1.5;margin:0 !important;color:var(--text-main) !important;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+
+/* تضمينات التواصل الاجتماعي في المقالة */
+.post-body iframe:not([id^="BLOGGER-video"]), .post-body video, .post-body embed, .post-body object.BLOG_video_class { width: 85% !important; max-width: 85% !important; margin: 20px auto !important; border-radius: 4px; }
+
+/* أ) تويتر/X على الموبايل - منفصل لأن ارتفاعه متغير حسب طول التغريدة */
+body.item-page .post-body iframe[id^="twitter-widget-"],
+body.item-page .post-body iframe[src*="platform.twitter.com"],
+body.item-page .post-body .twitter-tweet,
+body.item-page .post-body .twitter-tweet-rendered {
+    width: 65% !important;
+    max-width: 65% !important;
+    margin: 20px auto !important;
+    min-width: 280px !important;
+    min-height: 200px !important;
+}
+/* ب-1) فيسبوك على الموبايل */
+body.item-page .post-body iframe[src*="facebook.com"],
+body.item-page .post-body .fb-post,
+body.item-page .post-body .fb-video {
+    width: 70% !important;
+    max-width: 70% !important;
+    margin: 20px auto !important;
+    min-width: 280px !important;
+    height: unset !important;
+    aspect-ratio: unset !important;
+    min-height: 200px !important;
+}
+/* ب-2) انستغرام وتيك توك على الموبايل - بلا تغيير */
+body.item-page .post-body iframe[src*="instagram.com"],
+body.item-page .post-body iframe[src*="tiktok.com"],
+body.item-page .post-body .instagram-media,
+body.item-page .post-body .tiktok-embed {
+    width: 70% !important;
+    max-width: 70% !important;
+    margin: 20px auto !important;
+    min-width: 280px !important;
+    height: unset !important;
+    aspect-ratio: unset !important;
+    min-height: 200px !important;
+}
+
+
+
+/* إقرأ المزيد */   
+.sy-related-grid { grid-template-columns: 1fr; gap: 12px; }
+.sy-related-card { flex-direction: row; align-items: center; height: auto; }
+.sy-related-thumb { width: 110px !important; height: 85px !important; border-radius: 0 8px 8px 0; }
+.sy-related-info { padding: 10px 15px; width: calc(100% - 110px); }
+.sy-related-card-title { font-size: 14px; line-height: 1.4; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+/* شريط التنقل */
+.sy-breadcrumb { font-size: 12px; padding: 8px 10px; }
+.sy-bc-current { max-width: 160px; }
+
+/* شريط معلومات المقال */
+.sy-post-meta { font-size: 13px !important; margin-top: 15px; margin-bottom: 10px; }
+.sy-meta-label { margin-left: 10px !important; }
+.sy-meta-separator { margin: 0 5px !important; }
+.sy-date-only, .sy-time-only, .sy-static-text, .sy-t-city, .sy-t-ampm, .sy-t-num { font-size: 13px !important; }
+
+/* تحسينات وإصلاحات التعليقات والردود */  
+.comments, #comments { padding-right: 20px !important; padding-left: 20px !important; box-sizing: border-box !important; width: 100% !important; }
+body #comments .avatar-image-container { width: 35px !important; height: 35px !important; }
+body #comments .comment { padding-right: 48px !important; }
+body #comments .comment-block { min-width: 100% !important; padding: 10px 12px !important; }
+body #comments .comment-thread .comment-thread { padding-right: 12px !important; margin-right: 0 !important; }
+
+/* التغطية الحية */
+.live-event-row { padding: 12px 15px; }
+.live-event-row:hover { padding-right: 20px; }
+.live-event-text { font-size: 14px; }
+.live-card-title { font-size: 15px; }
+.live-card-body { max-height: 200px; } /* تصغير ارتفاع الصندوق ليناسب الشاشات الأصغر */
+
+/* تنسيق الإعلانات */
+.ad-banner-wrapper{margin:15px auto 25px auto;border-radius:0!important;width:100%}.ad-banner-wrapper img,.ad-banner-wrapper ins.adsbygoogle,.ad-under-post-wrapper,.ad-under-post-wrapper img,.ad-under-post-wrapper iframe,.ad-under-post-wrapper ins.adsbygoogle,#in-article-ad-wrapper ins.adsbygoogle{border-radius:0!important}
+
+/* شبكة التصنيفات الفرعية المخصصة للمنوعات */
+.news-themes__wrapper { grid-template-columns: 1fr !important; gap: 15px !important; }
+.theme-main-img { width: 100% !important; height: auto !important; aspect-ratio: 16 / 9 !important; object-fit: cover !important; }
+.theme-main-title { font-size: 16px !important; padding: 12px 10px 0 !important; line-height: 1.4 !important; } 
+.theme-sub-link { font-size: 14px !important; }   
+.theme-sub-item { padding: 10px !important; }   
+.theme-section__button-block { padding: 15px !important; }
+
+
+
+
+
+/* ***. تحسينات التجاوب للخطوط في الموبايل (Mobile Responsive) */
+.item-page .post-title { font-size: 24px !important; /* تصغير العنوان قليلاً في الهاتف */}
+.post-title { font-size: 20px !important; }
+
+
+}
+
+/* == End max-width: 768px =============================================================================================================================================================== */
+
+
+/* == max-width: 600px ================================================================================================================================================================= */
+
+@media only screen and (max-width:600px){
+
+/* شبكة الأخبار المميزة (الرئيسية والأقسام) */
+#special-news-grid .grid-item img,#category-special-grid .grid-item img{width:160px !important;height:110px !important}
+
+
+/* تخصيص المشاركة المميزة */
+.FeaturedPost .post-info,.FeaturedPost .summary-content,.FeaturedPost .post-summary{padding:15px!important}.FeaturedPost h3.post-title,.FeaturedPost .post-title,.FeaturedPost h3{font-size:15px!important;-webkit-line-clamp:3!important}
+
+/* تخصيص المشاركة المثبتة */
+.hero-img{width:160px;height:110px;flex:0 0 160px}.hero-content{width:calc(100% - 160px);padding:10px 12px}.hero-title{font-size:14px;-webkit-line-clamp:3}
+
+}
+
+
+/* == End max-width: 600px ============================================================================================================================================================= */
+
+
+
+
+/* == ثانياً: خريطة التجاوب الدقيقة (S24News Master Breakpoints) (تُضاف الأكواد هنا لضبط العناصر بدقة عالية مثل الإعلانات والصور والخطوط) ===================================== */
+
+
+/* == (min-width: 1921px) | 1. شاشات عملاقة (Ultra Wide) =================================================================================================================================== */
+
+@media screen and (min-width: 1921px) { 
+
+/* الشريط العلوي (التاريخ والتواصل الإجتماعي) */
+.top-date-bar { height: 3rem; }
+.date-display { font-size: 1.1rem; }
+.top-social-icons ul.social-list-ul { gap: 1.5em; }
+.top-icon { width: 1.4em; height: 1.4em; }
+
+}
+
+
+/* == End (min-width: 1921px) ========================================================================================================================================================== */
+
+
+
+/* == (min-width: 1201px) and (max-width: 1920px) | 2. شاشات المكتب القياسية (Desktop) ======================================================================================================= */
+
+@media screen and (min-width: 1201px) and (max-width: 1920px) { 
+
+/* الشريط العلوي (التاريخ والتواصل الإجتماعي) */
+.top-date-bar { height: 2.5rem; }
+.date-display { font-size: 0.875rem; }
+.top-social-icons ul.social-list-ul { gap: 1.2em; }
+.top-icon { width: 1.2em; height: 1.2em; }
+  
+
+}
+
+/* == End (min-width: 1201px) and (max-width: 1920px) ================================================================================================================================= */
+
+
+
+/* == (min-width: 1025px) and (max-width: 1200px) | 3. اللابتوب والشاشات المتوسطة (Laptops) =================================================================================================== */
+
+@media screen and (min-width: 1025px) and (max-width: 1200px) { 
+
+/* نفس قيم فئة "المكتب" أعلاه — تم نقلها هنا حرفيًا بعد فصل النطاقين لتفادي التداخل، بدون أي تغيير بالمظهر الفعلي */
+.top-date-bar { height: 2.5rem; }
+.date-display { font-size: 0.875rem; }
+.top-social-icons ul.social-list-ul { gap: 1.2em; }
+.top-icon { width: 1.2em; height: 1.2em; }
+
+}
+
+/* == End (min-width: 1025px) and (max-width: 1200px) ================================================================================================================================= */
+
+
+
+/* == (min-width: 769px) and (max-width: 1023px) | 4. تابلت - الوضع العرضي والطولي (Tablets) ========================================================================================================================== */
+
+@media screen and (min-width: 769px) and (max-width: 1023px) { 
+
+
+}
+
+
+/* == End (min-width: 769px) and (max-width: 1023px) ================================================================================================================================= */
+
+
+
+/* == (min-width: 481px) and (max-width: 768px) | 5. هواتف كبيرة / تابلت صغير (Large Phones) ============================================================================================== */
+
+@media screen and (min-width: 481px) and (max-width: 768px) { 
+
+
+
+}
+
+/* == End (min-width: 481px) and (max-width: 768px) ================================================================================================================================= */
+
+
+
+/* == max-width: 480px | 6-7. الهواتف الذكية والصغيرة (Standard & Small Phones) — تم دمج فئتي 376-480 و ≤375 لأن محتواهما كان مكررًا حرفيًا بالكامل ================================================================================================= */
+
+@media screen and (max-width: 480px) { 
+
+.right-area { gap: 8px; }
+ .left-area { margin-inline-start: 10px; }
+ .logo-sy { inline-size: 72px !important; }
+ .btn-live { min-width: 3.6rem; padding: 0 0.6rem; }
+ .mobile-search-icon { padding-block: 5px !important; padding-inline-start: 0 !important; padding-inline-end: 2px !important; }
+
+}
+
+/* == End max-width: 480px ========================================================================================================================================================== */
+
+
+/* ================== نهاية خريطة التجاوب ================== */
+
+
+
+/* ==========================================================================
+   🔴 نظام البث المباشر الموحد (Live Stream System)
+   ========================================================================== */
+
+/* 1. تخصيصات VideoJS المشتركة */
+.video-js { width: 100% !important; height: 100% !important; position: absolute !important; top: 0; left: 0; z-index: 5; }
+.video-js .vjs-big-play-button, .video-js .vjs-picture-in-picture-control, .video-js .vjs-current-time, .video-js .vjs-time-control, .video-js .vjs-duration, .video-js .vjs-remaining-time, .video-js .vjs-time-divider { display: none !important; }
+.video-js .vjs-progress-control { display: flex !important; visibility: visible !important; opacity: 1 !important; }
+.video-js .vjs-play-progress { background-color: var(--sy-green) !important; transition: none !important; }
+.video-js .vjs-play-progress:before { color: #ffffff !important; background-color: #ffffff !important; border-radius: 50%; box-shadow: 0 0 5px rgba(0,0,0,0.5); top: -0.3em; transition: none !important; transform: none !important; }
+.video-js.is-at-live-edge .vjs-play-progress:before { color: var(--color-red) !important; background-color: var(--color-red) !important; box-shadow: 0 0 8px rgba(231, 20, 20, 0.8) !important; }
+.video-js .vjs-progress-control:hover .vjs-progress-holder { font-size: 1em !important; }
+.video-js .vjs-progress-control:hover .vjs-play-progress:before { transform: none !important; top: -0.3em !important; }
+.video-js .vjs-volume-level { background-color: #fff !important; }
+
+/* 2. حاوية الفيديو والزر الوهمي (مشترك) */
+.video-container { position: relative; width: 100%; aspect-ratio: 16 / 9; background-color: var(--color-black); cursor: pointer; overflow: hidden; box-shadow: 0 5px 15px rgba(0,0,0,0.2); flex-shrink: 0 !important; }
+.fake-poster, .fake-poster-main { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; }
+.fake-play-btn, .fake-play-btn-main { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); width: 68px; height: 48px; background-color: rgba(0, 0, 0, 0.6); border-radius: 12px; z-index: 2; display: flex; align-items: center; justify-content: center; box-shadow: 0 0 20px rgba(0,0,0,0.3); border: 2px solid rgba(255,255,255,0.8); transition: all 0.2s ease; }
+.fake-play-btn svg, .fake-play-btn-main svg { width: 24px; height: 24px; fill: #fff; transition: fill 0.2s; margin-left: 5px; }
+.video-container:hover .fake-play-btn, .video-container:hover .fake-play-btn-main { background-color: rgba(255, 255, 255, 0.8); transform: translate(-50%, -50%) scale(1.1); border-color: #ffffff; }
+.video-container:hover .fake-play-btn svg, .video-container:hover .fake-play-btn-main svg { fill: var(--sy-green); }
+.sidebar-loader, .player-loader { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); border: 3px solid rgba(255,255,255,0.3); border-radius: 50%; border-top: 3px solid var(--sy-green); width: 30px; height: 30px; animation: spinSidebar 1s linear infinite; display: none; z-index: 3; }
+@keyframes spinSidebar { 0% { transform: translate(-50%, -50%) rotate(0deg); } 100% { transform: translate(-50%, -50%) rotate(360deg); } }
+
+/* 🟢 إصلاح: رسالة تظهر عند فشل تحميل مشغل الفيديو الخارجي (video.js) بعد مهلة 10 ثوانٍ */
+.video-load-error { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #fff; font-size: 13px; line-height: 1.6; text-align: center; z-index: 3; padding: 10px 16px; background: rgba(0,0,0,0.55); border-radius: 8px; max-width: 80%; }
+
+/* 3. الأداة الجانبية */
+.live-tv-widget { background-color: var(--color-black); border: 1px solid #333; overflow: hidden; margin-bottom: 20px; box-shadow: 0 4px 12px rgba(0,0,0,0.4); width: 100%; position: relative; flex-shrink: 0 !important; }
+
+/* 4. صفحة البث الرئيسية */
+body.live-page-mode #Blog1, body.live-page-mode .blog-posts, body.live-page-mode .sy-no-results, body.live-page-mode .comments, body.live-page-mode #comments, body.live-page-mode .post-footer { display: none !important; }
+.live-stream-wrapper { background-color: var(--bg-card) !important; border: 1px solid var(--border-color) !important; border-radius: 10px !important; padding: 0 !important; overflow: visible !important; margin-bottom: 20px; position: relative; direction: rtl; width: 100%; }
+.live-content-inner { padding: 20px 0 30px 0 !important; color: var(--text-main) !important; }
+.live-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 10px 15px 15px 15px; }
+.live-title { font-size: 24px; font-weight: 900; margin: 0; color: var(--text-main) !important; }
+.status-badge { background: rgba(231, 20, 20, 0.1); color: var(--color-red); padding: 5px 15px; border-radius: 20px; font-weight: bold; display: flex; align-items: center; gap: 8px; font-size: 14px; }
+.pulse-dot { width: 10px; height: 10px; background-color: var(--color-red); border-radius: 50%; display: inline-block; animation: pulse-red 2s infinite; }
+@keyframes pulse-red { 0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(231, 20, 20, 0.7); } 70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(231, 20, 20, 0); } 100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(231, 20, 20, 0); } }
+.live-info-box { background: var(--hover-bg) !important; padding: 25px; margin-top: 0; color: var(--text-main) !important; }
+.live-info-box h3 { color: var(--sy-green) !important; margin: 0 0 10px 0; font-size: 20px; }
+
+/* 5. الشريط المصغر للموبايل */
+.mini-live__wrapper { display: none; position: fixed; bottom: 0; inset-inline-start: 0; z-index: 999999; inline-size: 100%; block-size: 57px; padding: 0; box-sizing: border-box; background-color: var(--bg-card, #ffffff); border-top: 1px solid var(--border-color, #eee); box-shadow: 0 -2px 10px rgba(0,0,0,0.1); align-items: center; justify-content: space-between; gap: 8px; padding-inline-end: 10px; direction: rtl; }
+.mini-live__video-box { inline-size: 102px; block-size: 57px; flex-shrink: 0; background-color: var(--color-black, #000); border-inline-end: 1px solid var(--border-color, #ddd); overflow: hidden; }
+.mini-live__video-box iframe { inline-size: 100%; block-size: 100%; object-fit: cover; pointer-events: none; }
+.mini-live__link { flex-grow: 1; background-color: var(--color-red, #e71414); color: var(--color-white, #ffffff); border-radius: 4px; text-decoration: none; display: flex; flex-direction: column; align-items: center; justify-content: center; block-size: 42px; line-height: 1.2; transition: opacity 0.3s; margin: 0 !important; }
+.mini-live__link:hover { opacity: 0.9; }
+.mini-live__link span:first-child { font-size: 12px; font-weight: 700; }
+.mini-live__desc { font-size: 9px; opacity: 0.9; }
+.mini-live__button { background-color: var(--hover-bg, #f5f5f5); inline-size: 26px; block-size: 26px; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; padding: 0; }
+.mini-live__button svg { inline-size: 16px; block-size: 16px; fill: var(--text-sec, #555); }
+.mini-live__video-box .video-js * { box-shadow: none !important; text-shadow: none !important; }
+@media only screen and (max-width: 768px) {
+    .mini-live__wrapper { display: flex; animation: slideUpLive 0.4s ease-out; }
+    .live-return-pill { bottom: 65px !important; }
+}
+@keyframes slideUpLive { from { transform: translateY(100%); } to { transform: translateY(0); } }
+
+/* 6. زر العودة للبث */
+.live-return-pill { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px); background: var(--sy-green); color: #fff; display: flex; align-items: center; gap: 12px; padding: 12px 25px; border-radius: 50px; font-size: 14px; font-weight: bold; text-decoration: none; box-shadow: 0 8px 25px rgba(119, 189, 29, 0.4); z-index: 999999; opacity: 0; transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+.live-return-pill.visible { opacity: 1; transform: translateX(-50%) translateY(0); }
+.live-indicator-dot { width: 10px; height: 10px; background-color: var(--color-red); border-radius: 50%; position: relative; }
+.live-indicator-dot::after { content: ''; position: absolute; width: 100%; height: 100%; border-radius: 50%; background-color: var(--color-red); animation: pulse-dot 1.5s infinite; }
+@keyframes pulse-dot { 0% { transform: scale(1); opacity: 0.8; } 100% { transform: scale(3); opacity: 0; } }
+
+
+/* ==========================================================================
+   🔴 نهاابة نظام البث المباشر الموحد (Live Stream System)
+   ========================================================================== */
+
+
+
+
+/* ================================================= */
+/* 💻 شاشات الكمبيوتر العادية والعملاقة (1201px وأكبر) */
+/* ================================================= */
+@media screen and (min-width: 1201px) {
+    .main-container {
+        max-width: 864px !important; /* تثبيت العرض الأقصى للعمود */
+        padding-bottom: 72px !important; /* 🎯 التعديل هنا: 72 بكسل بالضبط */
+    }
+}
+
+/* ================================================= */
+/* 📺 الشاشات العملاقة (أكبر من 1450px) */
+/* ================================================= */
+@media screen and (min-width: 1450px) {
+    .main-container {
+        padding-inline: 72px; /* زيادة الحشوة الجانبية لتصبح القراءة مريحة */
+        /* 💡 لا نحتاج لكتابة البادينغ السفلي هنا، لأنه سيرث الـ 72px من كود الكمبيوتر تلقائياً! */
+    }
+}
+
+
+
+
+
+/* =========================================================
+   1. الصورة الأولى (غلاف المقال): عريضة وسينمائية 16:9
+========================================================= */
+body.item-page .post-body > .separator:first-of-type img,
+body.item-page .post-body > img:first-of-type { 
+    width: 100% !important; 
+    height: auto !important; 
+    aspect-ratio: 16 / 9 !important; 
+    object-fit: cover !important; 
+    margin-bottom: 25px !important;
+    border-radius: 0px !important; /* اختياري: يجعل زوايا الغلاف دائرية */
+}
+
+/* =========================================================
+   2. الصور الفرعية داخل المقال (الكمبيوتر): أنيقة، موسطة، وغير قبيحة
+========================================================= */
+body.item-page .post-body img:not(:first-of-type):not(.swiper-slide img):not(.album-item img),
+body.item-page .post-body .separator:not(:first-of-type) img:not(.swiper-slide img):not(.album-item img) {
+    display: block !important; 
+    height: auto !important; 
+    
+    /* 🟢 السر هنا: منع الصورة من أخذ أكثر من 75% من الشاشة لتكون أنيقة جداً */
+    max-width: 75% !important; 
+    
+    /* التوسيط مع مسافات فوق وتحت */
+    margin: 30px auto !important; 
+    
+    /* اللمسات الجمالية */
+    border-radius: 10px !important; 
+    box-shadow: 0 8px 20px rgba(0,0,0,0.08) !important; 
+    object-fit: contain !important;
+}
+
+/* =========================================================
+   3. هندسة المسافات للنصوص والعناوين (كمبيوتر)
+========================================================= */
+body.item-page h1.post-title,
+body.item-page h3.post-title { 
+    font-size: 31px; 
+    margin: 10px 0 10px 0; 
+    padding-right: 65px; 
+    padding-left: 65px; 
+}ody.item-page .post-body > *:not(.separator):not(img) { 
+    padding-right: 65px; 
+    padding-left: 65px; 
+}
+
+/* =========================================================
+   4. التجاوب مع الموبايل والتابلت (الشاشات أقل من 768px)
+========================================================= */
+@media only screen and (max-width: 768px) {
+    
+    /* القاعدة الموحّدة الوحيدة لصور المقال (غير الأولى) على الموبايل
+       — تجمع كل الخصائص التي كانت موزعة على 3 نسخ متضاربة، وتحافظ على
+       استثناء صور السلايدر/الألبوم من الظل والتقييد */
+    body.item-page .post-body img:not(:first-of-type):not(.swiper-slide img):not(.album-item img),
+    body.item-page .post-body .separator:not(:first-of-type) img:not(.swiper-slide img):not(.album-item img) {
+        display: block !important;
+        height: auto !important;
+        max-width: 90% !important;
+        margin: 20px auto !important;
+        border-radius: 8px !important;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        object-fit: contain !important;
+    }
+
+    /* تقليل الفراغات الجانبية للنصوص في الموبايل حتى لا يُحصر النص */
+    body.item-page h1.post-title,
+    body.item-page h3.post-title, 
+    body.item-page .post-body > *:not(.separator):not(img) { 
+        padding-right: 20px; 
+        padding-left: 20px; 
+    }
+    
+    body.item-page h1.post-title,
+    body.item-page h3.post-title {
+        font-size: 24px;
+    }
+}
