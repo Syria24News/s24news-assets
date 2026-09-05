@@ -4,6 +4,1800 @@
    يُلصق مباشرة أسفل هذا التعليق.
    ============================================================ */
 
+/* =========================================================
+   تنسيق الفوتر ونظام المشاركة (النسخة النهائية المصححة - أفقي)
+   ========================================================= */
+
+
+
+.post.hentry {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    margin-bottom: 15px; 
+    display: flex;
+    flex-direction: column; /* لضمان نزول الفوتر للأسفل */
+}
+
+/* 2. الهيكل الرئيسي للفوتر (فرض الترتيب الأفقي) */
+.rt-footer {
+    display: flex !important;
+    flex-direction: row !important; /* 🟢 السر هنا: إجبار الفوتر ليكون أفقياً */
+    justify-content: space-between !important;
+    align-items: center !important;
+    width: 100% !important;
+    padding: 10px 25px;
+    background-color: var(--color-content-block-bg);
+    border-top: 1px solid var(--border-color);
+    box-sizing: border-box;
+    margin-top: auto;
+    min-height: 60px;
+    order: 10;
+    border-bottom-right-radius: 10px; 
+    border-bottom-left-radius: 10px;  
+}
+
+/* 3. حاوية الأزرار اليمنى (حفظ، مشاهدات، نسخ) */
+.rt-footer-right { 
+    display: flex !important;
+    flex-direction: row !important; /* 🟢 إجبار الأزرار لتكون بجانب بعضها */
+    align-items: center !important;
+    gap: 20px !important; 
+}
+
+/* 4. المجموعات الصغيرة (الأيقونة + النص) */
+.rt-icon-group {
+    display: inline-flex !important;
+    flex-direction: row !important; /* 🟢 إجبار الأيقونة والنص أفقياً */
+    align-items: center !important;
+    gap: 6px;
+    color: var(--color-grey-65);
+    font-weight: bold;
+    font-size: 14px;
+    transition: color 0.2s;
+    cursor: pointer !important;
+}
+
+.rt-icon-group svg { width: 22px; height: 22px; }
+
+.rt-icon-group:hover { color: var(--text-main); }
+.rt-icon-group.copy-btn:hover { color: #8e44ad; }
+.rt-icon-group.save-btn:hover { color: var(--sy-green); }
+
+.rt-copy-link { 
+    color: #2980b9; 
+    font-size: 13px; 
+    font-weight: bold; 
+    text-decoration: underline; 
+    cursor: pointer !important;
+}
+
+/* 5. قائمة المشاركة المنبثقة (الأيقونات الملونة) */
+.share-btn-wrapper {
+    position: relative;
+    display: inline-flex !important;
+    align-items: center;
+}
+
+.mini-share-menu {
+    display: none; 
+    position: absolute;
+    bottom: 35px; /* تم رفعها قليلاً لتتجاوز الفوتر */
+    right: -5px;
+    left: auto;
+    transform: none;
+    background: transparent !important; 
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    gap: 6px !important;
+    z-index: 9999 !important; /* 🟢 هامة جداً لمنع التداخل مع الصندوق السفلي */
+    white-space: nowrap;
+    align-items: center;
+}
+
+.mini-share-menu.active {
+    display: flex !important;
+    flex-direction: row !important; /* 🟢 إجبار أيقونات المشاركة أن تكون أفقية */
+    animation: popUp 0.3s cubic-bezier(0.18, 0.89, 0.32, 1.28);
+}
+
+.mini-share-menu::after {
+    display: none !important;
+}
+
+/* 6. تنسيق أيقونات المشاركة (التبديل بين الأسود والأبيض) */
+.share-icon-link {
+    width: 28px;
+    height: 28px;
+    border-radius: 6px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-decoration: none;
+    transition: all 0.3s ease; 
+    background-color: var(--color-black); 
+    border: 1px solid rgba(0,0,0,0.1);
+    box-shadow: 0 3px 6px rgba(0,0,0,0.15);
+    cursor: pointer !important;
+}
+
+.share-icon-link svg {
+    width: 14px;
+    height: 14px;
+    fill: #fff; 
+    transition: fill 0.3s ease;
+}
+
+/* 🌑 الوضع الليلي: أبيض */
+[data-theme="dark"] .share-icon-link {
+    background-color: #fff !important; 
+    border-color: rgba(255,255,255,0.2);
+    box-shadow: 0 3px 8px rgba(0,0,0,0.5);
+}
+
+[data-theme="dark"] .share-icon-link svg {
+    fill: #000 !important; 
+}
+
+/* هوفر (مشترك) */
+.share-icon-link:hover {
+    opacity: 0.9;
+    transform: translateY(-3px);
+}
+
+.si-fb, .si-x, .si-wa, .si-tg, .si-li,.si-vk, .si-more {
+    background-color: #000; 
+}
+
+/* حركة الظهور */
+@keyframes popUp {
+    from { opacity: 0; transform: translateY(10px) scale(0.9); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* 10. إقرأ المزيد */
+.sy-related-posts-container { margin-top: 1px; padding-top: 20px; border-top: 1px solid var(--border-color, #eee); width: 100%; box-sizing: border-box; }
+.sy-related-main-title { padding-right: 10PX; font-family: 'IBM Plex Sans Arabic', sans-serif !important; font-size: 20px; font-weight: 900; color: var(--text-main, #000); margin-bottom: 20px; position: relative; display: inline-block; }
+.sy-related-grid { padding-right: 10px; padding-left: 10px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; direction: rtl; }
+.sy-related-card { background: var(--bg-card, #fff); border: 1px solid var(--border-color, #eee); border-radius: 8px; overflow: hidden; text-decoration: none; display: flex; flex-direction: column; }
+.sy-related-card:hover { transform: none; box-shadow: none; border-color: var(--border-color, #eee); }
+.sy-related-thumb { width: 100%; height: 160px; overflow: hidden; position: relative; flex-shrink: 0; }
+.sy-related-thumb img { width: 100%; height: 100%; object-fit: cover; }
+.sy-related-info { padding: 15px; flex-grow: 1; display: flex; align-items: flex-start; justify-content: center; flex-direction: column; }
+.sy-related-card-title { font-family: 'Readex Pro', sans-serif; font-size: 15px; font-weight: 700; line-height: 1.5; color: var(--text-main, #333); margin: 0; transition: color 0.3s ease; }
+.sy-related-card:hover .sy-related-card-title { color: #555555; }
+
+
+
+
+
+/* 11. MAINTENANCE V2 - DESIGN */
+/* 11. MAINTENANCE V2 - DESIGN (متوافق مع ألوان القالب تلقائياً) */
+#maintenance-overlay {
+    position: fixed;
+    top: 0; left: 0; width: 100%; height: 100%;
+    /* 🟢 استخدام لون خلفية الموقع مباشرة (سيكون فضي أنيق في النهار وداكن في الليل) */
+    background-color: var(--bg-body);
+    z-index: 999999999;
+    display: none; /* مخفي افتراضياً */
+    flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; 
+    color: var(--text-main); 
+    font-family: inherit;
+    padding: 20px; overflow: hidden;
+}
+
+/* تأثيرات الإضاءة الخلفية الخضراء الخفيفة جداً */
+#maintenance-overlay::before, #maintenance-overlay::after {
+    content: ''; position: absolute; border-radius: 50%; filter: blur(80px); opacity: 0.15; z-index: -1;
+}
+#maintenance-overlay::before { width: 300px; height: 300px; background: var(--sy-green); top: -50px; left: -50px; }
+#maintenance-overlay::after { width: 400px; height: 400px; background: var(--sy-green); bottom: -100px; right: -100px; }
+
+/* البطاقة المركزية */
+.m-card {
+    background-color: var(--bg-card);
+    padding: 40px; border-radius: 20px; 
+    border: 1px solid var(--border-color);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05); /* ظل ناعم جداً */
+    max-width: 600px; width: 100%; animation: floatUp 0.8s ease-out;
+}
+
+.m-icon-box {
+    width: 80px; height: 80px; background: rgba(119, 189, 29, 0.1); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center; margin: 0 auto 20px;
+    border: 1px solid rgba(119, 189, 29, 0.3);
+}
+.m-icon-box svg { width: 40px; height: 40px; fill: var(--sy-green); animation: spinSlow 15s linear infinite; }
+
+.m-title { 
+    font-size: 2.5rem; font-weight: 900; margin-bottom: 10px; 
+    color: var(--text-main); 
+}
+
+.m-desc { font-size: 1.1rem; color: var(--text-sec); line-height: 1.6; margin-bottom: 30px; font-weight: bold; }
+
+/* العداد */
+.m-timer { display: flex; gap: 15px; flex-wrap: wrap; justify-content: center; margin-bottom: 30px; direction: ltr; }
+
+.m-time-unit { 
+    background-color: var(--bg-body); 
+    padding: 15px; border-radius: 12px; min-width: 80px; 
+    border: 1px solid var(--border-color); 
+    display: flex; flex-direction: column; align-items: center; 
+}
+
+.m-number { font-size: 2rem; font-weight: bold; color: var(--text-main); font-family: sans-serif; }
+.m-label { font-size: 0.85rem; color: var(--sy-green); text-transform: uppercase; margin-top: 5px; font-weight: bold; }
+
+/* أزرار التواصل */
+.m-social { display: flex; gap: 10px; justify-content: center; margin-top: 20px; }
+.m-social a { 
+    width: 40px; height: 40px; border-radius: 50%; 
+    background-color: var(--bg-body);
+    border: 1px solid var(--border-color);
+    display: flex; align-items: center; justify-content: center; 
+    transition: 0.3s; color: var(--text-main); 
+}
+.m-social a:hover { 
+    background-color: var(--sy-green); 
+    color: #fff; 
+    border-color: var(--sy-green); 
+    transform: translateY(-3px); 
+}
+.m-social svg { width: 18px; height: 18px; fill: currentColor; }
+
+@keyframes spinSlow { 100% { transform: rotate(360deg); } }
+@keyframes floatUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+body.maintenance-active { overflow: hidden; }
+
+
+/* عند تفعيل زر القائمة: */
+
+/* 1. العمود الأيمن: اجعله شفافاً تماماً ولكن ابقِ مكانه محجوزاً */
+.main-layout.sidebar-hidden #main-right-sidebar {
+    opacity: 0 ;           /* شفافية كاملة (يختفي عن العين) */
+    pointer-events: none ; /* غير قابل للنقر (الروابط لن تعمل) */
+    visibility: visible ;  /* نبقيه مرئياً للمتصفح ليحجز المساحة */
+    /* نؤكد على العرض الثابت لكي لا يتقلص */
+    width: 250px ;         
+    flex-basis: 250px ;
+    flex-shrink: 0;
+}
+
+/* 2. العمود الأوسط: نمنعه من أي تغيير أو حركة */
+.main-layout.sidebar-hidden .main-container {
+    /* لا نغير أي شيء في العرض، نتركه كما هو في الحالة الطبيعية */
+    flex-grow: 1 ; 
+}
+
+/* 3. العمود الأيسر: تثبيت مكانه */
+.main-layout.sidebar-hidden .main-layout__column {
+    /* لا نغير شيئاً، سيبقى في مكانه لأن العمود الأيمن "الشبح" يزاحمه */
+}
+
+
+/* تنسيق التاغات الجديد (Custom Tags) */
+.custom-post-tags {
+    /* الترتيب: أهم سطر لحل مشكلة الظهور في الأعلى */
+    order: 3 ; 
+    
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 25px 0 0 0; 
+    padding: 20px 25px; 
+    border-top: 1px solid var(--border-color);
+    width: 100%;
+    box-sizing: border-box;
+    background-color: var(--bg-card);
+}
+
+.custom-post-tags a {
+    display: flex;
+    box-shadow: inset 0 0 0 .063rem rgb(98 98 98) currentcolor ;
+    padding: .30rem;
+    border: 1px solid currentColor;
+    color: var(--color-grey-65);
+    font-size: .7rem;
+    font-weight: normal;
+    text-decoration: none;
+    border-radius: .25rem;
+    background-color: var(--bg-card);
+    outline: none;
+    transition: color .3s ease-in-out, box-shadow .3s ease-in-out;
+    white-space: nowrap;
+
+}
+
+.custom-post-tags a:hover,
+.post-labels a:hover {
+    border-color: var(--sy-green);
+    color: var(--sy-green);
+    background-color: var(--bg-body);
+}
+
+
+/* --- تنسيق قائمة الأقسام المختارة (8 أسطر) --- */
+.custom-category-list-wrapper {
+    width: 100%;
+    margin-bottom: 40px;
+    background: var(--bg-card);
+    padding: 13px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    box-sizing: border-box;
+}
+
+#custom-category-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.cat-list-empty {
+    padding: 20px;
+    text-align: center;
+    color: var(--text-sec);
+    font-size: 14px;
+}
+
+.custom-cat-item {
+    display: flex;
+    flex-direction: row-reverse;
+    align-items: flex-start;
+    margin-bottom: 1px;
+    padding: 15px 0px 15px 0px;
+    border-bottom: 1px solid var(--border-color);
+    gap: 15px;
+}
+
+.custom-cat-item[data-cat-last="true"] {
+    border-bottom: none;
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+/* النصوص (يمين) */
+.cat-item-content {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* شريط التسمية واللون */
+.cat-label-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 18px;
+    font-weight: bold;
+    color: var(--text-sec);
+    text-decoration: none;
+}
+
+.cat-label-row:hover {
+    color: var(--sy-green);
+}
+
+.cat-color-box {
+    width: 24px;
+    height: 24px;
+    border-radius: 2px;
+    display: inline-block;
+}
+
+/* العنوان */
+.cat-item-title {
+    font-size: clamp(15px, 5vw, 18px);
+    font-weight: 900;
+    line-height: 1.3;
+    margin: 0;
+    color: var(--text-main);
+}
+.cat-item-title a:hover {
+    color: var(--text-main);
+}
+
+/* الصورة (يسار) */
+.cat-item-img {
+    width: 190px; /* عرض الصورة */
+    height: 125px; /* ارتفاع الصورة */
+    flex-shrink: 0;
+    border-radius: 8px ;
+    -webkit-border-radius: 8px ;
+    overflow: hidden;
+    margin-right: 0;
+}
+
+.cat-item-img img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    transition: all 0.4s ease;
+    filter: brightness(100%);
+    border-radius: 8px
+}
+
+.cat-item-img:hover img {
+    transform: none;
+    opacity: 1;
+    filter: brightness(110%);
+}
+
+/* إخفاء قائمة الإعدادات الخام (النقاط والأسماء) */
+#hidden-config-area, 
+#custom-cat-config-list,
+#s24-story-labels-config {
+    display: none ;
+}
+
+/* --- تنسيق قائمة الأقسام للموبايل فقط ---
+   ملاحظة: التنسيقات الفعلية موجودة ضمن القسم العام
+   "📱 3. شاشات الموبايل الصغيرة (أقل من 600px)" لاحقاً في هذا الملف
+   (قواعد .cat-item-img / .cat-item-title / .custom-cat-item) --- */
+
+
+
+
+
+/* 💾 تنسيقات صفحة الأخبار المحفوظة (Saved News) */
+
+/* 1. ضبط العرض ليطابق صفحة الأكثر قراءة (720px) */
+body.saved-page-mode .main-container { max-width: 720px !important; margin: 0 auto !important; width: 100% !important; padding: 0 !important; flex-grow: 0 !important; }
+
+/* تنسيق الصور داخل المحفوظات */
+body.saved-page-mode .post-body img, body.saved-page-mode .post-body .separator img { width: 100% !important; height: auto !important; max-height: 405px !important; aspect-ratio: 16 / 9 !important; object-fit: cover !important; border-radius: 0 !important; margin-bottom: 15px !important; }
+
+/* 2. تنسيق زر الحذف السريع (علامة X) */
+/* زر الحذف السريع (علامة X) - لون أخضر */
+
+
+/* 3. تلوين أيقونة الحفظ بالأخضر عند التفعيل */
+.rt-icon-group[title="حفظ"].saved svg { fill: var(--sy-green) !important; stroke: var(--sy-green) !important; transition: all 0.3s ease; }
+
+/* 4. تنسيقات إضافية للقائمة (احتياطية) */
+.saved-list-ul { list-style: none ; padding: 0; margin: 0 ; }
+.saved-item.text-only { display: flex; justify-content: space-between; align-items: center; padding: 15px; margin-bottom: 10px; border-bottom: 1px solid #eee; background: #fff; transition: background 0.2s; }
+.saved-item.text-only:hover { background: #f9f9f9; }
+
+/* 👁️ إخفاء المشاهدات في (المحفوظات + الأكثر قراءة) */
+body.saved-page-mode .rt-footer .rt-icon-group[title="مشاهدات"], body.most-read-page .rt-footer .rt-icon-group[title="مشاهدات"] { display: none !important; }
+
+
+
+
+
+/* 1. إخفاء قسم أيقونات الموبايل الجديد افتراضياً على الكمبيوتر */
+#Mobile_Social_Section { display: none; }
+
+   
+
+    
+
+
+
+
+
+
+
+
+
+/*  1. تنسيق العناوين (لجميع الصفحات - يمين دائماً)  */
+h3.post-title, .post-title, .post-title a { order: 1; font-size: 24px; font-weight: 900; color: var(--text-main); line-height: 1.4; margin: 5px 0 8px 0; text-align: right; text-decoration: none; display: block; cursor: pointer; width: 100%; padding: 15px 8px; box-sizing: border-box; }
+
+/* 🖼️ إصلاح الصور: إظهار الصورة الأولى فقط في الرئيسية وإخفاء الباقي */
+
+
+body.item-page .post-body .separator {
+    display: block !important;
+    text-align: center;
+    width: 100% !important;
+    margin: 0 !important;
+}
+
+
+/* 5. حماية الصفحات الخاصة (الأكثر قراءة والمحفوظات) */
+body.most-read-page .post-body img,
+body.saved-page-mode .post-body img,
+body.most-read-page .post-body .separator,
+body.saved-page-mode .post-body .separator {
+    display: block !important;
+    width: 100% !important;
+    height: auto !important;
+    aspect-ratio: 16 / 9;
+    object-fit: cover;
+}
+
+
+/* تخصيص المشاركة المميزة */
+.FeaturedPost{order:-10!important;margin-bottom:30px!important;width:100%!important}.FeaturedPost>h3.title,.FeaturedPost>.title{display:none!important}.FeaturedPost .widget-content,.FeaturedPost article{display:block!important;background-color:var(--bg-card)!important;border:0 solid var(--border-color)!important;border-radius:8px!important;position:relative!important;width:100%!important;box-sizing:border-box!important;margin:0!important;padding:0!important;overflow:hidden!important;transition:box-shadow .3s!important}.FeaturedPost .widget-content:hover,.FeaturedPost article:hover{box-shadow:0 5px 15px rgba(0,0,0,.08)!important}.FeaturedPost img,.FeaturedPost .post-image-link,.FeaturedPost .summary-img,.FeaturedPost .post-summary-image-container,.FeaturedPost .image-wrap,.FeaturedPost .thumbnail,.FeaturedPost .post-snippet,.FeaturedPost .summary-snippet{display:none!important;visibility:hidden!important;width:0!important;height:0!important;margin:0!important;padding:0!important}.FeaturedPost .post-info,.FeaturedPost .summary-content,.FeaturedPost .post-summary{width:100%!important;padding:20px!important;display:block!important;text-align:right!important;box-sizing:border-box!important;margin:0!important;border:none!important;float:none!important}.FeaturedPost h3.post-title,.FeaturedPost .post-title,.FeaturedPost h3{font-size:18px!important;font-weight:900!important;margin:0!important;line-height:1.5!important;display:-webkit-box!important;-webkit-line-clamp:2!important;-webkit-box-orient:vertical!important;overflow:hidden!important}.FeaturedPost h3.post-title a,.FeaturedPost .post-title a,.FeaturedPost h3 a{color:var(--text-main)!important;text-decoration:none!important}
+
+/* تخصيص المشاركة المثبتة */
+.pinned-hero-card{display:flex;flex-direction:row;background-color:var(--bg-card);border:1px solid var(--border-color);border-radius:8px;overflow:hidden;text-decoration:none;align-items:stretch;width:100%!important;box-sizing:border-box;position:relative;margin-bottom:30px}.hero-img{width:190px;height:125px;flex:0 0 190px;background-size:cover;background-position:center}.hero-content{width:calc(100% - 190px);padding:15px 20px;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;text-align:right;box-sizing:border-box;min-width:0;position:relative}.hero-title{font-size:18px;font-weight:900;color:var(--text-main);margin:0;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden} #HTML6 .title,#HTML6 h2{display:none!important}
+
+
+
+
+/* ---------------------------------------------------------
+   ب. صفحة المقالة (Item Page) - النسخة النظيفة (Clean Version)
+   الهدف: تطبيق نمط "الطقس" بأقل قدر من !important
+   --------------------------------------------------------- */
+
+/* 1. ضبط الحاويات لضمان تمدد الصورة للأطراف */
+body.item-page .main-layout .main-container {
+    padding: 0;
+    width: 100%;
+    max-width: 864px;
+    margin: 0 auto;
+}
+
+body.item-page .post-body {
+    padding: 0;
+    margin: 0;
+    width: 100%;
+    overflow: visible;
+    font-size: 19px;
+    color: var(--text-main);
+    line-height: 1.8;
+}
+
+/* 2. التعامل مع حاوية بلوجر (separator) */
+/* نستخدم !important هنا للتغلب على الستايل السطري الذي يضيفه بلوجر تلقائياً */
+body.item-page .post-body .separator {
+    margin: 0 !important;
+    padding: 0 !important;
+    width: 100% !important;
+    display: block;
+    text-align: center;
+    pointer-events: auto ; 
+    cursor: default ;
+}
+
+body.item-page .post-body .separator a {
+    margin-left: 0 !important;
+    margin-right: 0 !important;
+    display: block;
+}
+
+
+    
+    
+
+/* الإعلانات */
+.ad-banner-wrapper{display:block;width:100%;max-width:864px;margin:20px auto 40px auto;text-align:center;position:relative;overflow:hidden;border-radius:8px;background:transparent}.ad-banner-wrapper img{display:block;width:100%;max-width:100%;height:auto;object-fit:contain;margin:0 auto;border-radius:8px;border:none!important;transition:opacity .3s ease-in-out}#in-article-ad-wrapper{display:block;width:100%;max-width:100%;margin:30px auto;text-align:center;clear:both;overflow:hidden;background:transparent}.ad-under-post-wrapper{width:100%;margin:25px 0;text-align:center;display:flex;justify-content:center;align-items:center;clear:both;background:transparent}.ad-under-post-wrapper .widget{margin:0;padding:0;width:100%}.ad-banner-wrapper ins.adsbygoogle,#in-article-ad-wrapper ins.adsbygoogle,.ad-under-post-wrapper ins.adsbygoogle{display:block!important;margin:0 auto!important;max-width:100%!important}body:not(.item-page) .ad-under-post-wrapper,body.most-read-page .ad-under-post-wrapper,body.saved-page-mode .ad-under-post-wrapper,body:not(.item-page) #in-article-ad-wrapper{display:none!important}
+/* .... */
+
+
+
+/* تنسيق أداة التواصل الاجتماعي العلوية */
+.top-social-icons .widget { margin: 0; padding: 0; }
+.top-social-icons .widget-content { margin: 0; padding: 0; border: none; }
+.top-social-icons ul.social-list-ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    gap: 20px; /* المسافة بين الأيقونات */
+}
+.top-social-icons li { margin: 0; padding: 0; }
+.top-social-icons a {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--text-main);
+    opacity: 0.8;
+    transition: all 0.3s ease;
+}
+.top-social-icons a:hover { opacity: 1; color: var(--sy-green); }
+.top-icon { width: 20px; height: 20px; fill: currentColor; }
+/* إخفاء النص لتبقى الأيقونة فقط */
+.social-text-hidden { display: none; }
+
+
+
+
+
+
+
+
+
+
+
+
+/* 🟢 [sy-static-box] 🟢 */
+
+/* 1. الصندوق الخارجي */
+.sy-static-box {
+    background-color: #ffffff;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    margin-bottom: 30px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    display: flex;
+    flex-direction: column;
+    transition: background-color 0.3s, border-color 0.3s; /* نعومة التحويل */
+}
+
+/* 2. رأس القائمة (العنوان) */
+.sy-static-header {
+    background-color: #f9f9f9;
+    padding: 12px 15px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    transition: background-color 0.3s, border-color 0.3s;
+}
+
+/* حاوية اللوجو (ثابتة في الوضعين) */
+.sy-logo-box {
+    width: 32px;
+    height: 32px;
+    background-color: var(--sy-green);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    padding: 3px;
+}
+
+.sy-logo-box img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    filter: brightness(0) invert(1); /* يجعل اللوجو أبيض */
+}
+
+/* نص العنوان */
+.sy-header-title {
+    font-size: 18px;
+    font-weight: 900;
+    color:var(--color-black);
+    margin: 0;
+    line-height: 1;
+    transition: color 0.3s;
+}
+
+/* 3. جسم القائمة */
+.sy-static-body {
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    margin: 0;
+}
+
+/* رابط الخبر */
+a.sy-news-link {
+    display: block !important;
+    width: 100%;
+    padding: 12px 15px;
+    border-bottom: 1px solid #f0f0f0;
+    color: #333;
+    font-size: 15px;
+    font-weight: 700;
+    text-decoration: none;
+    line-height: 1.5;
+    box-sizing: border-box;
+    transition: all 0.2s ease;
+}
+
+/* تأثير المرور (الوضع النهاري) */
+a.sy-news-link:hover {
+    background-color: #f7f9f7; /* خلفية خفيفة جداً */
+    color:var(--color-black);
+    padding-right: 15px !important; /* تثبيت الحركة */
+}
+
+a.sy-news-link:last-child {
+    border-bottom: none;
+}
+
+/* 4. زر المزيد (ثابت أخضر في الوضعين) */
+.sy-more-btn {
+    display: block;
+    width: calc(100% - 30px);
+    margin: 15px auto;
+    background-color: #77bd1d !important;
+    color: #fff !important;
+    text-align: center;
+    padding: 10px;
+    border-radius: 5px;
+    font-weight: bold;
+    text-decoration: none;
+    transition: opacity 0.3s;
+}
+.sy-more-btn:hover {
+    opacity: 0.9;
+}
+
+/* ========================================= */
+/* 🌑 إعدادات الوضع الليلي (Dark Mode Overrides) */
+/* ========================================= */
+
+[data-theme="dark"] .sy-static-box {
+    background-color: #1e1e1e; /* خلفية الصندوق غامقة */
+    border-color: #333;        /* الحدود غامقة */
+}
+
+[data-theme="dark"] .sy-static-header {
+    background-color: #252525; /* خلفية العنوان أغمق قليلاً */
+    border-bottom-color: #333;
+}
+
+[data-theme="dark"] .sy-header-title {
+    color: #ffffff; /* العنوان يصبح أبيض */
+}
+
+[data-theme="dark"] a.sy-news-link {
+    color: #e0e0e0; /* النص رمادي فاتح */
+    border-bottom-color: #333; /* الفواصل غامقة */
+}
+
+[data-theme="dark"] a.sy-news-link:hover {
+    background-color: #2c2c2c; /* خلفية هوفر غامقة */
+    color: #fff;               /* النص يصبح أبيض ناصع */
+}
+/* 🔴 [sy-static-box] 🔴 */
+
+
+
+
+
+/* 🟢 [ استطلاع الرأي (poll__wrapper)] 🟢 */
+
+/* ========================================================= */
+/* 🗳️ نظام استطلاع الرأي المدمج (Poll System + Skeleton) */
+/* ========================================================= */
+
+/* 1. الحاوية الرئيسية */
+.poll__wrapper {
+    background-color: var(--bg-card, #fff);
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 2px 4px rgba(0,0,0,0.06);
+    padding: 20px;
+    margin-bottom: 30px;
+    border: 1px solid var(--border-color, #eee);
+    direction: rtl;
+    text-align: right;
+    position: relative;
+    min-height: 380px; 
+    contain: content;
+    display: flex;
+    flex-direction: column;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+/* ========================================= */
+/* 💀 تأثير التحميل (Skeleton Loading) */
+/* ========================================= */
+.poll-skeleton-container {
+    padding: 0; 
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    direction: rtl;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+@keyframes skeleton-loading {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+.sk-shape {
+    background: #e0e0e0;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: skeleton-loading 1.5s infinite linear;
+    border-radius: 4px;
+}
+
+.sk-title { height: 20px; width: 70%; margin-bottom: 10px; }
+.sk-row { display: flex; align-items: center; gap: 10px; }
+.sk-circle { width: 24px; height: 24px; border-radius: 50%; flex-shrink: 0; }
+.sk-text { height: 14px; width: 40%; }
+.sk-captcha { height: 40px; width: 100%; max-width: 300px; border-radius: 3px; }
+.sk-btn { height: 45px; width: 100%; margin-top: 10px; border-radius: 4px; }
+
+/* ========================================= */
+/* 📝 محتوى الاستطلاع الفعلي */
+/* ========================================= */
+.poll__title {
+    font-size: 18px;
+    font-weight: 900;
+    color: var(--text-main, #000);
+    margin-bottom: 20px;
+    line-height: 1.5;
+    min-height: 54px;
+    transition: color 0.3s ease;
+}
+
+.poll__options {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    margin-bottom: 20px;
+}
+
+.poll-label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    padding: 10px;
+    border-radius: 6px;
+    transition: background 0.2s, box-shadow 0.2s;
+    border: 1px solid transparent;
+    justify-content: flex-start;
+}
+
+.poll-label:hover { 
+    background-color: var(--hover-bg, #f9f9f9);
+}
+
+.poll-text {
+    font-size: 16px;
+    font-weight: bold;
+    color: var(--text-main, #333);
+    order: 2;
+    transition: color 0.3s ease;
+}
+
+/* تنسيق أزرار الراديو */
+.poll-label input[type="radio"] {
+    -webkit-appearance: none !important;
+    appearance: none !important;
+    width: 24px !important;
+    height: 24px !important;
+    min-width: 24px !important;
+    min-height: 24px !important;
+    border: 2px solid #ccc !important;
+    border-radius: 50%;
+    background-color: #fff;
+    margin-left: 15px;
+    cursor: pointer;
+    outline: none;
+    flex-shrink: 0;
+    transition: all 0.2s ease-in-out;
+}
+
+.poll-label input[type="radio"]:hover {
+    border-color: #999 !important;
+    box-shadow: 0 0 0 3px rgba(109, 178, 0, 0.1) !important;
+}
+
+.poll-label input[type="radio"]:focus-visible {
+    outline: 2px solid var(--sy-green) !important;
+    outline-offset: 2px !important;
+}
+
+/* ✅ ألوان الخيارات 1-6 (فاتحة وشفافة) */
+
+/* الخيار 1: أخضر فاتح */
+.poll-label:nth-of-type(1) input[type="radio"]:checked {
+    background-color: #9bc34a !important;
+    border-color: #9bc34a !important;
+    box-shadow: inset 0 0 0 4px #fff !important;
+}
+
+/* الخيار 2: أحمر فاتح */
+.poll-label:nth-of-type(2) input[type="radio"]:checked {
+    background-color: #ff6b6b !important;
+    border-color: #ff6b6b !important;
+    box-shadow: inset 0 0 0 4px #fff !important;
+}
+
+/* الخيار 3: برتقالي فاتح */
+.poll-label:nth-of-type(3) input[type="radio"]:checked {
+    background-color: #ffa500 !important;
+    border-color: #ffa500 !important;
+    box-shadow: inset 0 0 0 4px #fff !important;
+}
+
+/* الخيار 4: أزرق فاتح */
+.poll-label:nth-of-type(4) input[type="radio"]:checked {
+    background-color: #66ccff !important;
+    border-color: #66ccff !important;
+    box-shadow: inset 0 0 0 4px #fff !important;
+}
+
+/* الخيار 5: بنفسجي فاتح */
+.poll-label:nth-of-type(5) input[type="radio"]:checked {
+    background-color: #d99fef !important;
+    border-color: #d99fef !important;
+    box-shadow: inset 0 0 0 4px #fff !important;
+}
+
+/* الخيار 6: تركواز فاتح (بدل الأحمر المكرر) */
+.poll-label:nth-of-type(6) input[type="radio"]:checked {
+    background-color: #00bfa5 !important;
+    border-color: #00bfa5 !important;
+    box-shadow: inset 0 0 0 4px #fff !important;
+}
+
+/* الكابشا والزر */
+.fake-recaptcha {
+    background: #f9f9f9; 
+    border: 1px solid #d3d3d3;
+    border-radius: 3px; 
+    width: 100%; 
+    max-width: 300px;
+    padding: 10px 15px; 
+    margin: 0 0 20px 0;
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between;
+    gap: 10px;
+    transition: background-color 0.3s ease, border-color 0.3s ease;
+}
+
+.captcha-box {
+    width: 24px; height: 24px; border: 2px solid #c1c1c1;
+    border-radius: 2px; background: #fff; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.2s ease;
+    user-select: none;
+}
+
+.captcha-box:hover {
+    border-color: #999;
+    box-shadow: 0 0 0 2px rgba(0,0,0,0.05);
+}
+
+.poll__submit-button {
+    width: 100%; padding: 12px;
+    background-color: #9bc34a; color: #fff;
+    border: none; border-radius: 4px;
+    font-size: 16px; font-weight: bold;
+    cursor: pointer; transition: opacity 0.3s, transform 0.2s;
+}
+
+.poll__submit-button:hover:not(:disabled) {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+.poll__submit-button:focus-visible {
+    outline: 2px solid #9bc34a;
+    outline-offset: 2px;
+}
+
+.poll__submit-button:disabled { 
+    background-color: #ccc; 
+    cursor: not-allowed; 
+    opacity: 0.5;
+}
+
+/* ========================================= */
+/* 📊 النتائج والصفحات */
+/* ========================================= */
+.poll__results {
+    display: none; 
+    flex-direction: column; 
+    gap: 20px; 
+    padding-top: 10px;
+}
+
+#results-container {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.result-item { 
+    display: flex; 
+    flex-direction: column; 
+    gap: 8px;
+}
+
+.result-label { 
+    font-size: 16px; 
+    font-weight: bold; 
+    color: var(--text-main); 
+    text-align: right;
+    transition: color 0.3s ease;
+}
+
+/* ✅ إصلاح: تغيير direction: ltr إلى flex-direction: row-reverse */
+.result-bar-row { 
+    display: flex; 
+    align-items: center; 
+    justify-content: space-between; 
+    gap: 15px; 
+    flex-direction: row-reverse;
+}
+
+.result-stats { 
+    display: flex; 
+    gap: 8px; 
+    font-size: 14px; 
+    font-weight: bold; 
+    color: var(--text-main);
+    min-width: 80px;
+    transition: color 0.3s ease;
+}
+
+.stat-count { color: #555; }
+.stat-perc { color: var(--color-black); } 
+
+.progress-bg {
+    flex-grow: 1; 
+    height: 8px; 
+    background-color: #eee;
+    border-radius: 4px; 
+    overflow: hidden; 
+    direction: rtl;
+    transition: background-color 0.3s ease;
+}
+
+.progress-bar {
+    height: 100%; 
+    background-color: #9bc34a; 
+    width: 0%;
+    transition: width 1s ease-in-out;
+}
+
+/* ✅ ألوان أشرطة التقدم (فاتحة) */
+
+/* الخيار 1: أخضر فاتح */
+.result-item:nth-of-type(1) .progress-bar {
+    background: linear-gradient(90deg, #9bc34a, #8bc34a) !important;
+}
+
+/* الخيار 2: أحمر فاتح */
+.result-item:nth-of-type(2) .progress-bar {
+    background: linear-gradient(90deg, #ff6b6b, #ff5252) !important;
+}
+
+/* الخيار 3: برتقالي فاتح */
+.result-item:nth-of-type(3) .progress-bar {
+    background: linear-gradient(90deg, #ffa500, #ff9500) !important;
+}
+
+/* الخيار 4: أزرق فاتح */
+.result-item:nth-of-type(4) .progress-bar {
+    background: linear-gradient(90deg, #66ccff, #33bbff) !important;
+}
+
+/* الخيار 5: بنفسجي فاتح */
+.result-item:nth-of-type(5) .progress-bar {
+    background: linear-gradient(90deg, #d99fef, #c77dde) !important;
+}
+
+/* الخيار 6: تركواز فاتح */
+.result-item:nth-of-type(6) .progress-bar {
+    background: linear-gradient(90deg, #00bfa5, #00a896) !important;
+}
+
+.total-votes-container {
+    margin-top: 10px; 
+    font-size: 15px; 
+    font-weight: bold;
+    color: #0088cc; 
+    text-align: left; 
+    border-top: 1px solid #eee; 
+    padding-top: 15px;
+    transition: border-color 0.3s ease, color 0.3s ease;
+}
+
+.total-label { margin-right: 5px; }
+.total-number { 
+    margin-right: 5px; 
+    font-family: sans-serif;
+}
+
+.poll-pagination {
+    display: flex; 
+    justify-content: flex-start; 
+    gap: 5px;
+    margin-top: 20px; 
+    flex-wrap: wrap; 
+    direction: rtl !important;
+}
+
+.page-btn {
+    width: 30px; 
+    height: 30px;
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
+    background: #eee; 
+    color: #555;
+    border-radius: 4px; 
+    cursor: pointer;
+    font-weight: bold; 
+    font-size: 14px; 
+    transition: all 0.2s;
+    border: 1px solid transparent;
+}
+
+.page-btn:hover { 
+    background: #ddd; 
+}
+
+.page-btn:focus-visible {
+    outline: 2px solid #9bc34a;
+    outline-offset: 2px;
+}
+
+.page-btn.active { 
+    background: #9bc34a; 
+    color: #fff;
+}
+
+#poll-content-area { 
+    opacity: 0; 
+    transition: opacity 0.5s ease;
+}
+
+/* ========================================= */
+/* 🌓 دعم الوضع الليلي الكامل */
+/* ========================================= */
+
+[data-theme="dark"] .poll__wrapper {
+    background-color: #1e1e1e;
+    border-color: #333;
+}
+
+[data-theme="dark"] .sk-shape {
+    background: #2a2a2a;
+    background: linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%);
+    background-size: 200% 100%;
+}
+
+[data-theme="dark"] .poll__title {
+    color: #ffffff;
+}
+
+[data-theme="dark"] .poll-label {
+    background-color: #2a2a2a;
+}
+
+[data-theme="dark"] .poll-label:hover {
+    background-color: #333;
+}
+
+[data-theme="dark"] .poll-text {
+    color: #e0e0e0;
+}
+
+[data-theme="dark"] .poll-label input[type="radio"] {
+    background-color: #2a2a2a !important;
+    border-color: #555 !important;
+}
+
+[data-theme="dark"] .poll-label input[type="radio"]:hover {
+    border-color: #777 !important;
+}
+
+/* ✅ ألوان الخيارات في الوضع الليلي - الألوان الفاتحة تبقى */
+[data-theme="dark"] .poll-label:nth-of-type(1) input[type="radio"]:checked {
+    background-color: #9bc34a !important;
+    border-color: #9bc34a !important;
+    box-shadow: inset 0 0 0 4px #1e1e1e !important;
+}
+
+[data-theme="dark"] .poll-label:nth-of-type(2) input[type="radio"]:checked {
+    background-color: #ff6b6b !important;
+    border-color: #ff6b6b !important;
+    box-shadow: inset 0 0 0 4px #1e1e1e !important;
+}
+
+[data-theme="dark"] .poll-label:nth-of-type(3) input[type="radio"]:checked {
+    background-color: #ffa500 !important;
+    border-color: #ffa500 !important;
+    box-shadow: inset 0 0 0 4px #1e1e1e !important;
+}
+
+[data-theme="dark"] .poll-label:nth-of-type(4) input[type="radio"]:checked {
+    background-color: #66ccff !important;
+    border-color: #66ccff !important;
+    box-shadow: inset 0 0 0 4px #1e1e1e !important;
+}
+
+[data-theme="dark"] .poll-label:nth-of-type(5) input[type="radio"]:checked {
+    background-color: #d99fef !important;
+    border-color: #d99fef !important;
+    box-shadow: inset 0 0 0 4px #1e1e1e !important;
+}
+
+[data-theme="dark"] .poll-label:nth-of-type(6) input[type="radio"]:checked {
+    background-color: #00bfa5 !important;
+    border-color: #00bfa5 !important;
+    box-shadow: inset 0 0 0 4px #1e1e1e !important;
+}
+
+[data-theme="dark"] .fake-recaptcha {
+    background: #2a2a2a;
+    border-color: #444;
+}
+
+[data-theme="dark"] .captcha-box {
+    background: #2a2a2a;
+    border-color: #555;
+}
+
+[data-theme="dark"] .captcha-box:hover {
+    border-color: #777;
+}
+
+[data-theme="dark"] .poll__submit-button {
+    background-color: #9bc34a;
+}
+
+[data-theme="dark"] .poll__submit-button:hover:not(:disabled) {
+    opacity: 0.85;
+}
+
+[data-theme="dark"] .poll__submit-button:disabled {
+    background-color: #444;
+}
+
+[data-theme="dark"] .result-label {
+    color: #ffffff;
+}
+
+[data-theme="dark"] .result-stats {
+    color: #e0e0e0;
+}
+
+[data-theme="dark"] .stat-count {
+    color: #aaa;
+}
+
+[data-theme="dark"] .stat-perc {
+    color: #ccc;
+}
+
+[data-theme="dark"] .progress-bg {
+    background-color: #333;
+}
+
+[data-theme="dark"] .total-votes-container {
+    border-top-color: #333;
+    color: #66b3ff;
+}
+
+[data-theme="dark"] .page-btn {
+    background: #333;
+    color: #ccc;
+    border-color: #444;
+}
+
+[data-theme="dark"] .page-btn:hover {
+    background: #444;
+}
+
+[data-theme="dark"] .page-btn.active {
+    background: #9bc34a;
+    color: #fff;
+}
+
+/* ========================================= */
+/* 📱 استجابة الهاتف والأجهزة الصغيرة */
+/* ========================================= */
+
+@media (max-width: 768px) {
+    .poll__wrapper {
+        padding: 15px;
+        min-height: 300px;
+    }
+    
+    .poll__title {
+        font-size: 16px;
+        min-height: 48px;
+    }
+    
+    .poll-text {
+        font-size: 14px;
+    }
+    
+    .result-label {
+        font-size: 14px;
+    }
+    
+    .result-stats {
+        font-size: 12px;
+        min-width: 70px;
+    }
+    
+    .page-btn {
+        width: 28px;
+        height: 28px;
+        font-size: 12px;
+    }
+    
+    .poll__submit-button {
+        font-size: 14px;
+        padding: 10px;
+    }
+}
+
+@media (max-width: 480px) {
+    .poll__wrapper {
+        padding: 12px;
+        min-height: 280px;
+        margin-bottom: 20px;
+    }
+    
+    .poll__title {
+        font-size: 15px;
+        font-weight: 800;
+        min-height: 45px;
+        margin-bottom: 15px;
+    }
+    
+    .poll-label {
+        padding: 8px;
+        gap: 8px;
+    }
+    
+    .poll-text {
+        font-size: 13px;
+    }
+    
+    .poll-label input[type="radio"] {
+        width: 20px !important;
+        height: 20px !important;
+        min-width: 20px !important;
+        min-height: 20px !important;
+        margin-left: 10px;
+    }
+    
+    .fake-recaptcha {
+        flex-direction: column;
+        gap: 10px;
+        padding: 8px 10px;
+    }
+    
+    .poll__options {
+        gap: 12px;
+    }
+    
+    .poll__submit-button {
+        font-size: 13px;
+        padding: 10px;
+    }
+    
+    .result-label {
+        font-size: 13px;
+    }
+    
+    .result-stats {
+        font-size: 11px;
+        min-width: 60px;
+    }
+    
+    .progress-bg {
+        height: 6px;
+    }
+    
+    .page-btn {
+        width: 26px;
+        height: 26px;
+        font-size: 11px;
+    }
+    
+    .poll-pagination {
+        gap: 3px;
+        margin-top: 15px;
+    }
+    
+    .total-votes-container {
+        font-size: 13px;
+        padding-top: 10px;
+    }
+}
+
+/* ========================================= */
+/* ♿ إمكانية الوصول (Accessibility) */
+/* ========================================= */
+
+/* تحسين التباين */
+@media (prefers-contrast: more) {
+    .poll-label input[type="radio"] {
+        border-width: 3px;
+    }
+    
+    .progress-bar {
+        box-shadow: 0 0 0 2px var(--bg-card);
+    }
+}
+
+/* احترام تفضيلات المستخدم للحركة */
+@media (prefers-reduced-motion: reduce) {
+    .sk-shape,
+    .progress-bar,
+    .poll-label,
+    .poll__submit-button,
+    .poll-label input[type="radio"] {
+        animation: none !important;
+        transition: none !important;
+    }
+}
+
+/* 🔴 [ نهاية تصميم استطلاع الرأي ] 🔴 */
+
+
+
+
+
+/* --- تنسيق زر تحميل المزيد (محدث) --- */
+#load-more-container {
+    width: 100%;
+    text-align: center;
+    margin: 30px 0 50px 0;
+    clear: both;
+}
+
+#load-more-btn {
+    display: inline-block;
+    /* --- الوضع النهاري (الافتراضي) --- */
+    background-color: #f9f9f9; 
+    color: #333;
+    border: 2px solid #ddd;
+    /* ------------------------------ */
+    padding: 12px 40px;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 30px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    font-family: inherit;
+    outline: none;
+}
+
+/* تأثير المرور (الوضع النهاري) */
+#load-more-btn:hover {
+    background-color: var(--bg-body); /* خلفية خضراء */
+    color: var(--sy-green);
+    border-color: var(--sy-green);
+    transform: none;
+    box-shadow: none;
+}
+
+/* --- (جديد) تعديل القيم للوضع الليلي --- */
+[data-theme="dark"] #load-more-btn {
+    background-color: var(--color-black) ; /* خلفية سوداء */
+    color: #ffffff !important;            /* خط أبيض */
+    border: 2px solid #ffffff ; /* كنار أبيض */
+    box-shadow: none !important;          /* إلغاء الظل الافتراضي */
+}
+
+/* --- (جديد) التفاعل عند المرور في الوضع الليلي --- */
+[data-theme="dark"] #load-more-btn:hover {
+    background-color: var(--color-black) ; /* تبقى الخلفية سوداء */
+    color: var(--sy-green) !important;            /* يتحول الخط للأخضر */
+    border-color: var(--sy-green) ;     /* يتحول الكنار للأخضر */
+}
+
+/* حركة الدوران عند التحميل (تبقى كما هي) */
+.loading-spinner-btn {
+    display: none;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255,255,255,0.3);
+    border-radius: 50%;
+    border-top-color: #fff;
+    animation: spin 1s ease-in-out infinite;
+    margin-left: 10px;
+    vertical-align: middle;
+}
+
+/* تعديل لون حركة الدوران في الوضع النهاري لتكون ظاهرة */
+#load-more-btn .loading-spinner-btn {
+     border-color: rgba(0,0,0,0.1);
+     border-top-color: #333;
+}
+/* تعديل لون حركة الدوران عند الهوفر أو الوضع الليلي */
+#load-more-btn:hover .loading-spinner-btn,
+[data-theme="dark"] #load-more-btn .loading-spinner-btn {
+     border-color: rgba(255,255,255,0.3);
+     border-top-color: #fff; /* تصبح بيضاء */
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+
+/* تنسيق زر الصفحة الرئيسية أسفل المقال */
+.custom-home-btn-wrapper {
+    width: 100%;
+    text-align: center; /* توسيط الزر */
+    margin: 20px 0 15px 0; /* مسافة فوق وتحت */
+    clear: both;
+}
+
+.custom-home-btn {
+    display: inline-block;
+    background-color: #f9f9f9;
+    color: #333;
+    border: 1px solid #ddd;
+    padding: 10px 30px;
+    border-radius: 30px; /* حواف دائرية */
+    font-weight: bold;
+    font-size: 15px;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.custom-home-btn:hover {
+    background-color: #f9f9f9; /* اللون الأخضر الخاص بقالبك */
+    color: var(--sy-green);
+    border-color: var(--sy-green);
+    text-decoration: none;
+}
+
+
+[data-theme="dark"] .custom-home-btn {
+    background-color: var(--color-black) ; 
+    color: #ffffff ;          
+    border: 1px solid #ffffff;
+}
+
+
+[data-theme="dark"] .custom-home-btn:hover {
+    background-color: var(--color-black) ;
+    color: var(--sy-green) ;            
+    border-color: var(--sy-green) ;    
+}
+
+/* ضمان ظهور حاوية الروابط */
+.post-feeds {
+    display: block !important;
+    text-align: center;
+    margin-top: 20px;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* تعديل زر الصفحة الرئيسية (ليشبه زر تحميل المزيد) */
+
+/* 1. ضبط حاوية الزر لتكون في المنتصف */
+#blog-pager {
+    text-align: center;
+    margin: 30px 0 50px 0; /* مسافات مريحة من الأعلى والأسفل */
+    clear: both;
+    width: 100%;
+}
+
+/* 2. تصميم الزر نفسه */
+.home-link {
+    display: inline-block; /* لضمان أخذ الأبعاد الصحيحة */
+    
+    /* --- الألوان والإطار (الوضع النهاري) --- */
+    background-color: #f9f9f9;
+    color: #333;
+    border: 2px solid #ddd; /* إطار عريض مثل زر التحميل */
+    
+    /* --- الحجم والخط --- */
+    padding: 12px 40px;     /* حجم كبير */
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 30px;    /* زوايا دائرية بالكامل */
+    font-family:inherit;
+    
+    /* --- خصائص أخرى --- */
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    outline: none;
+    line-height: normal;
+}
+
+/* 3. تأثير المرور (Hover) - الحركة والظل الأخضر */
+.home-link:hover {
+    background-color: var(--bg-body);
+    color: var(--sy-green);
+    border-color: var(--sy-green);
+    transform: none; /* حركة خفيفة للأعلى */
+    box-shadow: none; /* ظل أخضر */
+    text-decoration: none;
+}
+
+/* ========================================= */
+/* 🌑 الوضع الليلي (Dark Mode) */
+/* ========================================= */
+
+[data-theme="dark"] .home-link {
+    background-color: var(--color-black);
+    color: #ffffff !important;
+    border: 2px solid #ffffff; /* إطار أبيض في الليل */
+    box-shadow: none !important;
+}
+
+/* التفاعل في الوضع الليلي */
+[data-theme="dark"] .home-link:hover {
+    background-color: var(--color-black);
+    color: var(--sy-green) !important; /* النص يتحول للأخضر */
+    border-color: var(--sy-green);     /* الإطار يتحول للأخضر */
+}
+
+
+
+
+
+
+
+
+
+/* --- تنسيق شبكة الأقسام (حل مشكلة عدم التساوي) --- */
+.news-themes__wrapper {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 40px;
+    direction: rtl;
+    /* جعل العناصر داخل الشبكة تأخذ نفس الارتفاع تلقائياً */
+    align-items: stretch; 
+}
+
+@media (max-width: 768px) {
+    .news-themes__wrapper { grid-template-columns: 1fr; }
+}
+
+.theme-section {
+    background-color: var(--bg-card);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    /* هذا هو الحل: اجبار الصندوق على ملء ارتفاع الخلية بالكامل */
+    height: 100%; 
+}
+
+/* 1. رأس القسم */
+.theme-section-header {
+    padding: 15px 20px;
+    font-size: 20px;
+    font-weight: 900;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    justify-content: right;
+}
+
+/* المنطقة الوسطى (التي تحتوي الأخبار) */
+.theme-content-area {
+    display: flex;
+    flex-direction: column;
+    /* تجعل هذه المنطقة تتمدد لتملأ الفراغ وتدفع الزر للأسفل */
+    flex-grow: 1; 
+}
+
+/* 2. الخبر الرئيسي */
+.theme-main-post {
+    display: block;
+    text-decoration: none;
+    margin-bottom: 10px;
+    overflow: hidden;
+}
+
+.theme-main-img {
+    width: 100%;
+    height: 200px;
+    object-fit: cover;
+    display: block;
+    transform: none !important;
+    filter: none !important;
+    transition: none !important;
+}
+
+.theme-main-post:hover .theme-main-img {
+    transform: none !important;
+    filter: none !important;
+}
+
+.theme-main-title {
+    padding: 10px 15px 0;
+    font-size: 18px;
+    font-weight: bold;
+    line-height: 1.4;
+    color: var(--text-main);
+    margin: 0;
+    transition: color 0.2s ease;
+}
+
+.theme-main-post:hover .theme-main-title { 
+    color: var(--text-sec) !important; 
+}
+
+/* 3. القائمة الفرعية */
+.theme-sub-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.theme-sub-item {
+    border-top: 1px solid rgba(0,0,0,0.08); 
+    padding: 12px 15px;
+}
+[data-theme="dark"] .theme-sub-item { border-top-color: rgba(255,255,255,0.1); }
+
+.theme-sub-link {
+    font-size: 15px;
+    font-weight: bold;
+    color: var(--text-main);
+    text-decoration: none;
+    line-height: 1.5;
+    display: block;
+    transition: color 0.2s ease;
+}
+
+.theme-sub-link:hover { 
+    color: var(--text-sec) !important;
+    padding-right: 0 !important;
+}
+
+/* 4. الزر (حل التناسق) */
+.theme-section__button-block {
+    padding: 20px;
+    /* التأكيد على دفع الزر للأسفل إذا لم تكن المنطقة الوسطى كافية */
+    margin-top: auto; 
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.main-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 48px; 
+    min-height: 48px;
+    line-height: 1;
+    background-color: #77bd1d !important; 
+    color: #fff !important;
+    font-weight: bold;
+    font-size: 16px;
+    border-radius: 6px;
+    text-decoration: none;
+    transition: background-color 0.3s;
+    margin: 0 !important;
+}
+
+.main-button:hover { 
+    background-color: #5ea000 !important;
+    opacity: 1;
+}
+
+
+
+/* إخفاء الأكثر قراءة important */
+#PopularPosts1 {
+    display: none;
+    visibility: hidden;
+    height: 0;
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+    border: none;
+    opacity: 0;
+}
+
 /* ========================================================= */
 /* 📱 تحديث اللوجو للموبايل (RT Style - Full Block) */
 /* ========================================================= */
