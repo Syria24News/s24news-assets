@@ -769,22 +769,6 @@ body#layout .breaking-news-container {
     to   { opacity: 1; transform: translateY(0); }
 }
 
-/* --- تنسيقات الموبايل: تبقى كما كانت في الأصل --- */
-@media only screen and (max-width: 1023px) {
-  .breaking-news-container .widget-content,
-  .breaking-news-container .widget-content a,
-  .breaking-news-container .widget-content span {
-      font-size: 0.875rem !important;
-      padding-inline: 10px;
-      padding-block: 0;
-  }
-}
-
-@media only screen and (max-width:768px) {
-  .breaking-news-container .widget-content a,
-  .breaking-news-container .widget-content span { font-size: 0.85rem; font-weight: 600; }
-}
-
 
 /* --- 6. TOP MENU (تحديث شكل الأزرار - نمط RT) --- */
 
@@ -1688,11 +1672,6 @@ body.maintenance-active { overflow: hidden; }
 .main-layout.sidebar-hidden .main-container {
     /* لا نغير أي شيء في العرض، نتركه كما هو في الحالة الطبيعية */
     flex-grow: 1 ;
-}
-
-/* 3. العمود الأيسر: تثبيت مكانه */
-.main-layout.sidebar-hidden .main-layout__column {
-    /* لا نغير شيئاً، سيبقى في مكانه لأن العمود الأيمن "الشبح" يزاحمه */
 }
 
 
@@ -3654,7 +3633,6 @@ body.item-page .post-body > .s24-cover-injected:has(~ div[dir="rtl"] .s24-galler
     margin-bottom: 20px; border-bottom: 0px solid var(--border-color);
     padding: 10px 15px 15px 15px;
 }
-@keyframes pulse-red { 0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(231, 20, 20, 0.7); } 70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(231, 20, 20, 0); } 100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(231, 20, 20, 0); } }
 
 /* المشغل والأزرار */
 
@@ -3951,7 +3929,6 @@ body.item-page .post-body > .s24-cover-injected:has(~ div[dir="rtl"] .s24-galler
 
 /* 1. تنسيق اسم القسم (مربع اللون + النص) */
 .sy-meta-label { display: flex; align-items: center; gap: 4px; color: var(--text-main); text-decoration: none; margin-left: 50px; }
-.sy-label-text { font-family: 'IBM Plex Sans Arabic', sans-serif !important; font-size: 15px !important; font-weight: 700 !important; }
 /* 2. تنسيق التاريخ وكلمة "آخر تحديث" */
 .sy-static-text { margin: 0px 18px 0px 5px; opacity: 0.9; }
 .sy-date-only { direction: ltr; color: var(--text-sec); margin-left: 0px; }
