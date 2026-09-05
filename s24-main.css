@@ -4,6 +4,1288 @@
    يُلصق مباشرة أسفل هذا التعليق.
    ============================================================ */
 
+/* ========================================================= */
+/* 📱 تحديث اللوجو للموبايل (RT Style - Full Block) */
+/* ========================================================= */
+
+
+
+
+
+
+
+/* تنسيق عبارة حقوق الملكية والاسم أسفل المقالات */
+.custom-copyright-footer {
+    /* 1. التموضع والعرض - جعله يطابق الحاوية الرئيسية */
+    width: 100%;
+    max-width: 1552px;         /* نفس العرض الأقصى للقالب */
+    margin: 30px auto 20px auto; /* التوسيط الآلي مع هوامش علوية وسفلية */
+    padding: 20px 24px;        /* حشوة جانبية 24px تطابق تماماً حشوة الهيدر والمحتوى */
+    box-sizing: border-box;    /* لضمان دقة العرض */
+    
+    /* 2. التنسيق البصري */
+    text-align: center;
+    border-top: 1px solid var(--border-color); /* الخط الفاصل بنفس عرض المحتوى */
+    font-size: 14px;
+    font-weight: bold;
+    color: var(--text-sec);
+    
+    /* 3. المرونة */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    clear: both;
+}
+
+/* تعديل للموبايل لضمان التناسق عند تصغير الشاشة */
+@media only screen and (max-width: 1023px) {
+    .custom-copyright-footer {
+        padding: 20px 15px;    /* تقليل الحشوة لتناسب الموبايل مثل منطقة المقالات */
+        margin-top: 20px;
+    }
+}
+/* نهاية تنسيق عبارة حقوق الملكية أسفل المقالات */
+
+
+
+
+
+
+
+/* حل مشكلة القوائم الجانبية في صفحة الأكثر قراءة */
+body.most-read-page .main-layout__column,
+body.most-read-page .main-layout__column,
+body.most-read-page #force-left-sidebar {
+    flex-grow: 0 !important;       /* 1. منع التمدد التلقائي */
+    width: 312px !important;       /* 2. تثبيت العرض برقم محدد */
+    min-width: 312px !important;   /* 3. ضمان عدم التقلص */
+    max-width: 312px !important;   /* 4. ضمان عدم التوسع */
+}
+
+/* توسيط المحتوى المتبقي (اختياري لجمالية أكثر) */
+body.most-read-page .main-layout {
+    justify-content: center !important;
+}
+
+
+
+
+
+/* ========================================================= */
+/* 🛠️ قسم إصلاحات المحتوى (الروابط، الصور، الفيديوهات) - النسخة المصححة */
+/* ========================================================= */
+
+/* 1. إصلاح الروابط النصية لتبقى في نفس السطر */
+.post-body a { 
+    display: inline; 
+    cursor: pointer; 
+    color: var(--sy-green); 
+    text-decoration: none !important; 
+}
+
+/* 2. استثناء للروابط التي تحتوي على صور (لتبقى في سطر مستقل موسط) */
+.post-body .separator a, 
+.post-body a img {
+    display: block !important;
+    margin: 0 auto;
+    max-width: 100%;
+    height: auto;
+}
+
+
+
+
+/* --- التغطية الحية --- */
+.live-coverage-wrapper { margin-top: 10px; margin-bottom: 25px; width: 100%; box-sizing: border-box;}
+
+.live-unified-card {
+    background-color: var(--bg-card);
+    border: 0px solid var(--sy-green);
+    border-radius: 10px;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 4px 15px rgba(231, 20, 20, 0.08);
+}
+
+.live-card-header {
+    background-color: rgba(231, 20, 20, 0.05);
+    padding: 12px 15px;
+    display: flex;
+    align-items: center;
+    border-bottom: 1px solid var(--border-color);
+    z-index: 2;
+}
+
+[data-theme="dark"] .live-card-header {
+    background-color: rgba(231, 20, 20, 0.15);
+}
+
+
+/* ========================================= */
+/* تنسيق أقواس البث الاحترافية المتسلسلة */
+/* ========================================= */
+
+.live-pro-signal {
+    width: 24px;
+    height: 24px;
+    margin-left: 12px; /* المسافة بين الأيقونة والنص */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.live-pro-signal svg {
+    width: 100%;
+    height: 100%;
+    fill: none;
+    stroke: var(--color-red); /* لون الأقواس */
+    stroke-width: 2.5; /* سماكة الأقواس */
+    stroke-linecap: round; /* حواف دائرية ناعمة */
+}
+
+/* النقطة في الأسفل تكون ممتلئة باللون */
+.bc-dot {
+    fill: var(--color-red);
+    stroke: none;
+    animation: signal-pulse 1.5s infinite ease-in-out;
+}
+
+/* تجهيز الأقواس للحركة */
+.bc-arc {
+    opacity: 0.2; /* الشفافية الافتراضية باهتة */
+}
+
+/* توقيت الإضاءة المتسلسل */
+.bc-arc-1 { animation: signal-pulse 1.5s infinite ease-in-out 0.2s; }
+.bc-arc-2 { animation: signal-pulse 1.5s infinite ease-in-out 0.4s; }
+.bc-arc-3 { animation: signal-pulse 1.5s infinite ease-in-out 0.6s; }
+
+/* حركة الإضاءة (تومض وتختفي) */
+@keyframes signal-pulse {
+    0% { opacity: 0.1; }
+    50% { opacity: 1; } /* تضيء بالكامل */
+    100% { opacity: 0.1; }
+}
+
+
+
+
+.live-card-title {
+    color: var(--color-red); font-size: 16px; font-weight: 900;
+    font-family: var(--font-title) !important;
+}
+
+.live-card-body {
+    max-height: 230px; 
+    overflow-y: auto;  
+    overscroll-behavior: auto; 
+    touch-action: pan-y; 
+}
+
+
+.live-card-body::-webkit-scrollbar { width: 6px; }
+.live-card-body::-webkit-scrollbar-track { background: rgba(0,0,0,0.02); }
+.live-card-body::-webkit-scrollbar-thumb { background-color: var(--border-color); border-radius: 10px; }
+.live-card-body::-webkit-scrollbar-thumb:hover { background-color: var(--sy-green); }
+[data-theme="dark"] .live-card-body::-webkit-scrollbar-track { background: rgba(255,255,255,0.02); }
+
+.live-event-row {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 15px 20px; text-decoration: none;
+    border-bottom: 1px solid var(--border-color);
+    background-color: transparent; transition: all 0.3s ease; box-sizing: border-box;
+}
+.live-event-row:last-child { border-bottom: none; }
+.live-event-row:hover { background-color: var(--bg-card); }
+
+.live-event-text {
+    font-size: 16px; font-weight: bold; color: var(--text-main);
+    font-family: var(--font-main) !important;
+}
+.live-event-row:hover .live-event-text { color: var(--text-main); opacity: 0.7; }
+
+.live-event-arrow {
+    color: var(--sy-green); font-size: 18px; font-family: serif;
+    margin-right: 10px; transition: transform 0.3s ease;
+}
+
+
+
+/* --- تنسيق إشعار التنبيه (Toast Notification) --- */
+#rt-toast {
+    visibility: hidden; /* مخفي افتراضياً */
+    min-width: 250px;
+    background-color: #333; /* لون خلفية داكن */
+    color: #fff; /* لون النص */
+    text-align: center;
+    border-radius: 50px; /* حواف دائرية بالكامل */
+    padding: 12px 20px;
+    position: fixed;
+    z-index: 2147483647; /* أعلى طبقة ممكنة ليظهر فوق كل شيء */
+    left: 50%;
+    bottom: 30px;
+    transform: translateX(-50%); /* توسيط العنصر */
+    font-size: 14px;
+    font-weight: bold;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out, bottom 0.3s ease-in-out;
+}
+
+/* كلاس التفعيل */
+#rt-toast.show {
+    visibility: visible;
+    opacity: 1;
+    bottom: 50px; /* حركة طفيفة للأعلى عند الظهور */
+}
+/* --- نهاية تنسيق إشعار التنبيه (Toast Notification) --- */
+
+
+
+/* ========================================= */
+/* 💀 RT Skeleton Loading System */
+/* ========================================= */
+
+/* 1. تعريف الحركة (النبض) */
+@keyframes shimmer {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+/* 2. الكلاس الأساسي للهيكل */
+.rt-skeleton {
+    background: #f0f0f0;
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: shimmer 1.5s infinite linear;
+    border-radius: 6px;
+    display: block;
+}
+
+/* 3. أشكال الهيكل (صور ونصوص) */
+.rt-sk-image {
+    width: 100%;
+    height: 200px; /* ارتفاع افتراضي */
+    margin-bottom: 10px;
+}
+.rt-sk-title {
+    width: 80%;
+    height: 20px;
+    margin-bottom: 8px;
+}
+.rt-sk-line {
+    width: 50%;
+    height: 15px;
+}
+
+/* 4. تخصيص الشبكة (Grid Skeleton) */
+.sy-sk-grid-wrapper { display: flex; flex-direction: column; gap: 15px; width: 100%; }
+.sy-sk-main-img { height: 300px; }
+.sy-sk-sub-grid { display: flex; gap: 15px; }
+.sy-sk-sub-item { flex: 1; height: 150px; }
+
+/* 5. تخصيص القائمة (List Skeleton - للأكثر قراءة) */
+.rt-sk-list-item {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 20px;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 10px;
+    background: var(--bg-card);
+}
+
+/* 6. دعم الوضع الليلي (Dark Mode) */
+[data-theme="dark"] .rt-skeleton {
+    background: #2a2a2a;
+    background: linear-gradient(90deg, #2a2a2a 25%, #3a3a3a 50%, #2a2a2a 75%);
+    background-size: 200% 100%;
+}
+
+/* ========================================= */
+/* 💀 RT Skeleton Loading System */نهاية 
+/* ========================================= */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* --- S24News Smart Gallery System (Mobile Fill Fixed) --- */
+
+
+/* =========================================================
+   🌟 S24News Swiper Gallery System (Professional & Fixed) 🌟
+   ========================================================= */
+
+/* 1. إخفاء المصدر الخام للصور دائماً */
+body:not(.item-page) .rt-album-source { display: none !important; }
+.rt-album-source { display: none !important; } 
+
+/* 2. الحاوية الرئيسية للمعرض */
+.s24-gallery-wrapper {
+    position: relative;
+    width: 100%;
+    max-width: 864px;
+    margin: 25px auto;
+    direction: rtl; /* دعم اللغة العربية */
+}
+
+/* ---------------------------------------------------------
+   🛡️ درع الحماية: إصلاح الفراغات السفلية المزعجة في بلوجر
+   --------------------------------------------------------- */
+/* تصفير ارتفاع السطر والخطوط لمنع الفراغات الوهمية تحت الصور */
+.item-page .post-body .s24-gallery-wrapper {
+    line-height: 0 !important;
+    font-size: 0 !important;
+    padding-bottom: 0 !important;
+}
+
+/* إجبار الصور داخل السلايدر على تجاهل هوامش بلوجر الافتراضية */
+.s24-gallery-wrapper img {
+    margin: 0 !important;
+    padding: 0 !important;
+    height: 100% !important;
+    width: 100% !important;
+    object-fit: cover !important;
+    display: block !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* ضمان أن الشريحة تملأ الطول بالكامل */
+.s24-gallery-wrapper .swiper-slide {
+    height: 100% !important;
+    padding: 0 !important;
+    margin-bottom: 0 !important;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box !important;
+}
+/* --------------------------------------------------------- */
+
+/* 3. السلايدر الرئيسي (الصورة الكبيرة) */
+.s24-main-swiper {
+    width: 100%;
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--color-black, #000);
+    aspect-ratio: 16 / 9 !important; /* أبعاد سينمائية متناسقة */
+    box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+    margin-bottom: 10px !important; /* المسافة الوحيدة بين الكبير والمصغر */
+}
+
+/* 4. عداد الصور (مثال: 1 / 5) */
+.item-page .post-body .s24-gallery-wrapper .swiper-pagination-fraction {
+    position: absolute;
+    bottom: 15px;
+    right: auto;
+    left: 15px; /* في الزاوية اليسرى */
+    width: auto !important;
+    background: rgba(0, 0, 0, 0.7);
+    color: #fff;
+    padding: 5px 15px;
+    border-radius: 20px;
+    font-size: 15px !important; /* استرجاع حجم الخط هنا فقط */
+    font-weight: bold;
+    font-family: 'IBM Plex Sans Arabic', sans-serif !important;
+    z-index: 10;
+    direction: ltr;
+    letter-spacing: 2px;
+    line-height: 1.5 !important;
+}
+
+/* 5. أسهم التنقل الجانبية */
+.s24-gallery-wrapper .swiper-button-next,
+.s24-gallery-wrapper .swiper-button-prev {
+    color: #fff !important;
+    background: rgba(255,255,255,0.15);
+    width: 45px !important;
+    height: 45px !important;
+    border-radius: 50%;
+    backdrop-filter: blur(4px);
+    transition: all 0.3s ease;
+    margin-top: -22px !important;
+}
+.s24-gallery-wrapper .swiper-button-next:hover,
+.s24-gallery-wrapper .swiper-button-prev:hover {
+    background: var(--sy-green, #77bd1d);
+}
+.s24-gallery-wrapper .swiper-button-next::after,
+.s24-gallery-wrapper .swiper-button-prev::after {
+    font-size: 20px !important;
+    font-weight: bold;
+}
+
+/* 6. سلايدر الصور المصغرة (السفلي) */
+.s24-thumb-swiper {
+    width: 100%;
+    height: 85px !important;
+    min-height: 85px !important;
+    max-height: 85px !important;
+    padding-bottom: 0 !important;
+    margin-bottom: 0 !important;
+}
+
+.s24-thumb-swiper .swiper-slide {
+    width: 20%;
+    opacity: 0.4; /* بهتان للصور غير المحددة */
+    cursor: pointer;
+    border-radius: 6px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+}
+
+/* تأثير الصورة المصغرة النشطة */
+.s24-thumb-swiper .swiper-slide-thumb-active {
+    opacity: 1;
+    border-color: var(--sy-green, #77bd1d) !important;
+}
+
+/* 7. إعدادات الموبايل */
+@media (max-width: 768px) {
+    .s24-thumb-swiper { 
+        height: 65px !important; 
+        min-height: 65px !important; 
+    }
+    /* إخفاء الأسهم في الموبايل والاعتماد على السحب بالإصبع */
+    .s24-gallery-wrapper .swiper-button-next,
+    .s24-gallery-wrapper .swiper-button-prev {
+        display: none !important; 
+    }
+}
+
+/* 8. 🆕 كسر حشوة الحاوية بهامش سالب لجعل صورة المعرض الرئيسية تمتد على كامل العرض —
+   🔒 مقيّد الآن بعلامة محلية على المعرض نفسه (s24-gallery-lead) بدل كلاس المقالة كاملة —
+   تُضاف من JS فقط حين يكون هذا المعرض بالذات هو القائد الفعلي (لا مقالة أخرى بها معرض في مكان آخر) */
+body.item-page .post-body > div[dir="rtl"] .s24-gallery-wrapper.s24-gallery-lead {
+    margin-left: -65px !important;
+    margin-right: -65px !important;
+    width: calc(100% + 130px) !important;
+    max-width: calc(100% + 130px) !important;
+}
+
+/* إلغاء الحواف الدائرية والظل — بنفس القيد المحلي */
+.s24-gallery-wrapper.s24-gallery-lead .s24-main-swiper {
+    border-radius: 0 !important;
+    box-shadow: none !important;
+}
+
+/* 9. 🆕 حالة المعرض كعنصر مباشر داخل post-body (بلا التفاف dir="rtl") — بنفس القيد المحلي */
+body.item-page .post-body > .s24-gallery-wrapper.s24-gallery-lead {
+    padding-right: 0 !important;
+    padding-left: 0 !important;
+    max-width: 100% !important;
+}
+
+/* 10. 🆕 إخفاء الغلاف الثابت عبر CSS مباشرة اعتماداً على نفس العلامة المحلية —
+   احتياط موثوق بجانب سكربت JS، يعمل حتى لو تأخر أو فشل تنفيذ ذلك السكربت لأي سبب */
+body.item-page .post-body > .s24-cover-injected:has(~ .s24-gallery-wrapper.s24-gallery-lead),
+body.item-page .post-body > .s24-cover-injected:has(~ div[dir="rtl"] .s24-gallery-wrapper.s24-gallery-lead) {
+    display: none !important;
+}
+/* --- نهاية S24News Smart Gallery System (Mobile Fill Fixed) --- */
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* ================================================= */
+/* 🔴 إعدادات صفحة البث المباشر (تخطيط + فيديو) 🔴 */
+/* ================================================= */
+
+/* 1. تنسيق حاوية الفيديو والتثبيت */
+.live-stream-wrapper {
+    background-color: var(--bg-card) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 10px !important;
+    padding: 0 !important;
+    overflow: visible !important; 
+    margin-bottom: 20px;
+    position: relative;
+    direction: rtl;
+    width: 100%; /* يأخذ عرض العمود الأوسط بالكامل */
+}
+
+.video-container {
+    border-radius: 0 !important;
+    overflow: hidden;
+    margin-bottom: 0px;
+    padding-top: 56.25%; 
+    background-color: var(--color-black); 
+    cursor: pointer;
+    box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    width: 100%;
+    
+    /* التثبيت (Sticky) */
+    position: -webkit-sticky !important;
+    position: sticky !important;
+    z-index: 900 !important;
+    transition: top 0.3s ease;
+}
+
+/* ضبط ارتفاع التثبيت حسب الجهاز */
+
+
+
+/* 2. تنسيقات المشغل والواجهة */
+.live-content-inner { 
+    padding: 20px 0 30px 0 !important; 
+    color: var(--text-main) !important; 
+}
+
+.live-header { 
+    display: flex; justify-content: space-between; align-items: center; 
+    margin-bottom: 20px; border-bottom: 0px solid var(--border-color); 
+    padding: 10px 15px 15px 15px;
+}
+.live-title { font-size: 24px; font-weight: 900; margin: 0; color: var(--text-main) !important; }
+.status-badge { background: rgba(119, 189, 29, 0.1); color: var(--sy-green); padding: 5px 15px; border-radius: 20px; font-weight: bold; display: flex; align-items: center; gap: 8px; font-size: 14px; }
+.pulse-dot { width: 10px; height: 10px; background-color: var(--color-red); border-radius: 50%; display: inline-block; animation: pulse-red 2s infinite; }
+@keyframes pulse-red { 0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(231, 20, 20, 0.7); } 70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(231, 20, 20, 0); } 100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(231, 20, 20, 0); } }
+
+/* المشغل والأزرار */
+.fake-poster-main { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 1; }
+.fake-play-btn-main {
+    position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+    width: 68px; height: 48px; background-color: rgba(0, 0, 0, 0.6);
+    border-radius: 12px; z-index: 2; display: flex; align-items: center; justify-content: center;
+    box-shadow: 0 0 20px rgba(0,0,0,0.3); border: 2px solid rgba(255,255,255,0.8);
+    transition: all 0.2s ease;
+}
+.fake-play-btn-main svg { width: 24px; height: 24px; fill: #fff; margin-left: 5px; }
+.video-container:hover .fake-play-btn-main { background-color: #ffffffa3; transform: translate(-50%, -50%) scale(1.1); border-color: #ffffff; }
+.video-container:hover .fake-play-btn-main svg { fill: var(--sy-green); }
+
+
+.player-loader { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); border: 4px solid rgba(255,255,255,0.3); border-radius: 50%; border-top: 4px solid var(--sy-green); width: 40px; height: 40px; animation: spin 1s linear infinite; display: none; z-index: 3; }
+
+.live-info-box { 
+    background: var(--hover-bg) !important; border-radius: 0 !important; 
+    padding: 25px; margin-top: 0; border-right: 0px solid var(--sy-green); color: var(--text-main) !important; 
+}
+.live-info-box h3 { color: var(--sy-green) !important; margin: 0 0 10px 0; font-size: 20px; }
+
+
+
+/* ================================================= */
+/* 🔴 نهاية إعدادات صفحة البث المباشر (تخطيط + فيديو) 🔴 */
+/* ================================================= */
+
+
+
+/* ============================================================
+   📱 إصلاح القائمة الجانبية في صفحات (الأكثر قراءة + المحفوظات) للموبايل
+   ============================================================ */
+
+
+
+/* ============================================================
+   📱 نهاية إصلاح القائمة الجانبية في صفحات (الأكثر قراءة + المحفوظات) للموبايل
+   ============================================================ */
+
+/* ================================================= */
+/* 🧩 نظام الشريط المتحرك الموحد (Unified Slider System) */
+/* ================================================= */
+
+/* 1. الحاوية الرئيسية */
+.sy-slider-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 15px;
+    width: 100%;
+    margin: 15px 0;
+    direction: rtl;
+    position: relative;
+    /* تم حذف cursor: grab لإلغاء إيحاء السحب في الكمبيوتر */
+}
+
+
+/* 2. منطقة التمرير (الوسط) */
+.sy-scroll-wrapper {
+    flex-grow: 1;
+    display: flex;
+    align-items: center;
+    
+    /* هذا السطر يضمن عمل التمرير باللمس في الموبايل */
+    overflow-x: auto; 
+    overflow-y: hidden;
+    
+    gap: 10px;
+    padding: 5px 0;
+    order: 2; /* الترتيب في المنتصف دائماً */
+    
+    /* إخفاء شريط التمرير (Scrollbar) شكلياً */
+    scrollbar-width: none; 
+    -ms-overflow-style: none;
+    scroll-behavior: smooth;
+    
+    width: calc(100% - 90px); /* ترك مسافة للأسهم */
+}
+
+.sy-scroll-wrapper::-webkit-scrollbar {
+    display: none;
+}
+
+/* 3. تصميم الكبسولة/الزر الموحد */
+.sy-standard-pill {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    
+    /* الألوان تعتمد على المتغيرات */
+    background-color: var(--color-main-header-bg); 
+    color: var(--text-main); 
+    
+    /* الحجم والحدود */
+    border: 1px solid transparent;
+    border-radius: 8px; 
+    padding: 8px 16px; 
+    
+    /* الخط */
+    font-size: 14px; 
+    font-weight: bold; 
+    text-decoration: none; 
+    line-height: 1.3; 
+    white-space: nowrap; 
+    
+    /* حركة ناعمة */
+    transition: all 0.3s ease-in-out;
+    flex-shrink: 0;
+    user-select: none;
+}
+
+/* تأثير المرور (Hover) */
+.sy-standard-pill:hover {
+    color: var(--sy-green);
+    background-color: var(--hover-bg);
+    border-color: var(--sy-green);
+    transform: none !important;
+    box-shadow: none !important;
+}
+
+/* دعم الوضع الليلي */
+[data-theme="dark"] .sy-standard-pill {
+    border-color: var(--border-color);
+}
+
+/* 4. تصميم الأسهم العامة */
+.sy-nav-arrow {
+    position: static;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    z-index: 2;
+    border: none;
+    user-select: none;
+    
+    /* الأبعاد */
+    width: 30px;      
+    height: 35px;
+    font-size: 28px;  
+    
+    /* الألوان والمظهر */
+    color: var(--text-sec);
+    background: transparent; 
+    border-radius: 0;        
+    box-shadow: none; 
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.sy-nav-arrow:hover {
+    color: var(--sy-green);
+    background: transparent;
+    transform: none !important; 
+}
+
+/* ترتيب الأسهم يمين ويسار */
+.sy-arrow-right { order: 3; } 
+.sy-arrow-left  { order: 1; }
+
+/* 5. إعدادات الموبايل الافتراضية (تظهر الأسهم) */
+/* هذا يطبق على القوائم العادية مثل القائمة العلوية */
+@media (max-width: 1024px) {
+    .sy-nav-arrow { 
+        display: flex !important; 
+        width: 30px;
+        height: 30px;
+        font-size: 20px;
+    }
+    .sy-scroll-wrapper { 
+        width: calc(100% - 75px) !important; 
+    }
+}
+
+/* ================================================= */
+/* 📱 الكلاس الذكي: إخفاء الأسهم على الموبايل (Utility Class) */
+/* الاستخدام: أضف "sy-hide-mobile-arrows" لأي شريط تريده */
+/* ================================================= */
+
+@media (max-width: 1024px) {
+    
+    /* 1. إخفاء أي سهم داخل الحاوية التي تحمل هذا الكلاس */
+    .sy-hide-mobile-arrows .sy-nav-arrow {
+        display: none !important;
+    }
+
+    /* 2. توسيع منطقة التمرير لتملأ الفراغ */
+    .sy-hide-mobile-arrows .sy-scroll-wrapper {
+        width: 100% !important;
+        max-width: 100% !important;
+        flex-basis: 100% !important;
+        margin: 0 !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+    }
+}
+/* ================================================= */
+/* 🧩 نهاية نظام الشريط المتحرك الموحد (Unified Slider System) */
+/* ================================================= */
+
+
+/* ========================================================================== */
+/* 🏷️ نظام ترويسات الأقسام والأزرار والأعلام الموحد (Modern Unified UI)       */
+/* ========================================================================== */
+/* 1. هيكل الترويسة والنصوص (Header & Text)    */
+.sy-section-header { margin-bottom: 30px;  padding: 0 10px; text-align: right; direction: rtl; }
+.sy-section-title-row { display: flex; align-items: center; justify-content: flex-start; margin-bottom: 20px; }
+.sy-section-title-text { font-size: 24px; font-weight: 900; color: var(--text-main); margin: 0; line-height: 1.2; }
+.sy-section-desc { margin-bottom: 20px; font-size: 16px; color: var(--text-sec); padding: 0 10px; line-height: 1.6; display: block; }
+.sy-related-title { font-size: 18px; font-weight: 900; color: var(--text-main); margin: 30px 0 15px 0; border: none; padding: 0; line-height: 1.2; }
+
+/* 2. المربعات الملونة والأعلام (Generic Square)*/
+.sy-generic-square, .country-flag, .syria-flag-icon, .all-news-logo { flex: 0 0 25px !important; height: 25px !important; display: inline-flex; align-items: center; justify-content: center; padding: 0 !important; margin-inline-end: 10px !important; border-radius: 3px; overflow: hidden; box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05); background-color: var(--page-color, transparent); background-position: center !important; background-repeat: no-repeat !important; background-size: 100% 100% !important; border: 1px solid var(--page-color, rgba(0, 0, 0, 0.05)); }
+
+/* علم سوريا المطور (مستثنى ليملأ المربع تماماً) */
+.syria-flag-icon { background-size: 100% 100% !important; background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 300 200' preserveAspectRatio='none'%3E%3Crect width='300' height='67' fill='%2322AB5B'/%3E%3Crect y='67' width='300' height='66' fill='%23FFFFFF'/%3E%3Crect y='133' width='300' height='67' fill='%23000000'/%3E%3Cg fill='red'%3E%3Cpolygon points='90,75 97,95 115,95 101,108 107,125 90,115 73,125 79,108 65,95 83,95'/%3E%3Cpolygon points='150,75 157,95 175,95 161,108 167,125 150,115 133,125 139,108 125,95 143,95'/%3E%3Cpolygon points='210,75 217,95 235,95 221,108 227,125 210,115 193,125 199,108 185,95 203,95'/%3E%3C/g%3E%3C/svg%3E") !important; border: none !important; }
+
+/* لوجو الموقع */
+.all-news-logo { background-color: var(--sy-green) !important; background-image: url('https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEgeuurJSEqv95Xbqa7rYRACLNXO6YFHA1YhWsH_3pb57sA_g01cDkD44MGxWQNDTJNeO4Ol2tRAOOBMVWPKoahUXss3sbQMmHQu3GzRmE3FpAK7r6NDzRx3joLDgGgkduyZU0vmx1AoZinzDhehul5DDuR_9J30CnAAS9hyE1AekqBKk2nynpp2UlqZT7Hf/s16000/logo24sn.png') !important; background-size: 80% !important; }
+
+/* 3. حاويات الأزرار (Flex Containers)         */
+.sy-mosaic-container, 
+.sy-related-list { display: flex; flex-wrap: wrap; width: 100%; direction: rtl; justify-content: flex-start; }
+.sy-mosaic-container { gap: 10px; margin: 20px 0; }
+.sy-related-list { gap: 8px; margin-bottom: 20px; }
+
+/* 4. تصميم الكبسولات (Unified Buttons)        */
+.sy-mosaic-item, .sy-related-btn { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; width: auto; min-width: 0; gap: 0px; position: relative; overflow: hidden; outline: none; background-color: var(--bg-card); border: 1px solid currentColor; color: var(--color-grey-65); border-radius: .25rem; padding: .38rem .75rem; font-size: 1rem; font-weight: 500; text-decoration: none; white-space: nowrap; line-height: 1.125rem; transition: color .3s ease-in-out, border-color .3s ease-in-out, background-color .3s ease-in-out; box-shadow: none !important; }
+.sy-mosaic-icon { font-size: 18px; line-height: 1; margin: 0; display: flex; }
+
+/* 5. تفاعلات الماوس (Hover Effects)           */
+.sy-mosaic-item:hover { background-color: var(--bg-body) !important; border-color: var(--mosaic-color) !important; color: var(--mosaic-color) !important; box-shadow: none !important; transform: none !important; }
+.sy-related-btn:hover { background-color: var(--bg-body) !important; border-color: var(--btn-hover, var(--sy-green)) !important; color: var(--btn-hover, var(--sy-green)) !important; box-shadow: none !important; transform: none !important; }
+
+/* 6. مكتبة أعلام الدول (Country Flags)        */
+/* دول عربية */
+.flag-egypt    { background-image: url('https://flagcdn.com/w40/eg.png'); }
+.flag-saudi    { background-image: url('https://flagcdn.com/w40/sa.png'); }
+.flag-uae      { background-image: url('https://flagcdn.com/w40/ae.png'); }
+.flag-jordan   { background-image: url('https://flagcdn.com/w40/jo.png'); }
+.flag-lebanon  { background-image: url('https://flagcdn.com/w40/lb.png'); }
+.flag-iraq     { background-image: url('https://flagcdn.com/w40/iq.png'); }
+.flag-palestine{ background-image: url('https://flagcdn.com/w40/ps.png'); }
+.flag-kuwait   { background-image: url('https://flagcdn.com/w40/kw.png'); }
+.flag-qatar    { background-image: url('https://flagcdn.com/w40/qa.png'); }
+.flag-bahrain  { background-image: url('https://flagcdn.com/w40/bh.png'); }
+.flag-oman     { background-image: url('https://flagcdn.com/w40/om.png'); }
+.flag-yemen    { background-image: url('https://flagcdn.com/w40/ye.png'); }
+.flag-algeria  { background-image: url('https://flagcdn.com/w40/dz.png'); }
+.flag-morocco  { background-image: url('https://flagcdn.com/w40/ma.png'); }
+.flag-tunisia  { background-image: url('https://flagcdn.com/w40/tn.png'); }
+.flag-libya    { background-image: url('https://flagcdn.com/w40/ly.png'); }
+.flag-sudan    { background-image: url('https://flagcdn.com/w40/sd.png'); }
+/* دول العالم */
+.flag-usa      { background-image: url('https://flagcdn.com/w40/us.png'); }
+.flag-russia   { background-image: url('https://flagcdn.com/w40/ru.png'); }
+.flag-china    { background-image: url('https://flagcdn.com/w40/cn.png'); }
+.flag-uk       { background-image: url('https://flagcdn.com/w40/gb.png'); }
+.flag-france   { background-image: url('https://flagcdn.com/w40/fr.png'); }
+.flag-germany  { background-image: url('https://flagcdn.com/w40/de.png'); }
+.flag-turkey   { background-image: url('https://flagcdn.com/w40/tr.png'); }
+.flag-iran     { background-image: url('https://flagcdn.com/w40/ir.png'); }
+.flag-ukraine  { background-image: url('https://flagcdn.com/w40/ua.png'); }
+.flag-israel   { background-image: url('https://flagcdn.com/w40/il.png'); }
+.flag-italy    { background-image: url('https://flagcdn.com/w40/it.png'); }
+.flag-india    { background-image: url('https://flagcdn.com/w40/in.png'); }
+.flag-japan    { background-image: url('https://flagcdn.com/w40/jp.png'); }
+.flag-nkorea   { background-image: url('https://flagcdn.com/w40/kp.png'); }
+.flag-brazil   { background-image: url('https://flagcdn.com/w40/br.png'); }
+.flag-venezuela{ background-image: url('https://flagcdn.com/w40/ve.png'); }
+.flag-afghanistan{ background-image: url('https://flagcdn.com/w40/af.png'); }
+.flag-pakistan { background-image: url('https://flagcdn.com/w40/pk.png'); }
+.flag-belarus  { background-image: url('https://flagcdn.com/w40/by.png'); }
+
+/* ------------------------------------------- */
+/* 7. التجاوب مع الموبايل (Unified Mobile)     */
+/* ------------------------------------------- */
+@media (max-width: 768px) {
+    .sy-mosaic-container { gap: 8px; padding: 0 5px; }
+    .sy-related-list { gap: 6px; }
+    .sy-related-title { font-size: 16px; margin-top: 20px; }
+    .sy-mosaic-item, .sy-related-btn { font-size: 13px; padding: 6px 12px; }
+    .sy-related-btn { flex-grow: 1; text-align: center; }
+}
+/* ========================================================================== */
+
+
+/* شريط مسار التنقل (Breadcrumbs) */
+.sy-breadcrumb { display: flex; align-items: center; flex-wrap: nowrap; margin: 15px 0 10px 0; padding: 12px 10px; font-family: 'Readex Pro', sans-serif; font-size: 12px; font-weight: 400; color: var(--text-sec); overflow: hidden; width: 100%; box-sizing: border-box; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; line-height: 1.2; }
+.sy-bc-item { display: inline-flex; align-items: center; white-space: nowrap; flex-shrink: 0; }
+.sy-bc-item a { color: var(--text-sec); text-decoration: none; transition: all 0.3s ease; padding: 2px 4px; border-radius: 4px; }
+.sy-bc-item a:hover { color: var(--page-color, var(--sy-green));  background-color: transparent; }
+.sy-bc-sep { margin: 0 8px; font-size: 11px; color: var(--text-sec); display: flex; align-items: center; flex-shrink: 0; opacity: 0.5; }
+.sy-bc-current { color: var(--text-main); font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; flex-shrink: 1; opacity: 0.8; }
+
+/* --- شريط معلومات المقال --- */
+.sy-post-meta { display: flex; align-items: center; justify-content: flex-start; flex-wrap: wrap; margin-top: 20px; margin-bottom: 15px; padding-right: 30px; color: var(--text-sec); line-height: 1.5; gap: 0; }
+.meta-inner { order: 3; color: var(--text-sec); line-height: 1.5; margin-top: 2px; margin-bottom: 1px; padding: 2px 25px 15px 25px; box-sizing: border-box; display: flex; align-items: center; flex-wrap: wrap; font-size: 16px; }
+.post-body .meta-inner { margin-right: -65px; margin-left: -65px; }
+@media only screen and (max-width: 768px) {
+    .post-body .meta-inner { margin-right: -20px; margin-left: -20px; }
+}
+.meta-el.meta-update::before { content: '|'; margin: 0 8px; opacity: 0.5; }
+.meta-label { font-size: 12px; }
+
+/* تنسيق التاريخ المعكوس - بدون لون أخضر */
+.sy-static-text {
+    font-weight: 700 !important;
+    font-size: 12px !important;
+}
+
+.sy-published-date,
+.sy-updated-date {
+    color: var(--text-sec);
+    font-weight: 400;
+    margin: 0 5px;
+    opacity: 0.8;
+    font-size: 12px !important;
+}
+
+.sy-meta-separator {
+    font-size: 12px !important;
+}
+
+/* 1. تنسيق اسم القسم (مربع اللون + النص) */
+.sy-meta-label { display: flex; align-items: center; gap: 4px; color: var(--text-main); text-decoration: none; margin-left: 50px; }
+.sy-label-text { font-family: 'IBM Plex Sans Arabic', sans-serif !important; font-size: 15px !important; font-weight: 700 !important; }
+/* 2. تنسيق التاريخ وكلمة "آخر تحديث" */
+.sy-static-text, .sy-date-only { font-family: 'Readex Pro', sans-serif !important; font-size: 13.5px !important; font-weight: 600; }
+.sy-static-text { margin: 0px 18px 0px 5px; opacity: 0.9; }
+.sy-date-only { direction: ltr; color: var(--text-sec); margin-left: 0px; }
+/* 3. الفاصل العمودي (|) */
+.sy-meta-separator {  color: var(--text-sec); opacity: 0.4; font-size: 14px; margin: 0 10px; }
+/* 4. تنسيق توقيت دمشق (ص / م) */
+.sy-time-only { display: inline-flex; flex-direction: row; align-items: center; gap: 4px; color: var(--text-sec); direction: ltr; }
+.sy-t-city, .sy-t-ampm, .sy-t-num { font-family: 'Readex Pro', sans-serif !important; font-size: 13.5px !important; font-weight: 600; color: var(--text-sec); }
+.sy-t-num { letter-spacing: 0.5px; }
+/* --- نهاية شريط معلومات المقال --- */
+
+/* 📱 إعدادات الموبايل (مستقلة تماماً الآن) */
+
+
+
+/* --- نهاية تنسيق شريط معلومات المقال (المعدل sy) --- */
+
+/* بداية تنسيق المعين الأخضر في نهاية المقال */
+.sy-end-diamond { display: inline-block; width: 8px; height: 8px; background-color: var(--sy-green); -webkit-transform: rotate(45deg); transform: rotate(45deg); margin-right: 3px; margin-bottom: 0px; vertical-align: middle; opacity: 0; animation: fadeInShape 0.5s ease forwards; }
+@keyframes fadeInShape { to { opacity: 1; } }
+/* نهاية تنسيق المعين الأخضر في نهاية المقال */
+
+
+
+
+/* ================================================= */
+/* 📱 2. شاشات التابلت الصغيرة والموبايل الكبير (أقل من 768px) */
+/* ================================================= */
+@media only screen and (max-width:768px) {
+  
+
+
+
+  .progress-wrap { bottom: 65px !important; left: 15px !important; width: 42px !important; height: 42px !important; }
+  .progress-arrow svg { width: 20px !important; height: 20px !important; }
+
+
+  .breaking-news-container .widget-content a, .breaking-news-container .widget-content span { font-size: 0.85rem; font-weight: 600; }
+
+
+}
+
+/* ================================================= */
+/* 📱 3. شاشات الموبايل الصغيرة (أقل من 600px) */
+/* ================================================= */
+@media only screen and (max-width: 600px) {
+  
+
+  /* القوائم المخصصة */
+  .cat-item-img {
+    width: 160px;
+    height: 110px;
+  }
+
+  .cat-item-title {
+    font-size: 14px;
+    line-height: 1.4;
+  }
+
+  .custom-cat-item {
+    gap: 10px;
+    padding-bottom: 12px;
+    margin-bottom: 12px;
+  }
+
+}
+
+
+
+ 
+
+
+
+
+/* نهاية تنسيق ترويسة صفحة البحث (بنفس لون خلفية الموقع تماماً) */
+
+
+
+
+/* بداية تنسيق صندوق المعلومات المخصص */
+
+    /* تعريف ألوان خلفية خاصة للصندوق فقط (لأنها غير موجودة في القالب) */
+   
+    /* تنسيق الصندوق باستخدام المتغيرات */
+    .note-box {
+        /* الخلفية تأخذ المتغير الذي عرفناه بالأعلى */
+        background-color: var(--sy-note-bg); 
+        
+        /* النص يأخذ لون نصوص الموقع الرسمي */
+        color: var(--text-main); 
+        
+        /* الحد يأخذ اللون الأخضر الرسمي للموقع */
+        border-right: 5px solid var(--sy-green); 
+        
+        padding: 15px;
+        margin: 20px auto;
+        border-radius: 0px;
+        font-size: 14px;
+        line-height: 1.6;
+        width: 80%;
+        max-width: 600px;
+        
+        /* إضافة بسيطة: انتقال ناعم عند تغيير الألوان */
+        transition: background-color 0.3s, color 0.3s, border-color 0.3s;
+    }
+
+
+/* نهاية تنسيق صندوق المعلومات المخصص */
+
+
+
+/* --- تنسيق التلميح الذكي (Tooltip) بداية --- */
+
+
+/* --- تنسيق التلميح الذكي (Tooltip) المطور --- */
+.sy-tooltip {
+    position: relative;
+    display: inline;
+    border-bottom: none;
+    cursor: help;
+    color: var(--sy-tooltip-color) !important;
+    font-weight: inherit !important;
+    font-style: inherit !important;
+    font-size: inherit !important;
+    line-height: inherit !important;
+}
+
+/* شكل الصندوق الأساسي */
+.sy-tooltip::after {
+    content: attr(data-title);
+    position: absolute;
+    bottom: 130%; 
+    left: 50%;
+    transform: translateX(-50%); /* التوسيط الافتراضي */
+    
+    background-color: var(--color-black-1c);
+    color: #fff;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: normal;
+    text-align: right;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+    z-index: 10005;
+    
+    /* 🟢 التعديلات الجديدة للموبايل: */
+    white-space: normal;       /* السماح بنزول السطر */
+    width: max-content;        /* العرض حسب المحتوى */
+    max-width: 200px;          /* أقصى عرض للصندوق حتى لا يملأ الشاشة */
+    min-width: 120px;          /* أقل عرض */
+    line-height: 1.4;
+    
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.2s;
+    pointer-events: none;
+}
+
+/* السهم الصغير */
+.sy-tooltip::before {
+    content: "";
+    position: absolute;
+    bottom: 120%;
+    left: 50%;
+    transform: translateX(-50%);
+    border-width: 5px;
+    border-style: solid;
+    border-color: var(--color-black-1c) transparent transparent transparent;
+    visibility: hidden;
+    opacity: 0;
+    transition: opacity 0.2s;
+}
+
+/* --- فئات المحاذاة الذكية (يتم تفعيلها بالجافاسكربت) --- */
+
+/* إذا كانت الكلمة في أقصى اليمين، اجعل الشرح ينزاح لليسار */
+.sy-tooltip.pos-right::after {
+    left: auto;
+    right: 0;
+    transform: none; /* إلغاء التوسيط */
+    text-align: right;
+}
+.sy-tooltip.pos-right::before {
+    left: auto;
+    right: 10px; /* مكان السهم */
+    transform: none;
+}
+
+/* إذا كانت الكلمة في أقصى اليسار، اجعل الشرح ينزاح لليمين */
+.sy-tooltip.pos-left::after {
+    left: 0;
+    right: auto;
+    transform: none;
+    text-align: right;
+}
+.sy-tooltip.pos-left::before {
+    left: 10px;
+    transform: none;
+}
+
+body.glossary-index-page .rt-footer,
+body.glossary-index-page .post-footer,
+body.glossary-index-page .comments,
+body.glossary-index-page #comments {
+    display: none !important;
+}
+
+body.static-page-view .rt-footer {
+    display: none !important;
+}
+
+a.sy-tooltip {
+    cursor: pointer;
+    text-decoration: none;
+    color: var(--sy-tooltip-color) !important;
+    font-weight: inherit !important;
+}
+
+a.sy-tooltip .sy-ext-icon {
+    font-size: 0.75em;
+    vertical-align: middle;
+    margin-inline-start: 1px;
+    opacity: 0.85;
+    position: relative;
+    top: -1px;
+}
+
+body.s24-glossary-article .custom-post-tags,
+body.s24-glossary-article .post-footer,
+body.s24-glossary-article .rt-footer,
+body.s24-glossary-article .comments,
+body.s24-glossary-article #comments {
+    display: none !important;
+}
+
+/* 🆕 معرض الصور والفيديو: لا شيء يُخفى — كل شيء ظاهر مثل المقال العادي تماماً */
+
+/* 🆕 صورة غلاف الفيديو + زر التشغيل المخصص (مستوحى من مرجع سانا، بهوية الموقع)
+   نفس لغة التصميم المستخدمة أصلاً بكرت الفيديو بالرئيسية (خلفية داكنة + أيقونة بيضاء + sy-green عند التمرير) */
+
+.s24-video-poster-wrapper { position: relative; width: 100%; }
+.s24-video-poster-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; cursor: pointer; }
+.s24-video-poster-overlay img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.s24-video-play-btn { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.2); transition: background 0.2s ease; }
+.s24-video-play-btn svg { width: 64px; height: 64px; fill: #fff; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.5)); transition: fill 0.2s ease; }
+.s24-video-poster-overlay:hover .s24-video-play-btn { background: rgba(255,255,255,0.1); }
+.s24-video-poster-overlay:hover .s24-video-play-btn svg { fill: var(--sy-green); }
+
+
+/* ===== الفيديو القائد: عرض كامل 100% مطابق تماماً لمعاملة الصورة الأولى =====
+   يعتمد على حاوية .separator نفسها المُعلَّمة بكلاس s24-lead-video-wrapper من سكربت
+   الكشف، ويشمل الحالتين معاً (مرفوع من الجهاز عبر object.BLOG_video_class، ويوتيوب
+   عبر iframe) بصرف النظر عمّا إذا استبدل بلوجر الـobject بـiframe داخلياً أم لا */
+body.s24-video-article .s24-lead-video-wrapper,
+body.s24-video-article .s24-lead-video-wrapper .s24-video-poster-wrapper,
+body.s24-video-article .s24-lead-video-wrapper object.BLOG_video_class,
+body.item-page.s24-video-article .s24-lead-video-wrapper iframe,
+body.s24-video-article .s24-lead-video-wrapper video,
+body.s24-video-article .s24-lead-video-wrapper embed {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 30px auto !important;
+    border-radius: 0 !important;
+}
+
+/* 🆕 كسر حشوة حاوية عبر هوامش سالبة للفيديو القائد فقط — دون المساس
+   بحشوة بقية عناصر المقالة(النصوص) المجاورة له داخل نفس الحاوية */
+body.item-page .post-body > div[dir="rtl"] .s24-lead-video-wrapper {
+    margin-left: -65px !important;
+    margin-right: -65px !important;
+    width: calc(100% + 130px) !important;
+    max-width: calc(100% + 130px) !important;
+}
+
+body.item-page.s24-video-article .s24-lead-video-wrapper iframe,
+body.s24-video-article .s24-lead-video-wrapper object.BLOG_video_class,
+body.s24-video-article .s24-lead-video-wrapper video {
+    aspect-ratio: 16 / 9 !important;
+}
+
+/* ===== حماية الفيديوهات الثانية (غير القائدة) عند 75% ===== */
+body.s24-video-article .post-body iframe:not(.s24-lead-video-iframe),
+body.s24-video-article .post-body video,
+body.s24-video-article .post-body embed,
+body.s24-video-article .post-body object.BLOG_video_class {
+    width: 75% !important;           /* 75% فقط للثانية+ */
+    max-width: 750px !important;
+}
+
+body.s24-video-article .post-body iframe[id^="BLOGGER-video"]:first-of-type {
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 30px auto !important;
+}
+
+
+body.item-page.s24-video-article .post-body .separator.s24-lead-video-wrapper .s24-video-poster-wrapper .s24-video-poster-overlay img {
+    width: 100% !important;
+    height: 100% !important;
+    max-width: 100% !important;
+    object-fit: cover !important;
+    display: block !important;
+}
+
+
+/* عند التفاعل */
+/* عند التفاعل */
+.sy-tooltip:hover::after, .sy-tooltip:hover::before,
+.sy-tooltip:focus::after, .sy-tooltip:focus::before,
+.sy-tooltip.is-open::after, .sy-tooltip.is-open::before {
+    visibility: visible;
+    opacity: 1;
+}
+
+/* 🆕 مؤشر بصري: خط منقّط بلون الهوية يدل أن الكلمة تفاعلية */
+.sy-tooltip {
+    text-decoration: underline dotted var(--sy-green) !important;
+    text-decoration-thickness: 1px !important;
+    text-underline-offset: 3px !important;
+    text-decoration-skip-ink: auto;
+}
+.sy-tooltip:hover,
+.sy-tooltip.is-open {
+    text-decoration-style: solid !important;
+}
+
+/* 🆕 قيمة ليلية للون الكلمة (الخلفية داكنة فيحتاج لوناً أفتح) */
+[data-theme="dark"] {
+    --sy-tooltip-color: #c3ccd8;
+}
+
+/* 🆕 السهم يأخذ نفس طبقة الصندوق */
+.sy-tooltip::before { z-index: 10005; }
+
+/* 🆕 الفتح للأسفل عند ضيق المساحة فوق الكلمة */
+.sy-tooltip.pos-below::after {
+    bottom: auto;
+    top: 130%;
+}
+.sy-tooltip.pos-below::before {
+    bottom: auto;
+    top: 120%;
+    border-color: transparent transparent var(--color-black-1c) transparent;
+}
+[data-theme="dark"] .sy-tooltip.pos-below::before {
+    border-color: transparent transparent #ffffff transparent !important;
+}
+
+/* ================================================= */
+/* 🌗 تخصيص ألوان الشرح في الوضع الليلي (Dark Mode) */
+/* الهدف: جعل الصندوق أبيض والنص أسود لزيادة الوضوح */
+/* ================================================= */
+
+[data-theme="dark"] .sy-tooltip::after {
+    background-color: #ffffff !important;
+    color: var(--color-black, #000) !important;
+    border: 1px solid #e0e0e0;
+    box-shadow: 0 5px 20px rgba(255,255,255,0.1);
+}
+
+/* تلوين السهم الصغير ليصبح أبيض أيضاً */
+[data-theme="dark"] .sy-tooltip::before {
+    border-color: #ffffff transparent transparent transparent !important;
+}
+
+/* تلوين الكلمة الأصلية نفسها في الوضع الليلي */
+[data-theme="dark"] .sy-tooltip,
+[data-theme="dark"] a.sy-tooltip {
+    color: var(--sy-tooltip-color) !important;
+    border-bottom-color: transparent;
+}
+
+
+/* --- تنسيق التلميح الذكي (Tooltip) نهاية --- */
+
+
+
+
+
+
+
+
+
+
+/* تم دمج هذه القاعدة ضمن القسم [42] الموحّد لصور الموبايل، راجع الأسفل */
+
 /* ========================================================================== */
 /* 🚀 النظام الشامل الموحد لتضمين (فيديو، يوتيوب، وتواصل اجتماعي) - S24News */
 /* ========================================================================== */
