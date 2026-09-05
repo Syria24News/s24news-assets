@@ -56,9 +56,6 @@ a {
 }
 
 
-/* 3. TOP DATE BAR (تم التعديل لضبط العرض) */
-
-
 /* ==========================================================================
    الخصائص الأساسية للشريط العلوي (تطبيق فلسفة الوحدات النسبية)
 ========================================================================== */
@@ -789,9 +786,6 @@ body#layout .breaking-news-container {
 }
 
 
- /* 6. BLUE MENU */
-
-
 /* --- 6. TOP MENU (تحديث شكل الأزرار - نمط RT) --- */
 
 /* 1. الحاوية الرئيسية للشريط */
@@ -1309,8 +1303,6 @@ body.most-read-page #force-left-sidebar {
 .post.hentry {
     background-color: var(--bg-card);
     border: 1px solid var(--border-color);
-    border-radius: 10px; /* تم توحيد الانحناء ليصبح 10px كما أردت */
-    margin-bottom: 0;
     display: flex;
     flex-direction: column;
     box-shadow: 0 1px 3px rgba(0,0,0,0.05); /* إضافة الظل النظيف هنا */
@@ -1403,9 +1395,6 @@ h3.post-title a:hover {
   scroll-margin-top: var(--sticky-top-offset);
 }
 
-/* --- [جديد] إخفاء الصورة المكررة --- */
-/* هذا الكود يخفي الصورة الأولى التي وضعتها يدوياً داخل المقال */
-/* لأننا قمنا بعرضها في الأعلى بشكل آلي وجميل */
 /* إخفاء الصورة المكررة أصبح يتم عبر JS بفحص فعلي للتطابق — راجع سكربت "إصلاح صور المقالات" */
 
 
@@ -1436,7 +1425,6 @@ body #comments .comment-actions a:hover { color: var(--sy-green) !important; tex
 
 /* ========================================================= */
 
-      /* Footer Actions */
 
 /* =========================================================
    تنسيق الفوتر ونظام المشاركة (النسخة النهائية المصححة - أفقي)
@@ -1447,7 +1435,7 @@ body #comments .comment-actions a:hover { color: var(--sy-green) !important; tex
     background-color: var(--bg-card);
     border: 1px solid var(--border-color);
     border-radius: 8px;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
     display: flex;
     flex-direction: column; /* لضمان نزول الفوتر للأسفل */
 }
@@ -1976,7 +1964,6 @@ body.item-page .post-body .separator a {
 
 /* الإعلانات */
 .ad-banner-wrapper{display:block;width:100%;max-width:864px;margin:20px auto 40px auto;text-align:center;position:relative;overflow:hidden;border-radius:8px;background:transparent}.ad-banner-wrapper img{display:block;width:100%;max-width:100%;height:auto;object-fit:contain;margin:0 auto;border-radius:8px;border:none!important;transition:opacity .3s ease-in-out}#in-article-ad-wrapper{display:block;width:100%;max-width:100%;margin:30px auto;text-align:center;clear:both;overflow:hidden;background:transparent}.ad-under-post-wrapper{width:100%;margin:25px 0;text-align:center;display:flex;justify-content:center;align-items:center;clear:both;background:transparent}.ad-under-post-wrapper .widget{margin:0;padding:0;width:100%}.ad-banner-wrapper ins.adsbygoogle,#in-article-ad-wrapper ins.adsbygoogle,.ad-under-post-wrapper ins.adsbygoogle{display:block!important;margin:0 auto!important;max-width:100%!important}body:not(.item-page) .ad-under-post-wrapper,body.most-read-page .ad-under-post-wrapper,body.saved-page-mode .ad-under-post-wrapper,body:not(.item-page) #in-article-ad-wrapper{display:none!important}
-/* .... */
 
 
 /* تنسيق أداة التواصل الاجتماعي العلوية */
@@ -3663,7 +3650,6 @@ body.item-page .post-body > .s24-cover-injected:has(~ div[dir="rtl"] .s24-galler
     margin-bottom: 20px; border-bottom: 0px solid var(--border-color);
     padding: 10px 15px 15px 15px;
 }
-.status-badge { background: rgba(119, 189, 29, 0.1); color: var(--sy-green); padding: 5px 15px; border-radius: 20px; font-weight: bold; display: flex; align-items: center; gap: 8px; font-size: 14px; }
 @keyframes pulse-red { 0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(231, 20, 20, 0.7); } 70% { transform: scale(1); box-shadow: 0 0 0 10px rgba(231, 20, 20, 0); } 100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(231, 20, 20, 0); } }
 
 /* المشغل والأزرار */
@@ -3861,7 +3847,7 @@ body.item-page .post-body > .s24-cover-injected:has(~ div[dir="rtl"] .s24-galler
 /* 1. هيكل الترويسة والنصوص (Header & Text)    */
 .sy-section-header { margin-bottom: 30px;  padding: 0 10px; text-align: right; direction: rtl; }
 .sy-section-title-row { display: flex; align-items: center; justify-content: flex-start; margin-bottom: 20px; }
-.sy-section-title-text { font-size: 24px; font-weight: 900; color: var(--text-main); margin: 0; line-height: 1.2; }
+.sy-section-title-text { font-weight: 900; color: var(--text-main); margin: 0; line-height: 1.2; }
 .sy-section-desc { margin-bottom: 20px; font-size: 16px; color: var(--text-sec); padding: 0 10px; line-height: 1.6; display: block; }
 .sy-related-title { font-size: 18px; font-weight: 900; color: var(--text-main); margin: 30px 0 15px 0; border: none; padding: 0; line-height: 1.2; }
 
@@ -3960,10 +3946,7 @@ body.item-page .post-body > .s24-cover-injected:has(~ div[dir="rtl"] .s24-galler
 .meta-label { font-size: 12px; }
 
 /* تنسيق التاريخ المعكوس - بدون لون أخضر */
-.sy-static-text {
-    font-weight: 700 !important;
-    font-size: 12px !important;
-}
+.sy-static-text { font-weight: 700 !important; }
 
 .sy-published-date,
 .sy-updated-date {
@@ -3974,19 +3957,15 @@ body.item-page .post-body > .s24-cover-injected:has(~ div[dir="rtl"] .s24-galler
     font-size: 12px !important;
 }
 
-.sy-meta-separator {
-    font-size: 12px !important;
-}
 
 /* 1. تنسيق اسم القسم (مربع اللون + النص) */
 .sy-meta-label { display: flex; align-items: center; gap: 4px; color: var(--text-main); text-decoration: none; margin-left: 50px; }
 .sy-label-text { font-family: 'IBM Plex Sans Arabic', sans-serif !important; font-size: 15px !important; font-weight: 700 !important; }
 /* 2. تنسيق التاريخ وكلمة "آخر تحديث" */
-.sy-static-text, .sy-date-only { font-family: 'Readex Pro', sans-serif !important; font-size: 13.5px !important; font-weight: 600; }
 .sy-static-text { margin: 0px 18px 0px 5px; opacity: 0.9; }
 .sy-date-only { direction: ltr; color: var(--text-sec); margin-left: 0px; }
 /* 3. الفاصل العمودي (|) */
-.sy-meta-separator {  color: var(--text-sec); opacity: 0.4; font-size: 14px; margin: 0 10px; }
+.sy-meta-separator {  color: var(--text-sec); opacity: 0.4; font-size: 12px !important; margin: 0 10px; }
 /* 4. تنسيق توقيت دمشق (ص / م) */
 .sy-time-only { display: inline-flex; flex-direction: row; align-items: center; gap: 4px; color: var(--text-sec); direction: ltr; }
 .sy-t-city, .sy-t-ampm, .sy-t-num { font-family: 'Readex Pro', sans-serif !important; font-size: 13.5px !important; font-weight: 600; color: var(--text-sec); }
@@ -4340,7 +4319,7 @@ body.item-page.s24-video-article .post-body .separator.s24-lead-video-wrapper .s
 /* --- تنسيق التلميح الذكي (Tooltip) نهاية --- */
 
 
-/* تم دمج هذه القاعدة ضمن القسم [42] الموحّد لصور الموبايل، راجع الأسفل */
+/* دُمجت هذه القاعدة ضمن قسم "التجاوب مع الموبايل" في آخر الملف */
 
 /* ========================================================================== */
 /* 🚀 النظام الشامل الموحد لتضمين (فيديو، يوتيوب، وتواصل اجتماعي) - S24News */
@@ -4652,7 +4631,7 @@ header { position: fixed; top: 40px; width: 100%; z-index: 1000; background-colo
 #force-left-sidebar h3.title, .main-layout__column h3.title { display: none; }
 
 /* 5. تنسيقات صفحة المقال (Item Page) */
-/* تنسيق صورة الغلاف بالكامل موجود الآن فقط في القسم [42] "الصورة الأولى (غلاف المقال)" — كان هذا المقطع مكرراً وميتاً تماماً */
+/* تنسيق صورة الغلاف موجود في قسم "الصورة الأولى (غلاف المقال)" في آخر الملف */
 
 
 body.item-page h1.post-title,
