@@ -3936,7 +3936,7 @@ body.item-page .post-body > .s24-cover-injected:has(~ div[dir="rtl"] .s24-galler
 .sy-meta-separator {  color: var(--text-sec); opacity: 0.4; font-size: 12px !important; margin: 0 10px; }
 /* 4. تنسيق توقيت دمشق (ص / م) */
 .sy-time-only { display: inline-flex; flex-direction: row; align-items: center; gap: 4px; color: var(--text-sec); direction: ltr; }
-.sy-t-city, .sy-t-ampm, .sy-t-num { font-family: var(--font-main) !important; font-size: 13.5px !important; font-weight: 600; color: var(--text-sec); }
+.sy-t-city, .sy-t-ampm, .sy-t-num { color: var(--text-sec); } /* الخط والحجم والوزن محسومة في القاعدة الموحّدة أسفل الملف */
 .sy-t-num { letter-spacing: 0.5px; }
 /* --- نهاية شريط معلومات المقال --- */
 
