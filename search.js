@@ -35,14 +35,16 @@ document.addEventListener("DOMContentLoaded", function() {
                 resultsBox.style.display = "block";
                 resultsBox.innerHTML = '<div class="ajax-loading">...</div>';
                 
-                fetch('/feeds/posts/summary?alt=json&max-results=6&orderby=published&q=' + encodeURIComponent(query))
+                fetch('/feeds/posts/summary?alt=json&max-results=12&orderby=published&q=' + encodeURIComponent(query))
                 .then(res => res.json())
                 .then(data => {
                     if (currentRequestId !== searchRequestId) return;
                     resultsBox.innerHTML = "";
                     if (data.feed.entry) {
-                        data.feed.entry.slice(0, 4).forEach(entry => {
-                            let title = entry.title.$t;
+                        const filteredEntries = data.feed.entry.filter(function(entry) {
+                            return !(entry.category || []).some(function(cat) { return cat.term === 'الموسوعة'; });
+                        });
+                        filteredEntries.slice(0, 4).forEach(entry => {                            let title = entry.title.$t;
                             let link = entry.link.find(l => l.rel == "alternate").href;
                                                         let img = entry.media$thumbnail ? entry.media$thumbnail.url.replace("s72-c", "s100-c") : "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 60 60'%3E%3Crect width='60' height='60' fill='%23e0e0e0'/%3E%3C/svg%3E";
                             
