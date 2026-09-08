@@ -88,7 +88,7 @@ function generateCustomFooters() {
         // 1. أيقونة المشاهدات
         if (isSingleArticle) {
             html += '<div class="rt-icon-group" title="مشاهدات" style="cursor:default">';
-            html += '<span id="real_page_view" style="margin-left:6px; font-weight:900">...</span>';
+            html += '<span id="real_page_view" style="margin-left:6px; font-weight:700">...</span>';
             html += '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>';
             html += '</div>';
             setTimeout(initFirebaseCounter, 1000); 
