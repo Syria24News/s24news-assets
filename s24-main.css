@@ -1563,14 +1563,14 @@ body #comments .comment-actions a:hover { color: var(--sy-green) !important; tex
 
 /* 10. إقرأ المزيد */
 .sy-related-posts-container { margin-top: 1px; padding-top: 20px; border-top: 1px solid var(--border-color, #eee); width: 100%; box-sizing: border-box; }
-.sy-related-main-title { padding-right: 10PX; font-family: 'IBM Plex Sans Arabic', sans-serif !important; font-size: 20px; font-weight: 900; color: var(--text-main, #000); margin-bottom: 20px; position: relative; display: inline-block; }
+.sy-related-main-title { padding-right: 10PX; font-family: var(--font-title) !important; font-size: 20px; font-weight: 900; color: var(--text-main, #000); margin-bottom: 20px; position: relative; display: inline-block; }
 .sy-related-grid { padding-right: 10px; padding-left: 10px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; direction: rtl; }
 .sy-related-card { background: var(--bg-card, #fff); border: 1px solid var(--border-color, #eee); border-radius: 8px; overflow: hidden; text-decoration: none; display: flex; flex-direction: column; }
 .sy-related-card:hover { transform: none; box-shadow: none; border-color: var(--border-color, #eee); }
 .sy-related-thumb { width: 100%; height: 160px; overflow: hidden; position: relative; flex-shrink: 0; }
 .sy-related-thumb img { width: 100%; height: 100%; object-fit: cover; }
 .sy-related-info { padding: 15px; flex-grow: 1; display: flex; align-items: flex-start; justify-content: center; flex-direction: column; }
-.sy-related-card-title { font-family: 'Readex Pro', sans-serif; font-size: 15px; font-weight: 700; line-height: 1.5; color: var(--text-main, #333); margin: 0; transition: color 0.3s ease; }
+.sy-related-card-title { font-family: var(--font-main); font-size: 15px; font-weight: 700; line-height: 1.5; color: var(--text-main, #333); margin: 0; transition: color 0.3s ease; }
 .sy-related-card:hover .sy-related-card-title { color: #555555; }
 
 
@@ -3496,7 +3496,7 @@ body:not(.item-page) .rt-album-source { display: none !important; }
     border-radius: 20px;
     font-size: 15px !important; /* استرجاع حجم الخط هنا فقط */
     font-weight: bold;
-    font-family: 'IBM Plex Sans Arabic', sans-serif !important;
+    font-family: var(--font-title) !important;
     z-index: 10;
     direction: ltr;
     letter-spacing: 2px;
@@ -3897,7 +3897,7 @@ body.item-page .post-body > .s24-cover-injected:has(~ div[dir="rtl"] .s24-galler
 
 
 /* شريط مسار التنقل (Breadcrumbs) */
-.sy-breadcrumb { display: flex; align-items: center; flex-wrap: nowrap; margin: 15px 0 10px 0; padding: 12px 10px; font-family: 'Readex Pro', sans-serif; font-size: 12px; font-weight: 400; color: var(--text-sec); overflow: hidden; width: 100%; box-sizing: border-box; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; line-height: 1.2; }
+.sy-breadcrumb { display: flex; align-items: center; flex-wrap: nowrap; margin: 15px 0 10px 0; padding: 12px 10px; font-family: var(--font-main); font-size: 12px; font-weight: 400; color: var(--text-sec); overflow: hidden; width: 100%; box-sizing: border-box; -webkit-font-smoothing: antialiased; -moz-osx-font-smoothing: grayscale; line-height: 1.2; }
 .sy-bc-item { display: inline-flex; align-items: center; white-space: nowrap; flex-shrink: 0; }
 .sy-bc-item a { color: var(--text-sec); text-decoration: none; transition: all 0.3s ease; padding: 2px 4px; border-radius: 4px; }
 .sy-bc-item a:hover { color: var(--page-color, var(--sy-green));  background-color: transparent; }
@@ -3936,7 +3936,7 @@ body.item-page .post-body > .s24-cover-injected:has(~ div[dir="rtl"] .s24-galler
 .sy-meta-separator {  color: var(--text-sec); opacity: 0.4; font-size: 12px !important; margin: 0 10px; }
 /* 4. تنسيق توقيت دمشق (ص / م) */
 .sy-time-only { display: inline-flex; flex-direction: row; align-items: center; gap: 4px; color: var(--text-sec); direction: ltr; }
-.sy-t-city, .sy-t-ampm, .sy-t-num { font-family: 'Readex Pro', sans-serif !important; font-size: 13.5px !important; font-weight: 600; color: var(--text-sec); }
+.sy-t-city, .sy-t-ampm, .sy-t-num { font-family: var(--font-main) !important; font-size: 13.5px !important; font-weight: 600; color: var(--text-sec); }
 .sy-t-num { letter-spacing: 0.5px; }
 /* --- نهاية شريط معلومات المقال --- */
 
@@ -4538,13 +4538,13 @@ body.item-page .post-body .fb-video iframe {
 /* --- التنسيق العام للخطوط --- */
 
 /* 1. الخط الأساسي للموقع ونصوص المقالات (Readex Pro) */
-body, p, .post-body, .post-snippet, .sy-section-desc, .s24n-cookie-text, .result-stats { font-family: 'Readex Pro', sans-serif !important; font-weight: 400; line-height: 1.8; }
+body, p, .post-body, .post-snippet, .sy-section-desc, .s24n-cookie-text, .result-stats { font-family: var(--font-main) !important; font-weight: 400; line-height: 1.8; }
 /* حجم خط صفحة المقال أصبح مصدره الوحيد القسم "ب. صفحة المقالة (Item Page) - النسخة النظيفة" (19px)
    بالإضافة لمتغير JS الديناميكي (نفس القيمة الافتراضية 19px) — إزالة "18px !important" هنا
    يمنع القفزة البصرية اللحظية عند تحميل شريط أدوات المقال (sy-article-tools) */
 
 /* 2. خط IBM Plex Sans Arabic للعناوين (الهوية الرصينة) */
-h1, h2, h3, h4, .post-title, .post-title a, .sy-section-title-text, .grid-title, .theme-main-title, .stories-card__title, .live-title, .sy-news-link { font-family: 'IBM Plex Sans Arabic', sans-serif !important; font-weight: 700 !important; line-height: 1.4; }
+h1, h2, h3, h4, .post-title, .post-title a, .sy-section-title-text, .grid-title, .theme-main-title, .stories-card__title, .live-title, .sy-news-link { font-family: var(--font-title) !important; font-weight: 700 !important; line-height: 1.4; }
 
 /* أحجام مخصصة للعناوين لتبرز هويتها */
 .post-title, .post-title a { font-size: 24px !important; /* عناوين الرئيسية */ }
@@ -4552,14 +4552,14 @@ h1, h2, h3, h4, .post-title, .post-title a, .sy-section-title-text, .grid-title,
 .sy-section-title-text { font-size: 21px !important; /* عناوين الأقسام */ }
 
 /* 3. إصلاح القائمة الجانبية اليسرى واليمنى والكبسولات */
-.main-layout__column a, .main-layout__column a, #force-left-sidebar a, .dropdown-btn, .sy-standard-pill,.sy-label-text { font-family: 'Readex Pro', sans-serif !important; font-weight: 700 !important; /* جعل أسماء الأقسام بارزة */ font-size: 14.5px !important; /* حجم متناسق مع القوائم الجانبية */ }
-.sy-standard-pill { font-family: 'Readex Pro', sans-serif !important; font-weight: normal !important; /* جعل أسماء الأقسام بارزة */ font-size: 13px !important; /* حجم متناسق مع القوائم الجانبية */ }
+.main-layout__column a, .main-layout__column a, #force-left-sidebar a, .dropdown-btn, .sy-standard-pill,.sy-label-text { font-family: var(--font-main) !important; font-weight: 700 !important; /* جعل أسماء الأقسام بارزة */ font-size: 14.5px !important; /* حجم متناسق مع القوائم الجانبية */ }
+.sy-standard-pill { font-family: var(--font-main) !important; font-weight: normal !important; /* جعل أسماء الأقسام بارزة */ font-size: 13px !important; /* حجم متناسق مع القوائم الجانبية */ }
 
 /* 4. إصلاح فني لتوقيت دمشق والبيانات الثابتة */
-.sy-t-city, .sy-t-ampm, .sy-t-num, .sy-date-only, .sy-static-text { font-family: 'Readex Pro', sans-serif !important; font-size: 13.5px !important; font-weight: 400; opacity: 0.9; }
+.sy-t-city, .sy-t-ampm, .sy-t-num, .sy-date-only, .sy-static-text { font-family: var(--font-main) !important; font-size: 13.5px !important; font-weight: 400; opacity: 0.9; }
 
 /* 5. أزرار التحكم وتحميل المزيد */
-#load-more-btn, .home-link, .sy-more-btn, .poll__submit-button { font-family: 'IBM Plex Sans Arabic', sans-serif !important; font-weight: 700; font-size: 15px !important; text-transform: none; }
+#load-more-btn, .home-link, .sy-more-btn, .poll__submit-button { font-family: var(--font-title) !important; font-weight: 700; font-size: 15px !important; text-transform: none; }
 
 
 /* --- نهاية التنسيق العام للخطوط --- */
