@@ -5086,3 +5086,24 @@ body.item-page h3.post-title {
         font-size: 24px;
     }
 }
+
+/* ===== مقالات ذات صلة (الموسوعة) ===== */
+.s24-enc-related{
+  margin:24px 0;padding:16px 18px;
+  background:var(--bg-card,#fff);
+  border:1px solid var(--border-color,#ddd);
+  border-right:4px solid var(--sy-green,#77bd1d);
+  border-radius:8px;
+  direction:rtl;
+}
+.s24-enc-related ul{list-style:none;margin:10px 0 0;padding:0;
+  display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px 16px}
+.s24-enc-related li{display:flex;align-items:center;gap:8px;font-size:14px;line-height:1.6}
+.s24-enc-related a{color:var(--text-main,#000);text-decoration:none;
+  border-bottom:1px solid transparent;transition:color .2s,border-color .2s}
+.s24-enc-related a:hover{color:var(--sy-green,#77bd1d);border-bottom-color:var(--sy-green,#77bd1d)}
+.s24-rel-ico{font-size:15px;line-height:1;flex-shrink:0;opacity:.85}
+@media (max-width:480px){
+  .s24-enc-related{padding:14px}
+  .s24-enc-related ul{grid-template-columns:1fr;gap:6px}
+}
