@@ -157,8 +157,11 @@ document.addEventListener("DOMContentLoaded", function() {
                         a.className = el.className;
                         a.setAttribute('data-title', 'اضغط لقراءة المقالة كاملة');
                         a.href = map[word];
-                        a.target = '_blank';
-                        a.rel = 'noopener';
+                        // داخل الموسوعة: تصفّح في نفس الصفحة. خارجها: تبويب جديد
+                        if (!document.body.classList.contains('s24-glossary-article')) {
+                            a.target = '_blank';
+                            a.rel = 'noopener';
+                        }
                         a.textContent = el.textContent;
                         el.parentNode.replaceChild(a, el);
                     }
