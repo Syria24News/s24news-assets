@@ -153,10 +153,12 @@
   /* ======================= 1) الشريط العلوي ======================= */
 
   var BAR_CSS =
-    '.s24-next-prayer{text-decoration:none;white-space:nowrap}' +
+    '.s24-next-prayer{text-decoration:none;white-space:nowrap;cursor:pointer;' +
+    'transition:opacity .15s ease}' +
     '.s24-next-prayer:empty{display:none}' +
     '.s24-next-prayer::before{content:"|";opacity:.45;margin:0 8px}' +
-    '.s24-next-prayer:hover{text-decoration:underline}';
+    '.s24-next-prayer:hover{text-decoration:none;opacity:.7}' +
+    '.s24-next-prayer i{font-style:normal;margin-inline-start:6px}';
 
   /* عنصر التاريخ: أعمق عنصر داخل الشريط يحمل «بتوقيت» أو صيغة ساعة.
      يُبحث عنه متأخراً لأن ui-core.js تكتب التاريخ بعد تحميل القالب. */
@@ -210,7 +212,7 @@
       if (!days) return;
       var t = damascusNow();
       var np = nextPrayer(days, t.d, t.minutes);
-      if (np) link.textContent = np.label + ' ' + np.time;
+      if (np) link.innerHTML = np.label + '<i>' + np.time + '</i>';
     }
 
     /* محاولات متكرّرة حتى يكتب القالب التاريخ، ثم حارس يعيد الإدراج إن مُحي */
