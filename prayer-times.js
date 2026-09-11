@@ -1,6 +1,6 @@
 /* S24News — مواقيت الصلاة
    وظيفتان في ملف واحد:
-   1) سطر الصلاة القادمة في الشريط العلوي (.top-date-bar) — في كل الصفحات.
+   1) سطر الصلاة القادمة بجانب التاريخ في الشريط العلوي (.top-date-bar) — في كل الصفحات.
    2) صفحة المواقيت الكاملة — عند وجود العنصر #s24-prayer-page.
    المصدر: Aladhan API — طلب واحد لكل شهر لكل مدينة، مخزَّن محلياً ومشترك بين الوظيفتين. */
 
@@ -153,16 +153,24 @@
   /* ======================= 1) الشريط العلوي ======================= */
 
   var BAR_CSS =
-    '.s24-next-prayer{font:inherit;color:inherit;text-decoration:none;' +
-    'margin-inline-start:14px;white-space:nowrap}' +
+    '.s24-next-prayer{text-decoration:none;white-space:nowrap}' +
+    '.s24-next-prayer:empty{display:none}' +
+    '.s24-next-prayer::before{content:"|";opacity:.45;margin:0 8px}' +
     '.s24-next-prayer:hover{text-decoration:underline}';
 
+  /* عنصر التاريخ: أعمق عنصر داخل الشريط يحمل «بتوقيت» أو صيغة ساعة.
+     يُبحث عنه متأخراً لأن ui-core.js تكتب التاريخ بعد تحميل القالب. */
   function findDateNode(bar) {
-    var nodes = bar.querySelectorAll('*');
-    for (var i = 0; i < nodes.length; i++) {
-      if (nodes[i].children.length === 0 && nodes[i].textContent.indexOf('بتوقيت') !== -1) {
-        return nodes[i];
-      }
+    var nodes = bar.querySelectorAll('*'), i, t;
+    for (i = 0; i < nodes.length; i++) {
+      if (nodes[i].children.length) continue;
+      t = nodes[i].textContent || '';
+      if (t.indexOf('بتوقيت') !== -1) return nodes[i];
+    }
+    for (i = 0; i < nodes.length; i++) {
+      if (nodes[i].children.length) continue;
+      t = nodes[i].textContent || '';
+      if (/\d{1,2}:\d{2}/.test(t)) return nodes[i];
     }
     return null;
   }
@@ -181,27 +189,48 @@
     link.href = PAGE;
     link.title = 'مواقيت الصلاة';
 
-    var city = savedCity();
-    var n = damascusNow();
+    var days = null, placed = false, tries = 0;
 
-    loadMonth(city, n.y, n.m).then(function (days) {
-      var anchor = findDateNode(bar);
+    /* يأخذ الخط واللون من عنصر التاريخ نفسه، فيتطابق الوزن والحجم والعائلة */
+    function place() {
+      var a = findDateNode(bar);
+      if (!a || !a.parentNode) return false;
+      var cs = window.getComputedStyle(a);
+      link.style.fontFamily    = cs.fontFamily;
+      link.style.fontSize      = cs.fontSize;
+      link.style.fontWeight    = cs.fontWeight;
+      link.style.fontStyle     = cs.fontStyle;
+      link.style.letterSpacing = cs.letterSpacing;
+      link.style.color         = cs.color;
+      a.parentNode.insertBefore(link, a.nextSibling);
+      return true;
+    }
 
-      function paint() {
-        var t = damascusNow();
-        var np = nextPrayer(days, t.d, t.minutes);
-        if (!np) return;
-        link.textContent = np.label + ' ' + np.time;
-        /* ساعة الشريط تُعاد كتابتها دورياً وقد تمحو الرابط، فنعيد وضعه عند الحاجة */
-        if (!document.getElementById('s24-next-prayer')) {
-          if (anchor && anchor.parentNode) anchor.parentNode.insertBefore(link, anchor.nextSibling);
-          else bar.appendChild(link);
-        }
-      }
+    function paint() {
+      if (!days) return;
+      var t = damascusNow();
+      var np = nextPrayer(days, t.d, t.minutes);
+      if (np) link.textContent = np.label + ' ' + np.time;
+    }
 
+    /* محاولات متكرّرة حتى يكتب القالب التاريخ، ثم حارس يعيد الإدراج إن مُحي */
+    var timer = setInterval(function () {
+      tries++;
+      if (!document.getElementById('s24-next-prayer')) placed = false;
+      if (!placed) placed = place();
+      if (placed) paint();
+      if (tries > 60) clearInterval(timer);      // نتوقف بعد 30 ثانية
+    }, 500);
+
+    loadMonth(savedCity(), damascusNow().y, damascusNow().m).then(function (d) {
+      days = d;
       paint();
-      setInterval(paint, 60000);
     }).catch(function () { /* لا نعرض شيئاً بدل عرض وقت خاطئ */ });
+
+    setInterval(function () {
+      if (!document.getElementById('s24-next-prayer')) place();
+      paint();
+    }, 60000);
   }
 
   /* ======================= 2) صفحة المواقيت ======================= */
