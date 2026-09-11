@@ -9,6 +9,14 @@
 
   /* ======================= الإعدادات ======================= */
 
+  /* نمط عرض سطر الشريط العلوي — بدّل الكلمة وارفع الملف:
+       'text'        تبديل نصّي: «الظهر بعد 4 دقائق» ← «أذان الظهر» ← «مضى أذان الظهر»
+       'chip'        النص ثابت، وتظهر حوله رقاقة رمادية خلال النافذة
+       'countdown'   عدّاد حيّ بالثواني ينزل حتى الأذان ثم يصعد بعده
+       'window-only' السطر مخفيّ تماماً، ولا يظهر إلا داخل النافذة                */
+  var STYLE  = 'text';
+
+  var WINDOW = 5;                        // نافذة التمييز بالدقائق، قبل الأذان وبعده
   var METHOD = 3;                        // 3 = رابطة العالم الإسلامي (الفجر 18° / العشاء 17°)
   var SCHOOL = 0;                        // 0 = الجمهور، 1 = الحنفي (يؤخّر العصر)
   var TUNE   = '0,0,0,0,0,0,0,0,0';      // الإمساك,الفجر,الشروق,الظهر,العصر,المغرب,الغروب,العشاء,منتصف الليل
@@ -57,6 +65,11 @@
 
   function clean(t) { return String(t || '').split(' ')[0]; }
 
+  function toMin(t) {
+    var p = clean(t).split(':');
+    return (parseInt(p[0], 10) || 0) * 60 + (parseInt(p[1], 10) || 0);
+  }
+
   /* صيغة العرض. الشريط العلوي عندك بنظام 12 ساعة مع ص/م، فوحّدنا عليه.
      اجعل HOUR12 = false لتعود المواقيت إلى نظام 24 ساعة. */
   var HOUR12 = true;
@@ -71,19 +84,18 @@
     return h + ':' + p[1] + ' ' + suffix;
   }
 
-  function toMin(t) {
-    var p = clean(t).split(':');
-    return (parseInt(p[0], 10) || 0) * 60 + (parseInt(p[1], 10) || 0);
-  }
-
   function damascusNow() {
     var parts = new Intl.DateTimeFormat('en-GB', {
       timeZone: TZ, year: 'numeric', month: '2-digit', day: '2-digit',
-      hour: '2-digit', minute: '2-digit', hour12: false
+      hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
     }).formatToParts(new Date());
     var o = {};
     parts.forEach(function (p) { o[p.type] = p.value; });
-    return { y: +o.year, m: +o.month, d: +o.day, minutes: (+o.hour) * 60 + (+o.minute) };
+    return {
+      y: +o.year, m: +o.month, d: +o.day,
+      minutes: (+o.hour) * 60 + (+o.minute),
+      seconds: +o.second
+    };
   }
 
   function cityById(id) {
@@ -167,28 +179,98 @@
   /* ======================= 1) الشريط العلوي ======================= */
 
   var BAR_CSS =
+    /* الأساس، مشترك بين الأنماط الأربعة */
     '.s24-next-prayer{text-decoration:none;white-space:nowrap;cursor:pointer;' +
-    'transition:opacity .15s ease}' +
+    'transition:opacity .15s ease,background-color .25s ease,border-color .25s ease}' +
     '.s24-next-prayer:empty{display:none}' +
     '.s24-next-prayer::before{content:"|";opacity:.45;margin:0 8px}' +
     '.s24-next-prayer:hover{text-decoration:none;opacity:.7}' +
-    '.s24-next-prayer i{font-style:normal;margin-inline-start:6px}';
+    '.s24-next-prayer i{font-style:normal;margin-inline-start:6px}' +
 
-  /* عنصر التاريخ: أعمق عنصر داخل الشريط يحمل «بتوقيت» أو صيغة ساعة.
-     يُبحث عنه متأخراً لأن ui-core.js تكتب التاريخ بعد تحميل القالب. */
-  function findDateNode(bar) {
-    var nodes = bar.querySelectorAll('*'), i, t;
-    for (i = 0; i < nodes.length; i++) {
-      if (nodes[i].children.length) continue;
-      t = nodes[i].textContent || '';
-      if (t.indexOf('بتوقيت') !== -1) return nodes[i];
+    /* التمييز النصّي — يستخدمه text و countdown و window-only */
+    '.s24-next-prayer.is-soon{font-weight:700}' +
+    '.s24-next-prayer.is-now{font-weight:700;animation:s24npPulse 1.8s ease-in-out infinite}' +
+    '@keyframes s24npPulse{0%,100%{opacity:1}50%{opacity:.45}}' +
+    '@media(prefers-reduced-motion:reduce){.s24-next-prayer.is-now{animation:none}}' +
+
+    /* الرقاقة — الفاصل | يُلغى لأنه سيقع داخل الرقاقة لا خارجها */
+    '.s24-next-prayer.is-chip::before{content:none}' +
+    '.s24-next-prayer.is-chip{margin-inline-start:12px;border:1px solid transparent;' +
+    'border-radius:999px;padding:2px 10px}' +
+    '.s24-next-prayer.chip-soon,.s24-next-prayer.chip-past{' +
+    'background:rgba(128,128,128,.10);border-color:rgba(128,128,128,.22)}' +
+    '.s24-next-prayer.chip-now{' +
+    'background:rgba(128,128,128,.24);border-color:rgba(128,128,128,.45)}';
+
+  /* حالة السطر: داخل نافذة الأذان أولاً، وإلا الصلاة القادمة.
+     mode: soon (قبل) | now (اللحظة) | past (بعد) | idle (خارج النافذة)
+     at: دقيقة الأذان منذ منتصف الليل — تحتاجها أنماط العدّاد */
+  function barState(days, t) {
+    var day = findDay(days, t.d);
+    if (!day) return null;
+    var friday = day.date.hijri.weekday.ar === 'الجمعة';
+
+    for (var i = 0; i < ROWS.length; i++) {
+      var r = ROWS[i];
+      if (!r.prayer) continue;
+      var label = (friday && r.key === 'Dhuhr') ? 'الجمعة' : r.label;
+      var at = toMin(day.timings[r.key]);
+      var diff = t.minutes - at;
+
+      if (diff === 0) return { mode: 'now',  label: label, time: clean(day.timings[r.key]), at: at };
+      if (diff > 0 && diff <= WINDOW)
+        return { mode: 'past', label: label, time: clean(day.timings[r.key]), at: at };
+      if (diff < 0 && -diff <= WINDOW)
+        return { mode: 'soon', label: label, time: clean(day.timings[r.key]), at: at };
     }
-    for (i = 0; i < nodes.length; i++) {
-      if (nodes[i].children.length) continue;
-      t = nodes[i].textContent || '';
-      if (/\d{1,2}:\d{2}/.test(t)) return nodes[i];
-    }
-    return null;
+
+    var np = nextPrayer(days, t.d, t.minutes);
+    if (!np) return null;
+    return { mode: 'idle', label: np.label, time: np.time, at: toMin(np.time) };
+  }
+
+  /* ---- المُصيّرات: كل واحد يعيد { html, cls } ---- */
+
+  function plain(s) { return s.label + '<i>' + fmt(s.time) + '</i>'; }
+
+  function renderText(s, t) {
+    if (s.mode === 'idle') return { html: plain(s), cls: '' };
+    if (s.mode === 'now')  return { html: 'أذان ' + s.label, cls: ' is-now' };
+    if (s.mode === 'past') return { html: 'مضى أذان ' + s.label, cls: '' };
+    var n = s.at - t.minutes;
+    var word = n === 1 ? 'دقيقة' : (n === 2 ? 'دقيقتين' : n + ' دقائق');
+    return { html: s.label + ' بعد ' + word, cls: ' is-soon' };
+  }
+
+  function renderChip(s) {
+    var cls = ' is-chip';
+    if (s.mode === 'soon' || s.mode === 'past') cls += ' chip-soon';
+    else if (s.mode === 'now') cls += ' chip-now';
+    return { html: plain(s), cls: cls };
+  }
+
+  function renderCountdown(s, t) {
+    if (s.mode === 'idle') return { html: plain(s), cls: '' };
+    var diff = (t.minutes * 60 + t.seconds) - (s.at * 60);
+    var abs  = Math.abs(diff);
+    var clock = Math.floor(abs / 60) + ':' + (abs % 60 < 10 ? '0' : '') + (abs % 60);
+    if (diff < 0) return { html: s.label + '<i>' + clock + '</i>', cls: ' is-soon' };
+    return {
+      html: 'أذان ' + s.label + '<i>' + clock + '</i>',
+      cls: diff < 60 ? ' is-now' : ' is-soon'
+    };
+  }
+
+  function renderWindowOnly(s, t) {
+    if (s.mode === 'idle') return { html: '', cls: '' };
+    return renderText(s, t);
+  }
+
+  function render(s, t) {
+    if (STYLE === 'chip')        return renderChip(s);
+    if (STYLE === 'countdown')   return renderCountdown(s, t);
+    if (STYLE === 'window-only') return renderWindowOnly(s, t);
+    return renderText(s, t);
   }
 
   function initTopBar() {
@@ -205,13 +287,14 @@
     link.href = PAGE;
     link.title = 'مواقيت الصلاة';
 
-    var days = null, placed = false, tries = 0;
+    var days = null, placed = false, tries = 0, baseWeight = '', secTimer = null;
 
     /* يأخذ الخط واللون من عنصر التاريخ نفسه، فيتطابق الوزن والحجم والعائلة */
     function place() {
       var a = findDateNode(bar);
       if (!a || !a.parentNode) return false;
       var cs = window.getComputedStyle(a);
+      baseWeight = cs.fontWeight;
       link.style.fontFamily    = cs.fontFamily;
       link.style.fontSize      = cs.fontSize;
       link.style.fontWeight    = cs.fontWeight;
@@ -222,11 +305,25 @@
       return true;
     }
 
+    /* العدّاد وحده يحتاج نبضة كل ثانية، ولا يحتاجها إلا داخل النافذة */
+    function manageSeconds(active) {
+      if (active && !secTimer) secTimer = setInterval(paint, 1000);
+      if (!active && secTimer) { clearInterval(secTimer); secTimer = null; }
+    }
+
     function paint() {
       if (!days) return;
       var t = damascusNow();
-      var np = nextPrayer(days, t.d, t.minutes);
-      if (np) link.innerHTML = np.label + '<i>' + fmt(np.time) + '</i>';
+      var s = barState(days, t);
+      if (!s) return;
+      var r = render(s, t);
+
+      link.innerHTML = r.html;
+      link.className = 's24-next-prayer' + r.cls;
+      /* الوزن المنسوخ سطرياً يتغلّب على الصنف، فنرفعه أثناء التمييز ونعيده بعده */
+      link.style.fontWeight = /is-(soon|now)/.test(r.cls) ? '' : baseWeight;
+
+      manageSeconds(STYLE === 'countdown' && s.mode !== 'idle');
     }
 
     /* محاولات متكرّرة حتى يكتب القالب التاريخ، ثم حارس يعيد الإدراج إن مُحي */
@@ -243,10 +340,32 @@
       paint();
     }).catch(function () { /* لا نعرض شيئاً بدل عرض وقت خاطئ */ });
 
-    setInterval(function () {
+    /* نبضة مضبوطة على رأس الدقيقة، وإلا فاتت لحظة الأذان بما يصل إلى 59 ثانية */
+    function tick() {
       if (!document.getElementById('s24-next-prayer')) place();
       paint();
-    }, 60000);
+    }
+    setTimeout(function () {
+      tick();
+      setInterval(tick, 60000);
+    }, (60 - new Date().getSeconds()) * 1000 + 200);
+  }
+
+  /* عنصر التاريخ: أعمق عنصر داخل الشريط يحمل «بتوقيت» أو صيغة ساعة.
+     يُبحث عنه متأخراً لأن ui-core.js تكتب التاريخ بعد تحميل القالب. */
+  function findDateNode(bar) {
+    var nodes = bar.querySelectorAll('*'), i, t;
+    for (i = 0; i < nodes.length; i++) {
+      if (nodes[i].children.length) continue;
+      t = nodes[i].textContent || '';
+      if (t.indexOf('بتوقيت') !== -1) return nodes[i];
+    }
+    for (i = 0; i < nodes.length; i++) {
+      if (nodes[i].children.length) continue;
+      t = nodes[i].textContent || '';
+      if (/\d{1,2}:\d{2}/.test(t)) return nodes[i];
+    }
+    return null;
   }
 
   /* ======================= 2) صفحة المواقيت ======================= */
