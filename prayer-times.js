@@ -57,6 +57,20 @@
 
   function clean(t) { return String(t || '').split(' ')[0]; }
 
+  /* صيغة العرض. الشريط العلوي عندك بنظام 12 ساعة مع ص/م، فوحّدنا عليه.
+     اجعل HOUR12 = false لتعود المواقيت إلى نظام 24 ساعة. */
+  var HOUR12 = true;
+
+  function fmt(t) {
+    var s = clean(t);
+    if (!HOUR12) return s;
+    var p = s.split(':'), h = parseInt(p[0], 10);
+    var suffix = h < 12 ? 'ص' : 'م';
+    h = h % 12;
+    if (h === 0) h = 12;
+    return h + ':' + p[1] + ' ' + suffix;
+  }
+
   function toMin(t) {
     var p = clean(t).split(':');
     return (parseInt(p[0], 10) || 0) * 60 + (parseInt(p[1], 10) || 0);
@@ -212,7 +226,7 @@
       if (!days) return;
       var t = damascusNow();
       var np = nextPrayer(days, t.d, t.minutes);
-      if (np) link.innerHTML = np.label + '<i>' + np.time + '</i>';
+      if (np) link.innerHTML = np.label + '<i>' + fmt(np.time) + '</i>';
     }
 
     /* محاولات متكرّرة حتى يكتب القالب التاريخ، ثم حارس يعيد الإدراج إن مُحي */
@@ -336,7 +350,7 @@
       today.innerHTML = '';
       ROWS.forEach(function (r) {
         var c = el('div', 's24pt-cell',
-          '<em>' + r.label + '</em><strong>' + clean(state.today.timings[r.key]) + '</strong>');
+          '<em>' + r.label + '</em><strong>' + fmt(state.today.timings[r.key]) + '</strong>');
         c.setAttribute('data-key', r.key);
         today.appendChild(c);
       });
@@ -353,7 +367,7 @@
       var h = Math.floor(left / 60), mm = left % 60;
       var rem = h > 0 ? ('بعد ' + h + ' ساعة و' + mm + ' دقيقة') : ('بعد ' + mm + ' دقيقة');
 
-      next.innerHTML = np.label + (np.tomorrow ? ' (غداً)' : '') + ' — ' + np.time +
+      next.innerHTML = np.label + (np.tomorrow ? ' (غداً)' : '') + ' — ' + fmt(np.time) +
                        '<span>' + rem + '</span>';
 
       Array.prototype.forEach.call(today.children, function (c) {
@@ -374,7 +388,7 @@
         var isToday = (+g.day === t.d && +g.month.number === t.m && +g.year === t.y);
         body += '<tr' + (isToday ? ' class="is-today"' : '') + '>';
         body += '<td>' + parseInt(g.day, 10) + ' — ' + h.weekday.ar + '</td>';
-        ROWS.forEach(function (r) { body += '<td>' + clean(day.timings[r.key]) + '</td>'; });
+        ROWS.forEach(function (r) { body += '<td>' + fmt(day.timings[r.key]) + '</td>'; });
         body += '</tr>';
       });
 
