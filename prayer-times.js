@@ -9,17 +9,17 @@
 
   /* ======================= الإعدادات ======================= */
 
-  /* نمط عرض سطر الشريط العلوي — بدّل الكلمة وارفع الملف:
-       'text'        تبديل نصّي: «الظهر بعد 4 دقائق» ← «أذان الظهر» ← «مضى أذان الظهر»
-       'chip'        النص ثابت، وتظهر حوله رقاقة رمادية خلال النافذة
-       'countdown'   عدّاد حيّ بالثواني ينزل حتى الأذان ثم يصعد بعده
-       'window-only' السطر مخفيّ تماماً، ولا يظهر إلا داخل النافذة                */
-  var STYLE  = 'text';
-
   var WINDOW = 5;                        // نافذة التمييز بالدقائق، قبل الأذان وبعده
   var METHOD = 3;                        // 3 = رابطة العالم الإسلامي (الفجر 18° / العشاء 17°)
   var SCHOOL = 0;                        // 0 = الجمهور، 1 = الحنفي (يؤخّر العصر)
-  var TUNE   = '0,0,0,0,0,0,0,0,0';      // الإمساك,الفجر,الشروق,الظهر,العصر,المغرب,الغروب,العشاء,منتصف الليل
+
+  /* معايرة كاملة على تقويم الجامع الأموي، 12 أيلول 2026 — تحقّق ميداني لكل وقت:
+     الفجر 4:52 والشروق 6:16 والعشاء 8:05 متطابقة بلا إزاحة،
+     والظهر 12:32 (+1) والعصر 4:05 (+1) والمغرب 6:48 (+2) — الاحتياط المعتاد في تقاويم المساجد.
+     الترتيب: الإمساك,الفجر,الشروق,الظهر,العصر,المغرب,الغروب,العشاء,منتصف الليل */
+  var TUNE   = '0,0,0,1,1,2,0,0,0';
+  var CACHE_V = 3;                       // ارفعه كلما غيّرت TUNE أو METHOD ليُهمَل المخزَّن القديم
+
   var TZ     = 'Asia/Damascus';
   var PAGE   = '/p/prayer-times.html';
   var DEFAULT_CITY = 'damascus';
@@ -87,14 +87,13 @@
   function damascusNow() {
     var parts = new Intl.DateTimeFormat('en-GB', {
       timeZone: TZ, year: 'numeric', month: '2-digit', day: '2-digit',
-      hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false
+      hour: '2-digit', minute: '2-digit', hour12: false
     }).formatToParts(new Date());
     var o = {};
     parts.forEach(function (p) { o[p.type] = p.value; });
     return {
       y: +o.year, m: +o.month, d: +o.day,
-      minutes: (+o.hour) * 60 + (+o.minute),
-      seconds: +o.second
+      minutes: (+o.hour) * 60 + (+o.minute)
     };
   }
 
@@ -142,9 +141,10 @@
   /* ---- التخزين المحلي: بيانات الشهر ثابتة، فتُحفظ بلا مدة صلاحية ---- */
 
   var pending = {};
+  var CACHE_PREFIX = 's24pt:v' + CACHE_V + ':';
 
   function loadMonth(city, y, m) {
-    var key = 's24pt:' + city.id + ':' + y + '-' + m;
+    var key = CACHE_PREFIX + city.id + ':' + y + '-' + m;
     if (pending[key]) return pending[key];
 
     var hit = null;
@@ -162,9 +162,12 @@
       if (!j || j.code !== 200 || !j.data) throw new Error('bad payload');
       try {
         var keys = [], i, n;
-        for (i = 0; i < localStorage.length; i++) {
+        for (i = localStorage.length - 1; i >= 0; i--) {
           n = localStorage.key(i);
-          if (n && n.indexOf('s24pt:') === 0) keys.push(n);
+          if (!n || n.indexOf('s24pt:') !== 0) continue;
+          /* مفاتيح إصدارات سابقة تحمل معايرة قديمة — تُحذف فوراً */
+          if (n.indexOf(CACHE_PREFIX) !== 0) { localStorage.removeItem(n); continue; }
+          keys.push(n);
         }
         keys.sort();
         while (keys.length >= 6) localStorage.removeItem(keys.shift());
@@ -181,26 +184,17 @@
   var BAR_CSS =
     /* الأساس، مشترك بين الأنماط الأربعة */
     '.s24-next-prayer{text-decoration:none;white-space:nowrap;cursor:pointer;' +
-    'transition:opacity .15s ease,background-color .25s ease,border-color .25s ease}' +
+    'transition:opacity .15s ease}' +
     '.s24-next-prayer:empty{display:none}' +
     '.s24-next-prayer::before{content:"|";opacity:.45;margin:0 8px}' +
     '.s24-next-prayer:hover{text-decoration:none;opacity:.7}' +
     '.s24-next-prayer i{font-style:normal;margin-inline-start:6px}' +
 
-    /* التمييز النصّي — يستخدمه text و countdown و window-only */
+    /* التمييز النصّي: عريض قبل الأذان، وعريض مع نبضة لحظته */
     '.s24-next-prayer.is-soon{font-weight:700}' +
     '.s24-next-prayer.is-now{font-weight:700;animation:s24npPulse 1.8s ease-in-out infinite}' +
     '@keyframes s24npPulse{0%,100%{opacity:1}50%{opacity:.45}}' +
-    '@media(prefers-reduced-motion:reduce){.s24-next-prayer.is-now{animation:none}}' +
-
-    /* الرقاقة — الفاصل | يُلغى لأنه سيقع داخل الرقاقة لا خارجها */
-    '.s24-next-prayer.is-chip::before{content:none}' +
-    '.s24-next-prayer.is-chip{margin-inline-start:12px;border:1px solid transparent;' +
-    'border-radius:999px;padding:2px 10px}' +
-    '.s24-next-prayer.chip-soon,.s24-next-prayer.chip-past{' +
-    'background:rgba(128,128,128,.10);border-color:rgba(128,128,128,.22)}' +
-    '.s24-next-prayer.chip-now{' +
-    'background:rgba(128,128,128,.24);border-color:rgba(128,128,128,.45)}';
+    '@media(prefers-reduced-motion:reduce){.s24-next-prayer.is-now{animation:none}}';
 
   /* حالة السطر: داخل نافذة الأذان أولاً، وإلا الصلاة القادمة.
      mode: soon (قبل) | now (اللحظة) | past (بعد) | idle (خارج النافذة)
@@ -242,37 +236,6 @@
     return { html: s.label + ' بعد ' + word, cls: ' is-soon' };
   }
 
-  function renderChip(s) {
-    var cls = ' is-chip';
-    if (s.mode === 'soon' || s.mode === 'past') cls += ' chip-soon';
-    else if (s.mode === 'now') cls += ' chip-now';
-    return { html: plain(s), cls: cls };
-  }
-
-  function renderCountdown(s, t) {
-    if (s.mode === 'idle') return { html: plain(s), cls: '' };
-    var diff = (t.minutes * 60 + t.seconds) - (s.at * 60);
-    var abs  = Math.abs(diff);
-    var clock = Math.floor(abs / 60) + ':' + (abs % 60 < 10 ? '0' : '') + (abs % 60);
-    if (diff < 0) return { html: s.label + '<i>' + clock + '</i>', cls: ' is-soon' };
-    return {
-      html: 'أذان ' + s.label + '<i>' + clock + '</i>',
-      cls: diff < 60 ? ' is-now' : ' is-soon'
-    };
-  }
-
-  function renderWindowOnly(s, t) {
-    if (s.mode === 'idle') return { html: '', cls: '' };
-    return renderText(s, t);
-  }
-
-  function render(s, t) {
-    if (STYLE === 'chip')        return renderChip(s);
-    if (STYLE === 'countdown')   return renderCountdown(s, t);
-    if (STYLE === 'window-only') return renderWindowOnly(s, t);
-    return renderText(s, t);
-  }
-
   function initTopBar() {
     var bar = document.querySelector('.top-date-bar');
     if (!bar) return;                         // لا شريط على الموبايل — نخرج بصمت
@@ -287,7 +250,7 @@
     link.href = PAGE;
     link.title = 'مواقيت الصلاة';
 
-    var days = null, placed = false, tries = 0, baseWeight = '', secTimer = null;
+    var days = null, tries = 0, baseWeight = '';
 
     /* يأخذ الخط واللون من عنصر التاريخ نفسه، فيتطابق الوزن والحجم والعائلة */
     function place() {
@@ -305,44 +268,56 @@
       return true;
     }
 
-    /* العدّاد وحده يحتاج نبضة كل ثانية، ولا يحتاجها إلا داخل النافذة */
-    function manageSeconds(active) {
-      if (active && !secTimer) secTimer = setInterval(paint, 1000);
-      if (!active && secTimer) { clearInterval(secTimer); secTimer = null; }
-    }
-
     function paint() {
       if (!days) return;
       var t = damascusNow();
       var s = barState(days, t);
       if (!s) return;
-      var r = render(s, t);
+      var r = renderText(s, t);
 
       link.innerHTML = r.html;
       link.className = 's24-next-prayer' + r.cls;
       /* الوزن المنسوخ سطرياً يتغلّب على الصنف، فنرفعه أثناء التمييز ونعيده بعده */
       link.style.fontWeight = /is-(soon|now)/.test(r.cls) ? '' : baseWeight;
-
-      manageSeconds(STYLE === 'countdown' && s.mode !== 'idle');
     }
 
-    /* محاولات متكرّرة حتى يكتب القالب التاريخ، ثم حارس يعيد الإدراج إن مُحي */
+    /* محاولة أولى، ثم مراقب يعيد الإدراج فوراً كلما أعادت ui-core كتابة التاريخ.
+       الاستطلاع الدوري لا يصلح هنا: نبضته غير متزامنة مع نبضة الساعة،
+       فيبقى الرابط غائباً حتى الفحص التالي — وهو سبب اختفائه عند قلب الدقيقة. */
+    var restoring = false;
+
+    function ensure() {
+      if (restoring) return;
+      if (bar.contains(link)) return;
+      restoring = true;
+      if (place()) paint();
+      restoring = false;
+    }
+
+    ensure();
+
+    if (window.MutationObserver) {
+      new MutationObserver(ensure).observe(bar, { childList: true, subtree: true });
+    } else {
+      setInterval(ensure, 1000);         // متصفحات قديمة جداً
+    }
+
+    /* محاولات أولى متقاربة حتى تكتب ui-core التاريخ لأول مرة */
     var timer = setInterval(function () {
       tries++;
-      if (!document.getElementById('s24-next-prayer')) placed = false;
-      if (!placed) placed = place();
-      if (placed) paint();
-      if (tries > 60) clearInterval(timer);      // نتوقف بعد 30 ثانية
-    }, 500);
+      ensure();
+      if (bar.contains(link) || tries > 40) clearInterval(timer);
+    }, 250);
 
     loadMonth(savedCity(), damascusNow().y, damascusNow().m).then(function (d) {
       days = d;
+      ensure();
       paint();
     }).catch(function () { /* لا نعرض شيئاً بدل عرض وقت خاطئ */ });
 
     /* نبضة مضبوطة على رأس الدقيقة، وإلا فاتت لحظة الأذان بما يصل إلى 59 ثانية */
     function tick() {
-      if (!document.getElementById('s24-next-prayer')) place();
+      ensure();
       paint();
     }
     setTimeout(function () {
