@@ -398,13 +398,12 @@ body.s24-font-lateef .s24-quran-basmala{
 }
 .s24-audio-credit a{color:var(--bs-main,#77bd1d);text-decoration:none}
 .s24-aya.is-playing{
-  background:rgba(119,189,29,.14);
-  border-radius:4px;
-  padding:.21em .1em .19em;
-  box-decoration-break:clone;
-  -webkit-box-decoration-break:clone;
-  transition:background .3s;
+  color:#4a7c12;
+  transition:color .3s;
 }
+body.dark-mode .s24-aya.is-playing,
+body.dark .s24-aya.is-playing,
+[data-theme="dark"] .s24-aya.is-playing{color:#9ede4e}
 .s24-aya{cursor:pointer}
 
 /* ═══ ١٧. إخفاء الغلاف عند وجود فيديو ═══ */
