@@ -206,7 +206,7 @@ document.addEventListener('DOMContentLoaded',function(){
         var au=new Audio();
         au.preload='auto';
         var pre=new Audio(); pre.preload='auto';
-        var cur=0, playing=false, loop=false;
+        var cur=0, playing=false;
 
         var abar=document.createElement('div');
         abar.className='s24-audio-bar';
@@ -214,18 +214,26 @@ document.addEventListener('DOMContentLoaded',function(){
           return '<option value="'+r[0]+'"'+(r[0]===reciter?' selected':'')+'>'+r[1]+'</option>';
         }).join('');
         abar.innerHTML='<button type="button" class="main" data-a="play">▶ تشغيل</button>'
-                     + '<button type="button" data-a="prev">⏮</button>'
-                     + '<button type="button" data-a="next">⏭</button>'
-                     + '<select>'+opts+'</select>'
-                     + '<button type="button" data-a="loop">🔁 تكرار الآية</button>'
+                     + '<button type="button" data-a="prev">الآية السابقة</button>'
+                     + '<button type="button" data-a="next">الآية التالية</button>'
+                     + '<select class="s24-reciter">'+opts+'</select>'
+                     + '<select class="s24-repeat">'
+                     +   '<option value="0">بلا تكرار</option>'
+                     +   '<option value="2">تكرار الآية مرتين</option>'
+                     +   '<option value="3">تكرار الآية ٣ مرات</option>'
+                     +   '<option value="5">تكرار الآية ٥ مرات</option>'
+                     +   '<option value="99">تكرار الآية بلا حد</option>'
+                     +   '<option value="sura">إعادة السورة عند انتهائها</option>'
+                     + '</select>'
                      + '<span class="s24-audio-state"></span>'
                      + '<span class="s24-audio-credit">التلاوة من <a href="https://everyayah.com" rel="nofollow" target="_blank">everyayah.com</a> — الحقوق لأصحابها، والاستعمال لغرض التلاوة والحفظ.</span>';
         var anchor=document.querySelector('.s24-quran-basmala')||quranHost;
         anchor.parentNode.insertBefore(abar,anchor);
 
         var bPlay=abar.querySelector('[data-a="play"]');
-        var bLoop=abar.querySelector('[data-a="loop"]');
-        var sel=abar.querySelector('select');
+        var sel=abar.querySelector('.s24-reciter');
+        var rep=abar.querySelector('.s24-repeat');
+        var repLeft=0;
         var st=abar.querySelector('.s24-audio-state');
 
         function mark(n){
@@ -256,14 +264,18 @@ document.addEventListener('DOMContentLoaded',function(){
         }
         function last(){ return ayas.length?+ayas[ayas.length-1].getAttribute('data-n'):1; }
 
-        function play(n){
+        function play(n,keepRepeat){
           if(n<1) n=1;
           if(n>last()){ stop(); return; }
+          if(!keepRepeat){
+            var m=rep.value;
+            repLeft=(m==='0'||m==='sura')?0:parseInt(m,10);
+          }
           cur=n;
           au.src=url(n);
           au.play().then(function(){
             playing=true; bPlay.textContent='⏸ إيقاف';
-            st.textContent='الآية '+n+' / '+last();
+            st.textContent='الآية '+n+' / '+last()+(repLeft>1?' — تكرار '+repLeft:'');
             mark(n); session(n);
             if(n<last()){ pre.src=url(n+1); }   /* تحميل مسبق للآية التالية */
           }).catch(function(){
@@ -276,7 +288,11 @@ document.addEventListener('DOMContentLoaded',function(){
           ayas.forEach(function(a){ a.classList.remove('is-playing'); });
         }
         au.addEventListener('ended',function(){
-          if(loop){ play(cur); return; }
+          var mode=rep.value;
+          if(mode!=='0' && mode!=='sura'){
+            if(repLeft>1){ repLeft--; play(cur,true); return; }
+          }
+          if(cur>=last() && mode==='sura'){ play(1); return; }
           play(cur+1);
         });
         au.addEventListener('error',function(){
@@ -289,8 +305,9 @@ document.addEventListener('DOMContentLoaded',function(){
         });
         abar.querySelector('[data-a="next"]').addEventListener('click',function(){ play((cur||0)+1); });
         abar.querySelector('[data-a="prev"]').addEventListener('click',function(){ play(Math.max(1,(cur||2)-1)); });
-        bLoop.addEventListener('click',function(){
-          loop=!loop; bLoop.classList.toggle('on',loop);
+        rep.addEventListener('change',function(){
+          var m=this.value;
+          repLeft=(m==='0'||m==='sura')?0:parseInt(m,10);
         });
         sel.addEventListener('change',function(){
           reciter=this.value;
