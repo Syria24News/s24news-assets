@@ -344,13 +344,13 @@ body.s24-font-lateef .s24-quran-basmala{
 .s24-aya{scroll-margin-top:130px}
 .s24-aya.is-hit{
   background:rgba(224,168,0,.20);border-radius:4px;
-  padding:.18em .1em .24em;
+  padding:.26em .1em .24em;
   box-decoration-break:clone;-webkit-box-decoration-break:clone;
 }
 .s24-aya.is-current{
   background:rgba(119,189,29,.22);
   border-radius:4px;
-  padding:.18em .1em .24em;
+  padding:.26em .1em .24em;
   box-decoration-break:clone;-webkit-box-decoration-break:clone;
 }
 .s24-hit-mark{
@@ -400,7 +400,7 @@ body.s24-font-lateef .s24-quran-basmala{
 .s24-aya.is-playing{
   background:rgba(119,189,29,.14);
   border-radius:4px;
-  padding:.18em .1em .24em;
+  padding:.26em .1em .24em;
   box-decoration-break:clone;
   -webkit-box-decoration-break:clone;
   transition:background .3s;
