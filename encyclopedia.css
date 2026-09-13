@@ -380,16 +380,29 @@ body.s24-font-lateef .s24-quran-basmala{
 .s24-audio-bar button:hover{border-color:var(--bs-main,#77bd1d)}
 .s24-audio-bar button.main{
   background:var(--bs-main,#77bd1d);color:#fff;border-color:var(--bs-main,#77bd1d);
-  min-width:96px;
+  min-width:92px;order:1;
+}
+.s24-audio-bar [data-a="prev"]{order:2}
+.s24-audio-bar [data-a="next"]{order:3}
+.s24-audio-bar .s24-reciter{order:4}
+.s24-audio-bar .s24-repeat{order:5}
+.s24-audio-bar .s24-audio-state{order:6}
+.s24-audio-bar .s24-audio-credit{order:7}
+@media (max-width:768px){
+  .s24-audio-bar .s24-reciter,
+  .s24-audio-bar .s24-repeat{flex:1 1 100%;min-width:0}
 }
 .s24-audio-bar button.on{color:var(--bs-main,#77bd1d);border-color:var(--bs-main,#77bd1d)}
 .s24-audio-bar select.s24-repeat{flex:0 1 190px;min-width:160px}
 .s24-audio-state{
   font-family:"IBM Plex Sans Arabic",sans-serif;
-  font-size:13px;color:var(--text-sec,#666);min-width:90px;
+  font-size:13px;color:var(--text-sec,#666);
+  white-space:nowrap;flex:0 0 auto;
+  margin-inline-start:auto;
 }
 .s24-audio-credit{
-  flex-basis:100%;font-size:11px;color:var(--text-sec,#888);line-height:1.6;
+  flex-basis:100%;font-size:10.5px;color:var(--text-sec,#999);
+  line-height:1.5;opacity:.75;margin-top:2px;
 }
 .s24-audio-credit a{color:var(--bs-main,#77bd1d);text-decoration:none}
 .s24-aya.is-playing{
