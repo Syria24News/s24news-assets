@@ -353,12 +353,7 @@ body.s24-font-lateef .s24-quran-basmala{
   padding:.21em .1em .19em;
   box-decoration-break:clone;-webkit-box-decoration-break:clone;
 }
-.s24-hit-mark{
-  background:rgba(224,168,0,.55);
-  border-radius:3px;padding:0 1px;
-}
-.s24-aya.is-current .s24-hit-mark{background:rgba(255,214,0,.85)}
-.s24-quran-bar button:disabled{opacity:.35;cursor:default}
+.s24-aya.is-current .s24-quran-bar button:disabled{opacity:.35;cursor:default}
 .s24-quran-bar .s24-hit-count{font-weight:700}
 /* علامة القراءة تعمل بلا أثر بصري — الأثر في زر «متابعة من الآية» وحده */
 
@@ -405,6 +400,68 @@ body.dark-mode .s24-aya.is-playing,
 body.dark .s24-aya.is-playing,
 [data-theme="dark"] .s24-aya.is-playing{color:#9ede4e}
 .s24-aya{cursor:pointer}
+
+
+/* ═══ حاوية أدوات القراءة الموحّدة ═══ */
+.s24-tools{
+  margin:0 0 16px;
+  border:1px solid var(--border-color,#dddddd);
+  border-radius:12px;
+  background:var(--bg-card,#ffffff);
+  overflow:hidden;
+  transition:transform .25s ease,opacity .25s ease;
+}
+.s24-tools-tabs{
+  display:flex;gap:0;
+}
+.s24-tools-btn{
+  flex:1;display:flex;align-items:center;justify-content:center;gap:7px;
+  padding:12px 8px;cursor:pointer;background:none;border:0;
+  border-top:1px solid transparent;
+  font-family:"IBM Plex Sans Arabic",sans-serif;
+  font-size:14px;font-weight:700;color:var(--text-sec,#666);
+  transition:color .2s,background .2s;
+}
+.s24-tools-btn + .s24-tools-btn{border-inline-start:1px solid var(--border-color,#dddddd)}
+.s24-tools-btn:hover{color:var(--bs-main,#77bd1d)}
+.s24-tools-btn.on{color:#fff;background:var(--bs-main,#77bd1d)}
+.s24-tools-btn .ico{font-size:16px;line-height:1}
+.s24-tools-panel{display:none;padding:12px 14px}
+.s24-tools-tabs .s24-resume{
+  flex:0 0 auto;padding:12px 14px;border:0!important;
+  border-inline-start:1px solid var(--border-color,#dddddd)!important;
+  border-radius:0;
+  font-family:"IBM Plex Sans Arabic",sans-serif;font-size:13px;font-weight:700;
+  cursor:pointer;
+}
+.s24-tools-panel.on{display:block}
+.s24-tools.is-open .s24-tools-panels{border-bottom:1px solid var(--border-color,#dddddd)}
+
+/* داخل الحاوية: إلغاء إطارات الأشرطة الثلاثة القديمة */
+.s24-tools .s24-font-switch,
+.s24-tools .s24-quran-bar,
+.s24-tools .s24-audio-bar{
+  margin:0;padding:0;border:0;background:none;
+}
+
+/* ── الجوال: شريط سفلي ثابت يختفي مع التمرير ── */
+@media (max-width:768px){
+  .s24-tools{
+    position:fixed;z-index:70;
+    inset-inline:8px;bottom:8px;
+    margin:0;
+    border-radius:14px;
+    box-shadow:0 6px 22px rgba(0,0,0,.18);
+    padding-bottom:env(safe-area-inset-bottom,0);
+  }
+  .s24-tools.is-hidden{transform:translateY(140%);opacity:0;pointer-events:none}
+  .s24-tools-panels{max-height:52vh;overflow-y:auto}
+  .s24-tools-btn .lbl{display:none}
+  .s24-tools-btn{padding:14px 8px;font-size:13px}
+  .s24-tools-btn .ico{font-size:19px}
+  /* إفساح مكان للشريط أسفل الصفحة */
+  body.s24-quran-text-page .s24-ending-divider{margin-bottom:84px}
+}
 
 /* ═══ ١٧. إخفاء الغلاف عند وجود فيديو ═══ */
 body.s24-glossary-article.s24-has-enc-video .s24-cover-injected{display:none!important}
