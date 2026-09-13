@@ -29,6 +29,12 @@ document.addEventListener('DOMContentLoaded',function(){
   var quranHost=document.querySelector('.s24-quran-text');
   var S24Tools=null;
 
+  /* تنظيف وقائي: أي صفحة بلا نص قرآني تُزيل عنها آثار صفحات سابقة
+     (قد ترثها من ذاكرة الرجوع في المتصفح فتخفي صور القوائم) */
+  if(!quranHost){
+    document.body.classList.remove('s24-quran-text-page','s24-has-enc-video');
+  }
+
   if(quranHost){
     S24Tools=(function(){
       var wrap=document.createElement('div');
@@ -116,11 +122,16 @@ document.addEventListener('DOMContentLoaded',function(){
   /* البحث في النص وحفظ موضع القراءة */
   if(quranHost){
     document.body.classList.add('s24-quran-text-page');
+    window.addEventListener('pagehide',function(){
+      document.body.classList.remove('s24-quran-text-page','s24-has-enc-video');
+    });
     /* إخفاء الغلاف مباشرة على العنصر — أقوى من أي CSS */
     (function(){
       function hideCover(){
-       var sel='.s24-cover-injected,.post-body > .separator:first-child';
-        document.querySelectorAll(sel).forEach(function(el){
+        /* الإخفاء محصور في جسم المقالة وحدها، فلا يمسّ صور القوائم */
+        var scope=(quranHost.closest && quranHost.closest('.post-body'))||quranHost.parentNode;
+        if(!scope) return;
+        scope.querySelectorAll('.s24-cover-injected').forEach(function(el){
           el.style.setProperty('display','none','important');
         });
       }
@@ -255,14 +266,42 @@ document.addEventListener('DOMContentLoaded',function(){
                      +   '<option value="99">تكرار الآية بلا حد</option>'
                      +   '<option value="sura">إعادة السورة عند انتهائها</option>'
                      + '</select>'
+                     + '<span class="s24-audio-vol">'
+                     +   '<button type="button" data-a="mute" title="كتم/تشغيل الصوت">\uD83D\uDD0A</button>'
+                     +   '<input type="range" min="0" max="100" step="5" value="100" aria-label="مستوى الصوت"/>'
+                     + '</span>'
                      + '<span class="s24-audio-state"></span>'
                      + '<span class="s24-audio-credit">التلاوة من <a href="https://everyayah.com" rel="nofollow" target="_blank">everyayah.com</a> — الحقوق لأصحابها، والاستعمال لغرض التلاوة والحفظ.</span>';
         S24Tools.add('audio','\u25B6','التلاوة',abar);
+
+        /* مستوى الصوت — يُحفظ في متصفح القارئ */
+        var VKEY='s24_quran_vol';
+        var vol=100, muted=false;
+        try{ var sv=localStorage.getItem(VKEY); if(sv!==null) vol=Math.max(0,Math.min(100,+sv)); }catch(e){}
 
         var bPlay=abar.querySelector('[data-a="play"]');
         var sel=abar.querySelector('.s24-reciter');
         var rep=abar.querySelector('.s24-repeat');
         var repLeft=0;
+        var bMute=abar.querySelector('[data-a="mute"]');
+        var rngVol=abar.querySelector('.s24-audio-vol input');
+
+        function applyVol(){
+          au.volume = muted ? 0 : (vol/100);
+          if(rngVol) rngVol.value = muted ? 0 : vol;
+          if(bMute) bMute.textContent = (muted||vol===0) ? '\uD83D\uDD07' : (vol<50 ? '\uD83D\uDD09' : '\uD83D\uDD0A');
+        }
+        if(rngVol) rngVol.addEventListener('input',function(){
+          vol=+this.value; muted=(vol===0);
+          try{ localStorage.setItem(VKEY,vol); }catch(e){}
+          applyVol();
+        });
+        if(bMute) bMute.addEventListener('click',function(){
+          muted=!muted;
+          if(!muted && vol===0){ vol=70; try{ localStorage.setItem(VKEY,vol); }catch(e){} }
+          applyVol();
+        });
+        applyVol();
         var st=abar.querySelector('.s24-audio-state');
 
         function mark(n){
@@ -302,6 +341,7 @@ document.addEventListener('DOMContentLoaded',function(){
           }
           cur=n;
           au.src=url(n);
+          applyVol();
           au.play().then(function(){
             playing=true; bPlay.textContent='⏸ إيقاف';
             st.textContent='الآية '+n+' / '+last()+(repLeft>1?' — تكرار '+repLeft:'');
@@ -349,7 +389,7 @@ document.addEventListener('DOMContentLoaded',function(){
             play(+a.getAttribute('data-n'));
           });
         });
-        st.textContent='آيات السورة: '+last();
+        st.textContent='عدد الآيات: '+arNum(last());
       })();
 
       /* علامة القراءة — حفظ آلي أثناء التمرير */
@@ -374,9 +414,12 @@ document.addEventListener('DOMContentLoaded',function(){
         resumeBtn=document.createElement('button');
         resumeBtn.type='button'; resumeBtn.className='s24-resume';
         resumeBtn.style.order=0;
-        resumeBtn.textContent='متابعة من الآية '+n;
+        resumeBtn.innerHTML='<span class="ico">\u21A9</span><span class="num">'+
+          String(n).replace(/[0-9]/g,function(d){return '٠١٢٣٤٥٦٧٨٩'[d];})+'</span>';
+        resumeBtn.title='متابعة القراءة من الآية '+n;
         resumeBtn.addEventListener('click',function(){
-          goTo(document.getElementById('aya-'+n));
+          var el=document.getElementById('aya-'+n);
+          if(el) el.scrollIntoView({behavior:'smooth',block:'center'});
         });
         S24Tools.tabs.appendChild(resumeBtn);
       }
