@@ -342,10 +342,16 @@ body.s24-font-lateef .s24-quran-basmala{
   border-color:var(--bs-main,#77bd1d)!important;
 }
 .s24-aya{scroll-margin-top:130px}
-.s24-aya.is-hit{background:rgba(224,168,0,.20);border-radius:4px}
+.s24-aya.is-hit{
+  background:rgba(224,168,0,.20);border-radius:4px;
+  padding:.18em .1em .32em;
+  box-decoration-break:clone;-webkit-box-decoration-break:clone;
+}
 .s24-aya.is-current{
   background:rgba(119,189,29,.22);
   border-radius:4px;
+  padding:.18em .1em .32em;
+  box-decoration-break:clone;-webkit-box-decoration-break:clone;
 }
 .s24-hit-mark{
   background:rgba(224,168,0,.55);
@@ -365,7 +371,7 @@ body.s24-font-lateef .s24-quran-basmala{
   background:var(--bg-card,#ffffff);
 }
 .s24-audio-bar select{
-  flex:1;min-width:140px;padding:9px 10px;font-size:14px;
+  flex:1;min-width:130px;padding:9px 10px;font-size:14px;
   font-family:"Readex Pro",Tahoma,sans-serif;
   border:1px solid var(--border-color,#dddddd);border-radius:8px;
   background:transparent;color:var(--text-main,#000);
@@ -382,6 +388,7 @@ body.s24-font-lateef .s24-quran-basmala{
   min-width:96px;
 }
 .s24-audio-bar button.on{color:var(--bs-main,#77bd1d);border-color:var(--bs-main,#77bd1d)}
+.s24-audio-bar select.s24-repeat{flex:0 1 190px;min-width:160px}
 .s24-audio-state{
   font-family:"IBM Plex Sans Arabic",sans-serif;
   font-size:13px;color:var(--text-sec,#666);min-width:90px;
@@ -393,6 +400,9 @@ body.s24-font-lateef .s24-quran-basmala{
 .s24-aya.is-playing{
   background:rgba(119,189,29,.14);
   border-radius:4px;
+  padding:.18em .1em .32em;
+  box-decoration-break:clone;
+  -webkit-box-decoration-break:clone;
   transition:background .3s;
 }
 .s24-aya{cursor:pointer}
