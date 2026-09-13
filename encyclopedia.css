@@ -1,0 +1,428 @@
+/* ══════════════════════════════════════════════════════════════
+   encyclopedia.css — تنسيق نظام الموسوعة في Syria24News
+   يُستدعى من ودجت HTML930 في القالب:
+   <link href="https://syria24news.github.io/s24news-assets/encyclopedia.css" rel="stylesheet"/>
+   ══════════════════════════════════════════════════════════════ */
+
+@import url('https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Scheherazade+New:wght@400;500&family=Noto+Naskh+Arabic:wght@400;500&family=Lateef&display=swap');
+
+/* ═══ ١. صندوق المعلومات — الاسم القياسي + الأسماء الموروثة ═══ */
+.s24-infobox,
+.s24-bio-infobox,.s24-place-infobox,.s24-enc-infobox{
+  float:left;width:300px;margin:0 20px 20px 0;
+  border:1px solid var(--border-color,#dddddd);border-radius:8px;overflow:hidden;
+  background:var(--bg-card,#ffffff);font-family:"Readex Pro",Tahoma,sans-serif;
+  direction:rtl;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.08);
+}
+.s24-infobox img{display:block;width:100%;height:auto}
+.s24-infobox-title,
+.s24-bio-native,.s24-place-native,.s24-enc-native{
+  font-weight:700;color:#fff;background:var(--bs-main,#77bd1d);
+}
+.s24-infobox-title,
+.s24-place-native,.s24-enc-native{font-size:15px;padding:10px 8px}
+.s24-bio-native{font-size:13px;opacity:.9;padding:0 8px 10px}
+.s24-bio-native:first-child{padding-top:10px}
+.s24-infobox-table,
+.s24-bio-table,.s24-place-table,.s24-enc-table{
+  width:100%;border-collapse:collapse;font-size:13px;
+}
+.s24-infobox-table tr,
+.s24-bio-table tr,.s24-place-table tr,.s24-enc-table tr{
+  border-top:1px solid var(--border-color,#dddddd);
+}
+.s24-infobox-table tr:first-child,
+.s24-bio-table tr:first-child,.s24-place-table tr:first-child,.s24-enc-table tr:first-child{
+  border-top:none;
+}
+.s24-infobox-table th,
+.s24-bio-table th,.s24-place-table th,.s24-enc-table th{
+  color:var(--text-sec,#555555);font-weight:700;text-align:right;
+  padding:8px 10px;width:38%;vertical-align:top;white-space:nowrap;
+}
+.s24-infobox-table td,
+.s24-bio-table td,.s24-place-table td,.s24-enc-table td{
+  color:var(--text-main,#000000);text-align:right;padding:8px 10px;line-height:1.5;
+}
+
+/* ═══ ٢. حاوية المتن والنص ═══ */
+.s24-enc-body{direction:rtl}
+.s24-enc-body p,
+.s24-enc-body ul,
+.s24-enc-body ol{
+  color:var(--text-main,#000000);font-family:"Readex Pro",Tahoma,sans-serif;
+  font-size:19px;font-weight:400;line-height:1.8;
+}
+.s24-enc-body p,.s24-enc-body li{text-align:justify}
+.s24-enc-body h2{
+  color:var(--text-main,#000000);font-family:"IBM Plex Sans Arabic",sans-serif;
+  font-size:24px;font-weight:700;margin:30px 0 15px;text-align:justify;
+}
+.s24-enc-body h3{
+  color:var(--text-main,#000000);font-family:"IBM Plex Sans Arabic",sans-serif;
+  font-size:20px;font-weight:700;margin:24px 0 12px;text-align:justify;
+}
+
+/* ═══ ٣. سطر التمييز ═══ */
+.s24-enc-hatnote{
+  font-size:15px;color:var(--text-sec,#555555);font-style:italic;
+  border-right:3px solid var(--border-color,#dddddd);
+  padding:4px 12px;margin:0 0 18px;
+}
+
+/* ═══ ٤. الوسائط ═══ */
+.s24-enc-figure{margin:0 0 22px}
+.s24-enc-figure img{display:block;width:100%;height:auto;border-radius:8px}
+.s24-enc-caption{
+  font-size:14px;color:var(--text-sec,#555555);line-height:1.6;
+  text-align:center;padding:8px 6px 0;
+}
+.s24-enc-video{margin:0 0 22px}
+/* صورة الغلاف: موجودة في الكود للمصغّرة، مخفيّة في الصفحة */
+.s24-cover-thumb{display:none!important}
+
+/* ═══ ٥. الاقتباس المميز ═══ */
+.s24-enc-quote{
+  border-right:4px solid var(--bs-main,#77bd1d);
+  background:var(--bg-card,#f7f7f7);border-radius:0 8px 8px 0;
+  padding:16px 18px;margin:22px 0;
+}
+.s24-enc-quote p{margin:0;font-size:18px;line-height:1.9}
+.s24-enc-quote-src{
+  display:block;margin-top:10px;font-size:14px;
+  color:var(--text-sec,#555555);font-weight:700;
+}
+
+/* ═══ ٦. صناديق التنبيه ═══ */
+.s24-enc-note{
+  border-right:4px solid var(--bs-main,#77bd1d);
+  background:var(--bg-card,#f7f7f7);border-radius:0 8px 8px 0;
+  padding:14px 16px;margin:22px 0;font-size:17px;line-height:1.8;
+}
+.s24-enc-note p{margin:0;font-size:17px}
+.s24-enc-note-title{
+  display:block;font-family:"IBM Plex Sans Arabic",sans-serif;
+  font-weight:700;font-size:15px;margin-bottom:6px;
+}
+.s24-enc-note.warn{border-right-color:#e0a800}
+.s24-enc-note.dispute{border-right-color:#c0392b}
+
+/* ═══ ٧. الجداول داخل المتن ═══ */
+.s24-enc-table-wrap{overflow-x:auto;margin:22px 0}
+.s24-enc-data{
+  width:100%;border-collapse:collapse;font-size:16px;
+  font-family:"Readex Pro",Tahoma,sans-serif;
+}
+.s24-enc-data th{
+  background:var(--bs-main,#77bd1d);color:#fff;font-weight:700;
+  padding:10px 12px;text-align:right;
+}
+.s24-enc-data td{
+  padding:10px 12px;text-align:right;color:var(--text-main,#000000);
+  border-top:1px solid var(--border-color,#dddddd);
+}
+
+/* ═══ ٨. الخط الزمني ═══ */
+.s24-enc-timeline{list-style:none;padding:0;margin:22px 0}
+.s24-enc-timeline li{
+  border-right:2px solid var(--border-color,#dddddd);
+  padding:0 18px 18px;position:relative;
+}
+.s24-enc-timeline li:last-child{border-right-color:transparent;padding-bottom:0}
+.s24-enc-timeline li::before{
+  content:"";position:absolute;right:-7px;top:6px;width:12px;height:12px;
+  border-radius:50%;background:var(--bs-main,#77bd1d);
+}
+.s24-enc-time-date{
+  display:block;font-family:"IBM Plex Sans Arabic",sans-serif;
+  font-weight:700;font-size:15px;color:var(--bs-main,#77bd1d);
+}
+
+/* ═══ ٩. انظر أيضاً + الروابط الخارجية + المصادر ═══ */
+.s24-enc-seealso,
+.s24-enc-links{
+  border:1px solid var(--border-color,#dddddd);border-radius:8px;
+  padding:14px 18px;margin:24px 0;background:var(--bg-card,#ffffff);
+}
+.s24-enc-seealso ul,
+.s24-enc-links ul{margin:8px 0 0;padding-right:20px;font-size:17px}
+.s24-enc-refs{margin:24px 0}
+.s24-enc-refs ol{font-size:15px;line-height:1.9;padding-right:22px}
+.s24-enc-refs li{margin-bottom:6px;color:var(--text-sec,#555555)}
+.s24-enc-seealso .s24-enc-box-title,
+.s24-enc-links .s24-enc-box-title,
+.s24-enc-refs .s24-enc-box-title{
+  display:block;font-family:"IBM Plex Sans Arabic",sans-serif;
+  font-weight:700;font-size:18px;margin-bottom:4px;
+  color:var(--text-main,#000000);
+}
+
+/* ═══ ١٠. الإحالات المرجعية ═══ */
+.s24-ref{
+  font-size:.72em;font-weight:700;line-height:0;
+  vertical-align:super;scroll-margin-top:120px;
+}
+.s24-ref a{
+  color:var(--bs-main,#77bd1d);text-decoration:none;padding:0 2px;
+}
+.s24-ref:target{
+  background:rgba(119,189,29,.18);border-radius:4px;
+}
+.s24-enc-refs li{scroll-margin-top:120px;transition:background .3s}
+.s24-enc-refs li:target{
+  background:rgba(119,189,29,.14);border-radius:6px;padding:4px 8px;
+}
+.s24-backref{
+  text-decoration:none;color:var(--bs-main,#77bd1d);
+  font-weight:700;margin-left:6px;
+}
+
+/* ═══ ١١. التنقل التسلسلي ═══ */
+.s24-enc-nav{
+  display:flex;gap:10px;justify-content:space-between;
+  margin:26px 0 0;font-family:"IBM Plex Sans Arabic",sans-serif;font-size:15px;
+}
+.s24-enc-nav a{
+  flex:1;text-align:center;padding:12px 10px;border-radius:8px;
+  border:1px solid var(--border-color,#dddddd);
+  color:var(--text-main,#000000);text-decoration:none;font-weight:700;
+}
+
+/* ═══ ١٢. الآيات بالرسم العثماني ═══ */
+.s24-enc-body .s24-ayah{
+  font-family:'Amiri Quran',serif;
+  font-size:1.25em;line-height:2;font-weight:400;
+}
+.s24-ayah-block{
+  display:block;font-family:'Amiri Quran',serif;
+  text-align:center;font-size:30px;line-height:2.1;
+  font-weight:400;margin:22px 0;padding:16px 10px;
+  color:var(--text-main,#000000);
+  border-top:1px solid var(--border-color,#dddddd);
+  border-bottom:1px solid var(--border-color,#dddddd);
+}
+
+/* ═══ ١٣. نص السورة الكامل ═══ */
+.s24-quran-text{
+  font-family:'Amiri Quran',serif;
+  font-size:30px;line-height:2.4;
+  text-align:justify;text-align-last:right;
+  color:var(--text-main,#000000);margin:22px 0;
+}
+/* رقم الآية: القوسان والرقم بلون الموقع، بلا خلفية */
+.s24-ayanum{
+  display:inline;
+  margin:0 4px;padding:0;
+  background:none;border:0;
+}
+.s24-ayanum > i{
+  font-style:normal;
+  font-family:inherit;
+  font-size:.92em;font-weight:400;
+  color:var(--bs-main,#77bd1d);
+  white-space:nowrap;
+}
+.s24-enc-body .s24-quran-text p{
+  margin:0 0 30px;padding:0 6px 26px;
+  border-bottom:1px solid var(--border-color,#dddddd);
+  font-family:'Amiri Quran',serif!important;
+  font-size:30px!important;
+  line-height:2.4!important;
+  text-align:justify!important;
+  text-align-last:right;
+  color:var(--text-main,#000000);
+}
+.s24-enc-body .s24-quran-text p:last-child{border-bottom:0;margin-bottom:0;padding-bottom:0}
+
+/* تعطيل التلميح الذكي داخل النص القرآني */
+.s24-quran-text .sy-tooltip,
+.s24-ayah-block .sy-tooltip,
+.s24-enc-body .s24-ayah .sy-tooltip{
+  background:none!important;color:inherit!important;
+  border:0!important;border-bottom:0!important;
+  padding:0!important;cursor:auto!important;
+  pointer-events:none!important;text-decoration:none!important;
+}
+.s24-quran-basmala{
+  display:block;font-family:'Amiri Quran',serif;
+  font-size:32px;text-align:center;margin:0 0 26px;
+  color:var(--text-main,#000000);
+}
+.s24-quran-read{
+  display:block;text-align:center;padding:16px 20px;margin:26px 0;
+  border-radius:10px;border:2px solid var(--bs-main,#77bd1d);
+  color:var(--bs-main,#77bd1d);
+  font-family:"IBM Plex Sans Arabic",sans-serif;
+  font-weight:700;font-size:17px;text-decoration:none;
+}
+
+/* ═══ ١٤. مبدّل الخط القرآني ═══ */
+.s24-font-switch{
+  display:flex;gap:8px;align-items:center;flex-wrap:wrap;
+  margin:0 0 18px;padding:10px 14px;
+  border:1px solid var(--border-color,#dddddd);border-radius:10px;
+  background:var(--bg-card,#ffffff);
+}
+.s24-font-switch b{
+  font-family:"IBM Plex Sans Arabic",sans-serif;
+  font-size:14px;font-weight:700;color:var(--text-sec,#555);
+}
+.s24-font-switch button{
+  padding:8px 14px;border-radius:8px;cursor:pointer;
+  font-family:"IBM Plex Sans Arabic",sans-serif;
+  font-size:13px;font-weight:700;
+  border:1px solid var(--border-color,#dddddd);
+  background:transparent;color:var(--text-main,#000);
+  transition:.2s;
+}
+.s24-font-switch button:hover{border-color:var(--bs-main,#77bd1d)}
+.s24-font-switch button.on{
+  background:var(--bs-main,#77bd1d);color:#fff;
+  border-color:var(--bs-main,#77bd1d);
+}
+/* الخط المختار يُطبَّق عبر صنف على الحاوية */
+body.s24-font-amiri .s24-enc-body .s24-quran-text p,
+body.s24-font-amiri .s24-ayah-block,
+body.s24-font-amiri .s24-enc-body .s24-ayah,
+body.s24-font-amiri .s24-quran-basmala{
+  font-family:'Amiri Quran',serif!important;
+}
+body.s24-font-system .s24-enc-body .s24-quran-text p,
+body.s24-font-system .s24-ayah-block,
+body.s24-font-system .s24-enc-body .s24-ayah,
+body.s24-font-system .s24-quran-basmala{
+  font-family:"Traditional Arabic","Times New Roman",serif!important;
+}
+body.s24-font-scheherazade .s24-enc-body .s24-quran-text p,
+body.s24-font-scheherazade .s24-ayah-block,
+body.s24-font-scheherazade .s24-enc-body .s24-ayah,
+body.s24-font-scheherazade .s24-quran-basmala{
+  font-family:'Scheherazade New',serif!important;
+}
+body.s24-font-naskh .s24-enc-body .s24-quran-text p,
+body.s24-font-naskh .s24-ayah-block,
+body.s24-font-naskh .s24-enc-body .s24-ayah,
+body.s24-font-naskh .s24-quran-basmala{
+  font-family:'Noto Naskh Arabic',serif!important;
+}
+body.s24-font-lateef .s24-enc-body .s24-quran-text p,
+body.s24-font-lateef .s24-ayah-block,
+body.s24-font-lateef .s24-enc-body .s24-ayah,
+body.s24-font-lateef .s24-quran-basmala{
+  font-family:'Lateef',serif!important;
+}
+
+/* ═══ ١٥. البحث في النص وحفظ موضع القراءة ═══ */
+.s24-quran-bar{
+  display:flex;gap:8px;align-items:center;flex-wrap:wrap;
+  margin:0 0 14px;padding:10px 14px;
+  border:1px solid var(--border-color,#dddddd);border-radius:10px;
+  background:var(--bg-card,#ffffff);
+}
+.s24-quran-bar input{
+  flex:1;min-width:150px;padding:9px 12px;font-size:15px;
+  font-family:"Readex Pro",Tahoma,sans-serif;
+  border-radius:8px;border:1px solid var(--border-color,#dddddd);
+  background:transparent;color:var(--text-main,#000);
+}
+.s24-quran-bar input:focus{outline:2px solid var(--bs-main,#77bd1d);outline-offset:-1px}
+.s24-quran-bar button{
+  padding:8px 12px;border-radius:8px;cursor:pointer;
+  font-family:"IBM Plex Sans Arabic",sans-serif;font-size:13px;font-weight:700;
+  border:1px solid var(--border-color,#dddddd);
+  background:transparent;color:var(--text-main,#000);transition:.2s;
+}
+.s24-quran-bar button:hover{border-color:var(--bs-main,#77bd1d)}
+.s24-quran-bar .s24-hit-count{
+  font-family:"IBM Plex Sans Arabic",sans-serif;
+  font-size:13px;color:var(--text-sec,#666);min-width:60px;
+}
+.s24-resume{
+  background:var(--bs-main,#77bd1d)!important;color:#fff!important;
+  border-color:var(--bs-main,#77bd1d)!important;
+}
+.s24-aya{scroll-margin-top:130px}
+.s24-aya.is-hit{background:rgba(224,168,0,.20);border-radius:4px}
+.s24-aya.is-current{
+  background:rgba(119,189,29,.22);
+  border-radius:4px;
+}
+.s24-hit-mark{
+  background:rgba(224,168,0,.55);
+  border-radius:3px;padding:0 1px;
+}
+.s24-aya.is-current .s24-hit-mark{background:rgba(255,214,0,.85)}
+.s24-quran-bar button:disabled{opacity:.35;cursor:default}
+.s24-quran-bar .s24-hit-count{font-weight:700}
+/* علامة القراءة تعمل بلا أثر بصري — الأثر في زر «متابعة من الآية» وحده */
+
+
+/* ═══ ١٦. مشغّل التلاوة آية آية ═══ */
+.s24-audio-bar{
+  display:flex;gap:8px;align-items:center;flex-wrap:wrap;
+  margin:0 0 14px;padding:10px 14px;
+  border:1px solid var(--border-color,#dddddd);border-radius:10px;
+  background:var(--bg-card,#ffffff);
+}
+.s24-audio-bar select{
+  flex:1;min-width:140px;padding:9px 10px;font-size:14px;
+  font-family:"Readex Pro",Tahoma,sans-serif;
+  border:1px solid var(--border-color,#dddddd);border-radius:8px;
+  background:transparent;color:var(--text-main,#000);
+}
+.s24-audio-bar button{
+  padding:9px 14px;border-radius:8px;cursor:pointer;
+  font-family:"IBM Plex Sans Arabic",sans-serif;font-size:13px;font-weight:700;
+  border:1px solid var(--border-color,#dddddd);
+  background:transparent;color:var(--text-main,#000);transition:.2s;
+}
+.s24-audio-bar button:hover{border-color:var(--bs-main,#77bd1d)}
+.s24-audio-bar button.main{
+  background:var(--bs-main,#77bd1d);color:#fff;border-color:var(--bs-main,#77bd1d);
+  min-width:96px;
+}
+.s24-audio-bar button.on{color:var(--bs-main,#77bd1d);border-color:var(--bs-main,#77bd1d)}
+.s24-audio-state{
+  font-family:"IBM Plex Sans Arabic",sans-serif;
+  font-size:13px;color:var(--text-sec,#666);min-width:90px;
+}
+.s24-audio-credit{
+  flex-basis:100%;font-size:11px;color:var(--text-sec,#888);line-height:1.6;
+}
+.s24-audio-credit a{color:var(--bs-main,#77bd1d);text-decoration:none}
+.s24-aya.is-playing{
+  background:rgba(119,189,29,.14);
+  border-radius:4px;
+  transition:background .3s;
+}
+.s24-aya{cursor:pointer}
+
+/* ═══ ١٧. إخفاء الغلاف عند وجود فيديو ═══ */
+body.s24-glossary-article.s24-has-enc-video .item-thumbnail,
+body.s24-glossary-article.s24-has-enc-video .s24-cover-injected{display:none!important}
+/* مقالة نص السورة: إخفاء الغلاف المحقون مع بقاء الصورة للمصغّرة */
+html body.s24-quran-text-page .item-thumbnail,
+html body.s24-quran-text-page .s24-cover-injected,
+html body.s24-quran-text-page .post-body > .separator:first-child{display:none!important}
+
+/* ═══ ١٨. بطاقة الختام ═══ */
+.s24-ending{
+  background:var(--bs-main,#77bd1d);border-radius:10px;padding:14px 20px;
+  text-align:center;color:#fff;font-family:"IBM Plex Sans Arabic",sans-serif;
+  font-weight:700;font-size:15px;margin-top:30px;
+}
+.s24-ending a{color:#fff;text-decoration:none}
+.s24-ending-divider{border-top:1px solid var(--border-color,#dddddd);margin-top:20px}
+
+/* ═══ ١٩. الجوال ═══ */
+@media (max-width:768px){
+  .s24-infobox,
+  .s24-bio-infobox,.s24-place-infobox,.s24-enc-infobox{
+    float:none;width:100%;margin:0 0 20px 0;
+  }
+  .s24-enc-nav{flex-direction:column}
+  .s24-ayah-block{font-size:25px;line-height:2}
+  .s24-ayanum{margin:0 3px}
+  .s24-enc-body .s24-quran-text p{font-size:25px!important;line-height:2.3!important;margin-bottom:24px;padding-bottom:20px}
+  .s24-quran-basmala{font-size:26px}
+}
