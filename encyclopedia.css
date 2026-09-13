@@ -361,9 +361,7 @@ body.s24-font-lateef .s24-quran-basmala{
 /* ═══ ١٦. مشغّل التلاوة آية آية ═══ */
 .s24-audio-bar{
   display:flex;gap:8px;align-items:center;flex-wrap:wrap;
-  margin:0 0 14px;padding:10px 14px;
-  border:1px solid var(--border-color,#dddddd);border-radius:10px;
-  background:var(--bg-card,#ffffff);
+  margin:0;padding:0;border:0;background:none;
 }
 .s24-audio-bar select{
   flex:1;min-width:130px;padding:9px 10px;font-size:14px;
@@ -386,8 +384,22 @@ body.s24-font-lateef .s24-quran-basmala{
 .s24-audio-bar [data-a="next"]{order:3}
 .s24-audio-bar .s24-reciter{order:4}
 .s24-audio-bar .s24-repeat{order:5}
-.s24-audio-bar .s24-audio-state{order:6}
-.s24-audio-bar .s24-audio-credit{order:7}
+.s24-audio-vol{
+  order:6;display:flex;align-items:center;gap:8px;
+  flex:1 1 100%;margin-top:4px;
+}
+.s24-audio-vol button{
+  padding:6px 10px;font-size:15px;line-height:1;
+  border-radius:8px;cursor:pointer;
+  border:1px solid var(--border-color,#dddddd);
+  background:transparent;color:var(--text-main,#000);
+}
+.s24-audio-vol input[type=range]{
+  flex:1;accent-color:var(--bs-main,#77bd1d);cursor:pointer;
+  height:4px;
+}
+.s24-audio-bar .s24-audio-state{order:7}
+.s24-audio-bar .s24-audio-credit{order:8}
 @media (max-width:768px){
   .s24-audio-bar .s24-reciter,
   .s24-audio-bar .s24-repeat{flex:1 1 100%;min-width:0}
@@ -395,14 +407,16 @@ body.s24-font-lateef .s24-quran-basmala{
 .s24-audio-bar button.on{color:var(--bs-main,#77bd1d);border-color:var(--bs-main,#77bd1d)}
 .s24-audio-bar select.s24-repeat{flex:0 1 190px;min-width:160px}
 .s24-audio-state{
+  flex:1 1 100%;
   font-family:"IBM Plex Sans Arabic",sans-serif;
-  font-size:13px;color:var(--text-sec,#666);
-  white-space:nowrap;flex:0 0 auto;
-  margin-inline-start:auto;
+  font-size:13px;font-weight:700;color:var(--text-sec,#666);
+  white-space:nowrap;
+  margin-top:6px;padding-top:10px;
+  border-top:1px solid var(--border-color,#dddddd);
 }
 .s24-audio-credit{
-  flex-basis:100%;font-size:10.5px;color:var(--text-sec,#999);
-  line-height:1.5;opacity:.75;margin-top:2px;
+  flex:1 1 100%;font-size:10.5px;color:var(--text-sec,#999);
+  line-height:1.5;opacity:.7;margin-top:4px;
 }
 .s24-audio-credit a{color:var(--bs-main,#77bd1d);text-decoration:none}
 .s24-aya.is-playing{
@@ -417,7 +431,7 @@ body.dark .s24-aya.is-playing,
 
 /* ═══ حاوية أدوات القراءة الموحّدة ═══ */
 .s24-tools{
-  margin:0 0 16px;
+  margin:20px 0 18px;
   border:1px solid var(--border-color,#dddddd);
   border-radius:12px;
   background:var(--bg-card,#ffffff);
@@ -439,16 +453,23 @@ body.dark .s24-aya.is-playing,
 .s24-tools-btn:hover{color:var(--bs-main,#77bd1d)}
 .s24-tools-btn.on{color:#fff;background:var(--bs-main,#77bd1d)}
 .s24-tools-btn .ico{font-size:16px;line-height:1}
-.s24-tools-panel{display:none;padding:12px 14px}
+.s24-tools-panel{display:none;padding:14px 14px 16px}
 .s24-tools-tabs .s24-resume{
-  flex:0 0 auto;padding:12px 14px;border:0!important;
+  flex:0 0 auto;display:flex;align-items:center;gap:5px;
+  padding:0 13px;border:0!important;border-radius:0;
+  background:transparent!important;
+  color:var(--bs-main,#77bd1d)!important;
   border-inline-start:1px solid var(--border-color,#dddddd)!important;
-  border-radius:0;
-  font-family:"IBM Plex Sans Arabic",sans-serif;font-size:13px;font-weight:700;
-  cursor:pointer;
+  font-family:"IBM Plex Sans Arabic",sans-serif;
+  font-size:13px;font-weight:700;cursor:pointer;
 }
+.s24-tools-tabs .s24-resume:hover{background:rgba(119,189,29,.10)!important}
+.s24-tools-tabs .s24-resume .ico{font-size:15px;line-height:1}
 .s24-tools-panel.on{display:block}
-.s24-tools.is-open .s24-tools-panels{border-bottom:1px solid var(--border-color,#dddddd)}
+.s24-tools.is-open .s24-tools-panels{
+  border-bottom:1px solid var(--border-color,#dddddd);
+  background:rgba(127,127,127,.04);
+}
 
 /* داخل الحاوية: إلغاء إطارات الأشرطة الثلاثة القديمة */
 .s24-tools .s24-font-switch,
@@ -477,9 +498,9 @@ body.dark .s24-aya.is-playing,
 }
 
 /* ═══ ١٧. إخفاء الغلاف عند وجود فيديو ═══ */
-body.s24-glossary-article.s24-has-enc-video .s24-cover-injected{display:none!important}
+body.s24-glossary-article.s24-has-enc-video .post-body .s24-cover-injected{display:none!important}
 /* مقالة نص السورة: إخفاء الغلاف المحقون مع بقاء الصورة للمصغّرة */
-html body.s24-quran-text-page .s24-cover-injected{display:none!important}
+html body.s24-quran-text-page .post-body .s24-cover-injected{display:none!important}
 /* ═══ ١٨. بطاقة الختام ═══ */
 .s24-ending{
   background:var(--bs-main,#77bd1d);border-radius:10px;padding:14px 20px;
