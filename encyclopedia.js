@@ -1,0 +1,365 @@
+/* ══════════════════════════════════════════════════════════════
+   encyclopedia.js — سلوك نظام الموسوعة في Syria24News
+   يُستدعى من ودجت HTML930 في القالب:
+   <script defer='defer' src='https://syria24news.github.io/s24news-assets/encyclopedia.js'></script>
+
+   يشمل: حساب العمر الحي، مبدّل الخط القرآني، البحث داخل نص السورة،
+   علامة القراءة، مشغّل التلاوة آية آية، تصنيف مقالات الفيديو، إخفاء الغلاف.
+   ══════════════════════════════════════════════════════════════ */
+
+document.addEventListener('DOMContentLoaded',function(){
+  function calcLiveAge(birthStr){
+    var p=birthStr.split('-').map(Number);
+    var birth=new Date(p[0],p[1]-1,p[2]);
+    var today=new Date();
+    var age=today.getFullYear()-birth.getFullYear();
+    var had=(today.getMonth()>birth.getMonth())||
+            (today.getMonth()===birth.getMonth()&&today.getDate()>=birth.getDate());
+    if(!had)age--;
+    return age;
+  }
+  document.querySelectorAll('.s24-live-age[data-birth]').forEach(function(el){
+    var age=calcLiveAge(el.getAttribute('data-birth'));
+    if(!isNaN(age))el.textContent=age;
+  });
+
+  /* مبدّل الخط القرآني — يظهر تلقائياً في أي صفحة فيها نص قرآني */
+  var quranHost=document.querySelector('.s24-quran-text');
+  if(quranHost){
+    var FONTS=[['amiri','أميري'],['scheherazade','شهرزاد'],['naskh','نسخ'],['lateef','لطيف'],['system','تقليدي']];
+    var saved=null;
+    try{ saved=localStorage.getItem('s24_quran_font'); }catch(e){}
+    if(!saved) saved='amiri';
+
+    function applyFont(id){
+      FONTS.forEach(function(f){ document.body.classList.remove('s24-font-'+f[0]); });
+      document.body.classList.add('s24-font-'+id);
+      try{ localStorage.setItem('s24_quran_font',id); }catch(e){}
+      box.querySelectorAll('button').forEach(function(b){
+        b.classList.toggle('on', b.getAttribute('data-font')===id);
+      });
+    }
+
+    var box=document.createElement('div');
+    box.className='s24-font-switch';
+    box.innerHTML='<b>الخط:</b>';
+    FONTS.forEach(function(f){
+      var b=document.createElement('button');
+      b.type='button';
+      b.setAttribute('data-font',f[0]);
+      b.textContent=f[1];
+      b.addEventListener('click',function(){ applyFont(f[0]); });
+      box.appendChild(b);
+    });
+    var anchor=document.querySelector('.s24-quran-basmala')||quranHost;
+    anchor.parentNode.insertBefore(box,anchor);
+    applyFont(saved);
+  }
+
+  /* البحث في النص وحفظ موضع القراءة */
+  if(quranHost){
+    document.body.classList.add('s24-quran-text-page');
+    /* إخفاء الغلاف مباشرة على العنصر — أقوى من أي CSS */
+    (function(){
+      function hideCover(){
+        var sel='.s24-cover-injected,.item-thumbnail,.post-body > .separator:first-child';
+        document.querySelectorAll(sel).forEach(function(el){
+          el.style.setProperty('display','none','important');
+        });
+      }
+      hideCover();
+      setTimeout(hideCover,300);
+      setTimeout(hideCover,1200);
+    })();
+    var ayas=[].slice.call(quranHost.querySelectorAll('.s24-aya'));
+    if(ayas.length){
+      var KEY='s24_quran_pos_'+location.pathname;
+
+      function norm(t){
+        return (t||'')
+          .replace(/[\u064B-\u0652\u0670\u0653-\u0655\u06D6-\u06ED\u0640]/g,'')
+          .replace(/[\u0622\u0623\u0625\u0671]/g,'\u0627')
+          .replace(/\u0649/g,'\u064A')
+          .replace(/\u0629/g,'\u0647')
+          .replace(/\s+/g,' ').trim();
+      }
+      ayas.forEach(function(a){
+        var c=a.cloneNode(true);
+        var n=c.querySelector('.s24-ayanum'); if(n) n.remove();
+        a.setAttribute('data-plain', norm(c.textContent));
+      });
+
+      var bar=document.createElement('div');
+      bar.className='s24-quran-bar';
+      bar.innerHTML='<input type="search" placeholder="ابحث في نص السورة…"/>'
+                  + '<button type="button" data-a="prev">السابق</button>'
+                  + '<button type="button" data-a="next">التالي</button>'
+                  + '<span class="s24-hit-count"></span>';
+      var barAnchor=document.querySelector('.s24-quran-basmala')||quranHost;
+      barAnchor.parentNode.insertBefore(bar,barAnchor);
+
+      var inp=bar.querySelector('input');
+      var cnt=bar.querySelector('.s24-hit-count');
+      var btnNext=bar.querySelector('[data-a="next"]');
+      var btnPrev=bar.querySelector('[data-a="prev"]');
+      var hits=[], idx=-1;
+
+      function arNum(n){ return String(n).replace(/[0-9]/g,function(d){return '٠١٢٣٤٥٦٧٨٩'[d];}); }
+
+      function updateCount(){
+        if(!hits.length){ cnt.textContent = inp.value.trim().length>1 ? 'لا نتائج' : ''; }
+        else{ cnt.textContent = arNum(idx+1)+' من '+arNum(hits.length); }
+        btnNext.disabled = btnPrev.disabled = hits.length<2;
+      }
+      function goTo(el){
+        if(!el) return;
+        ayas.forEach(function(a){ a.classList.remove('is-current'); });
+        el.classList.add('is-current');
+        el.scrollIntoView({behavior:'smooth',block:'center'});
+      }
+      function clearAll(){
+        ayas.forEach(function(a){
+          a.classList.remove('is-hit','is-current');
+          if(a.dataset.orig){ a.innerHTML=a.dataset.orig; delete a.dataset.orig; }
+        });
+      }
+      /* تظليل الكلمة نفسها داخل الآية */
+      function highlight(a,q){
+        var num=a.querySelector('.s24-ayanum');
+        var numHTML=num?num.outerHTML:'';
+        if(!a.dataset.orig) a.dataset.orig=a.innerHTML;
+        var txt=a.dataset.orig.replace(numHTML,'');
+        var plain=a.getAttribute('data-plain');
+        var pos=plain.indexOf(q);
+        if(pos<0) return;
+        /* خريطة من النص المجرّد إلى النص الأصلي */
+        var map=[], j=0, raw=txt.replace(/<[^>]*>/g,'');
+        for(var i=0;i<raw.length;i++){
+          var c=raw[i];
+          if(!/[\u064B-\u0652\u0670\u0653-\u0655\u06D6-\u06ED\u0640]/.test(c)){ map[j]=i; j++; }
+        }
+        var st=map[pos], en=map[Math.min(pos+q.length,map.length-1)];
+        if(st===undefined||en===undefined) return;
+        while(en<raw.length && /[\u064B-\u0652\u0670\u0653-\u0655\u06D6-\u06ED]/.test(raw[en])) en++;
+        a.innerHTML = raw.slice(0,st)
+                    + '<span class="s24-hit-mark">'+raw.slice(st,en)+'</span>'
+                    + raw.slice(en) + numHTML;
+      }
+      function runSearch(){
+        var q=norm(inp.value);
+        clearAll();
+        hits=[]; idx=-1;
+        if(q.length<2){ updateCount(); return; }
+        ayas.forEach(function(a){
+          if(a.getAttribute('data-plain').indexOf(q)>-1){
+            a.classList.add('is-hit');
+            highlight(a,q);
+            hits.push(a);
+          }
+        });
+        if(hits.length){ idx=0; goTo(hits[0]); }
+        updateCount();
+      }
+      function step(d){
+        if(!hits.length) return;
+        idx=(idx+d+hits.length)%hits.length;
+        goTo(hits[idx]);
+        updateCount();
+      }
+      var tmr;
+      inp.addEventListener('input',function(){ clearTimeout(tmr); tmr=setTimeout(runSearch,250); });
+      inp.addEventListener('keydown',function(e){
+        if(e.key==='Enter'){ e.preventDefault(); step(e.shiftKey?-1:1); }
+        if(e.key==='Escape'){ inp.value=''; runSearch(); inp.blur(); }
+      });
+      btnNext.addEventListener('click',function(){ step(1); });
+      btnPrev.addEventListener('click',function(){ step(-1); });
+      document.addEventListener('keydown',function(e){
+        if(!hits.length) return;
+        if(document.activeElement===inp) return;
+        if(e.key==='ArrowLeft'){ step(1); }
+        if(e.key==='ArrowRight'){ step(-1); }
+      });
+      updateCount();
+
+      /* ═══ مشغّل التلاوة آية آية ═══ */
+      (function(){
+        var sura = parseInt(quranHost.getAttribute('data-sura'),10);
+        if(!sura) return;                       /* يحتاج data-sura على الحاوية */
+
+        var RECITERS=[
+          ['Alafasy_128kbps','مشاري العفاسي'],
+          ['Husary_128kbps','محمود خليل الحصري'],
+          ['Abdul_Basit_Murattal_192kbps','عبد الباسط عبد الصمد (مرتّل)'],
+          ['Minshawy_Murattal_128kbps','محمد صديق المنشاوي'],
+          ['Abdurrahmaan_As-Sudais_192kbps','عبد الرحمن السديس'],
+          ['Saood_ash-Shuraym_128kbps','سعود الشريم']
+        ];
+        var RKEY='s24_quran_reciter';
+        var reciter=null;
+        try{ reciter=localStorage.getItem(RKEY); }catch(e){}
+        if(!reciter||!RECITERS.some(function(r){return r[0]===reciter;})) reciter=RECITERS[0][0];
+
+        var pad=function(n,l){ n=String(n); while(n.length<l) n='0'+n; return n; };
+        function url(a){ return 'https://everyayah.com/data/'+reciter+'/'+pad(sura,3)+pad(a,3)+'.mp3'; }
+
+        var au=new Audio();
+        au.preload='auto';
+        var pre=new Audio(); pre.preload='auto';
+        var cur=0, playing=false, loop=false;
+
+        var abar=document.createElement('div');
+        abar.className='s24-audio-bar';
+        var opts=RECITERS.map(function(r){
+          return '<option value="'+r[0]+'"'+(r[0]===reciter?' selected':'')+'>'+r[1]+'</option>';
+        }).join('');
+        abar.innerHTML='<button type="button" class="main" data-a="play">▶ تشغيل</button>'
+                     + '<button type="button" data-a="prev">⏮</button>'
+                     + '<button type="button" data-a="next">⏭</button>'
+                     + '<select>'+opts+'</select>'
+                     + '<button type="button" data-a="loop">🔁 تكرار الآية</button>'
+                     + '<span class="s24-audio-state"></span>'
+                     + '<span class="s24-audio-credit">التلاوة من <a href="https://everyayah.com" rel="nofollow" target="_blank">everyayah.com</a> — الحقوق لأصحابها، والاستعمال لغرض التلاوة والحفظ.</span>';
+        var anchor=document.querySelector('.s24-quran-basmala')||quranHost;
+        anchor.parentNode.insertBefore(abar,anchor);
+
+        var bPlay=abar.querySelector('[data-a="play"]');
+        var bLoop=abar.querySelector('[data-a="loop"]');
+        var sel=abar.querySelector('select');
+        var st=abar.querySelector('.s24-audio-state');
+
+        function mark(n){
+          ayas.forEach(function(a){ a.classList.remove('is-playing'); });
+          var el=document.getElementById('aya-'+n);
+          if(el){
+            el.classList.add('is-playing');
+            var r=el.getBoundingClientRect();
+            if(r.top<120||r.bottom>window.innerHeight-80){
+              el.scrollIntoView({behavior:'smooth',block:'center'});
+            }
+          }
+        }
+        function session(n){
+          if(!('mediaSession' in navigator)) return;
+          var nm=RECITERS.filter(function(r){return r[0]===reciter;})[0];
+          try{
+            navigator.mediaSession.metadata=new MediaMetadata({
+              title:'الآية '+n,
+              artist:nm?nm[1]:'',
+              album:document.title.replace(' (النص الكامل)',''),
+            });
+            navigator.mediaSession.setActionHandler('play',function(){ play(cur); });
+            navigator.mediaSession.setActionHandler('pause',pause);
+            navigator.mediaSession.setActionHandler('previoustrack',function(){ play(Math.max(1,cur-1)); });
+            navigator.mediaSession.setActionHandler('nexttrack',function(){ play(cur+1); });
+          }catch(e){}
+        }
+        function last(){ return ayas.length?+ayas[ayas.length-1].getAttribute('data-n'):1; }
+
+        function play(n){
+          if(n<1) n=1;
+          if(n>last()){ stop(); return; }
+          cur=n;
+          au.src=url(n);
+          au.play().then(function(){
+            playing=true; bPlay.textContent='⏸ إيقاف';
+            st.textContent='الآية '+n+' / '+last();
+            mark(n); session(n);
+            if(n<last()){ pre.src=url(n+1); }   /* تحميل مسبق للآية التالية */
+          }).catch(function(){
+            st.textContent='تعذّر التشغيل';
+          });
+        }
+        function pause(){ au.pause(); playing=false; bPlay.textContent='▶ تشغيل'; }
+        function stop(){
+          pause(); cur=0; st.textContent='انتهت السورة';
+          ayas.forEach(function(a){ a.classList.remove('is-playing'); });
+        }
+        au.addEventListener('ended',function(){
+          if(loop){ play(cur); return; }
+          play(cur+1);
+        });
+        au.addEventListener('error',function(){
+          st.textContent='تعذّر تحميل التلاوة';
+        });
+
+        bPlay.addEventListener('click',function(){
+          if(playing) pause();
+          else play(cur||1);
+        });
+        abar.querySelector('[data-a="next"]').addEventListener('click',function(){ play((cur||0)+1); });
+        abar.querySelector('[data-a="prev"]').addEventListener('click',function(){ play(Math.max(1,(cur||2)-1)); });
+        bLoop.addEventListener('click',function(){
+          loop=!loop; bLoop.classList.toggle('on',loop);
+        });
+        sel.addEventListener('change',function(){
+          reciter=this.value;
+          try{ localStorage.setItem(RKEY,reciter); }catch(e){}
+          if(playing) play(cur); else st.textContent='القارئ: '+this.options[this.selectedIndex].text;
+        });
+        /* الضغط على أي آية يبدأ التلاوة منها */
+        ayas.forEach(function(a){
+          a.addEventListener('click',function(){
+            play(+a.getAttribute('data-n'));
+          });
+        });
+        st.textContent='آيات السورة: '+last();
+      })();
+
+      /* علامة القراءة — حفظ آلي أثناء التمرير */
+      function topAya(){
+        var cur=ayas[0];
+        for(var i=0;i<ayas.length;i++){
+          if(ayas[i].getBoundingClientRect().top>140) break;
+          cur=ayas[i];
+        }
+        return cur;
+      }
+      function markSaved(n){
+        ayas.forEach(function(a){ a.classList.remove('is-marked'); });
+        var el=document.getElementById('aya-'+n);
+        if(el) el.classList.add('is-marked');
+      }
+
+      var resumeBtn=null;
+      function buildResume(n){
+        if(resumeBtn){ resumeBtn.remove(); resumeBtn=null; }
+        if(!n || +n<2) return;
+        resumeBtn=document.createElement('button');
+        resumeBtn.type='button'; resumeBtn.className='s24-resume';
+        resumeBtn.textContent='متابعة من الآية '+n;
+        resumeBtn.addEventListener('click',function(){
+          goTo(document.getElementById('aya-'+n));
+        });
+        bar.appendChild(resumeBtn);
+      }
+
+      var savedPos=null;
+      try{ savedPos=localStorage.getItem(KEY); }catch(e){}
+      if(savedPos){ markSaved(savedPos); buildResume(savedPos); }
+
+      var saveTmr;
+      window.addEventListener('scroll',function(){
+        clearTimeout(saveTmr);
+        saveTmr=setTimeout(function(){
+          var r=quranHost.getBoundingClientRect();
+          if(r.top>200 || r.bottom<200) return;   // خارج النص: لا نحفظ
+          var n=topAya().getAttribute('data-n');
+          try{ localStorage.setItem(KEY,n); }catch(e){}
+          markSaved(n);
+        },600);
+      },{passive:true});
+    }
+  }
+
+  var encVideo=document.querySelector('.s24-enc-video');
+  if(encVideo){
+    document.body.classList.add('s24-has-enc-video');
+    document.body.classList.add('s24-video-article');
+    encVideo.classList.add('separator','s24-lead-video-wrapper');
+    var ifr=encVideo.querySelector('iframe');
+    if(ifr && /youtube\.com\/embed/.test(ifr.getAttribute('src')||'')){
+      ifr.classList.add('s24-lead-video-iframe');
+    }
+  }
+});
