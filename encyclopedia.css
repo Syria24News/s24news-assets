@@ -409,9 +409,7 @@ body.dark .s24-aya.is-playing,
 /* ═══ ١٧. إخفاء الغلاف عند وجود فيديو ═══ */
 body.s24-glossary-article.s24-has-enc-video .s24-cover-injected{display:none!important}
 /* مقالة نص السورة: إخفاء الغلاف المحقون مع بقاء الصورة للمصغّرة */
-html body.s24-quran-text-page .s24-cover-injected,
-html body.s24-quran-text-page .post-body > .separator:first-child{display:none!important}
-
+html body.s24-quran-text-page .s24-cover-injected{display:none!important}
 /* ═══ ١٨. بطاقة الختام ═══ */
 .s24-ending{
   background:var(--bs-main,#77bd1d);border-radius:10px;padding:14px 20px;
