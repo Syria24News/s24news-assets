@@ -62,7 +62,7 @@ document.addEventListener('DOMContentLoaded',function(){
     /* إخفاء الغلاف مباشرة على العنصر — أقوى من أي CSS */
     (function(){
       function hideCover(){
-        var sel='.s24-cover-injected,.item-thumbnail,.post-body > .separator:first-child';
+       var sel='.s24-cover-injected,.post-body > .separator:first-child';
         document.querySelectorAll(sel).forEach(function(el){
           el.style.setProperty('display','none','important');
         });
