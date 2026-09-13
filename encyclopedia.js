@@ -23,8 +23,66 @@ document.addEventListener('DOMContentLoaded',function(){
     if(!isNaN(age))el.textContent=age;
   });
 
-  /* مبدّل الخط القرآني — يظهر تلقائياً في أي صفحة فيها نص قرآني */
+  /* ═══ حاوية أدوات القراءة الموحّدة ═══
+     شريط واحد بثلاث أيقونات: بحث، خط، تلاوة.
+     على الحاسوب فوق النص، وعلى الجوال ملتصق بأسفل الشاشة ويختفي مع التمرير. */
   var quranHost=document.querySelector('.s24-quran-text');
+  var S24Tools=null;
+
+  if(quranHost){
+    S24Tools=(function(){
+      var wrap=document.createElement('div');
+      wrap.className='s24-tools';
+      var tabs=document.createElement('div'); tabs.className='s24-tools-tabs';
+      var panels=document.createElement('div'); panels.className='s24-tools-panels';
+      wrap.appendChild(panels); wrap.appendChild(tabs);
+
+      var anchor=document.querySelector('.s24-quran-basmala')||quranHost;
+      anchor.parentNode.insertBefore(wrap,anchor);
+
+      var items=[];
+      function open(id){
+        items.forEach(function(it){
+          var on=(it.id===id);
+          it.btn.classList.toggle('on',on);
+          it.panel.classList.toggle('on',on);
+        });
+        wrap.classList.toggle('is-open', !!id);
+      }
+      var ORDER={audio:1,search:2,font:3};
+      function add(id,icon,label,panel){
+        panel.classList.add('s24-tools-panel');
+        panels.appendChild(panel);
+        var b=document.createElement('button');
+        b.type='button'; b.className='s24-tools-btn';
+        b.setAttribute('aria-label',label);
+        b.innerHTML='<span class="ico">'+icon+'</span><span class="lbl">'+label+'</span>';
+        b.addEventListener('click',function(){
+          open(b.classList.contains('on')?null:id);
+        });
+        b.style.order=ORDER[id]||9;
+        tabs.appendChild(b);
+        items.push({id:id,btn:b,panel:panel});
+      }
+
+      /* الجوال: إخفاء الشريط عند التمرير لأسفل وإظهاره عند التمرير لأعلى */
+      var lastY=window.pageYOffset, ticking=false;
+      window.addEventListener('scroll',function(){
+        if(ticking) return; ticking=true;
+        requestAnimationFrame(function(){
+          var y=window.pageYOffset, d=y-lastY;
+          if(Math.abs(d)>6 && !wrap.classList.contains('is-open')){
+            wrap.classList.toggle('is-hidden', d>0 && y>160);
+          }
+          lastY=y; ticking=false;
+        });
+      },{passive:true});
+
+      return {add:add, open:open, wrap:wrap, tabs:tabs};
+    })();
+  }
+
+  /* مبدّل الخط القرآني */
   if(quranHost){
     var FONTS=[['amiri','أميري'],['scheherazade','شهرزاد'],['naskh','نسخ'],['lateef','لطيف'],['system','تقليدي']];
     var saved=null;
@@ -51,8 +109,7 @@ document.addEventListener('DOMContentLoaded',function(){
       b.addEventListener('click',function(){ applyFont(f[0]); });
       box.appendChild(b);
     });
-    var anchor=document.querySelector('.s24-quran-basmala')||quranHost;
-    anchor.parentNode.insertBefore(box,anchor);
+    S24Tools.add('font','\u0623','الخط',box);
     applyFont(saved);
   }
 
@@ -62,7 +119,7 @@ document.addEventListener('DOMContentLoaded',function(){
     /* إخفاء الغلاف مباشرة على العنصر — أقوى من أي CSS */
     (function(){
       function hideCover(){
-       var sel='.s24-cover-injected';
+       var sel='.s24-cover-injected,.post-body > .separator:first-child';
         document.querySelectorAll(sel).forEach(function(el){
           el.style.setProperty('display','none','important');
         });
@@ -95,8 +152,7 @@ document.addEventListener('DOMContentLoaded',function(){
                   + '<button type="button" data-a="prev">السابق</button>'
                   + '<button type="button" data-a="next">التالي</button>'
                   + '<span class="s24-hit-count"></span>';
-      var barAnchor=document.querySelector('.s24-quran-basmala')||quranHost;
-      barAnchor.parentNode.insertBefore(bar,barAnchor);
+      S24Tools.add('search','\u2315','البحث',bar);
 
       var inp=bar.querySelector('input');
       var cnt=bar.querySelector('.s24-hit-count');
@@ -107,7 +163,7 @@ document.addEventListener('DOMContentLoaded',function(){
       function arNum(n){ return String(n).replace(/[0-9]/g,function(d){return '٠١٢٣٤٥٦٧٨٩'[d];}); }
 
       function updateCount(){
-        if(!hits.length){ cnt.textContent = inp.value.trim().length>1 ? 'لا نتائج' : ''; }
+        if(!hits.length){ cnt.textContent = (inp.value||'').trim().length>1 ? 'لا نتائج' : ''; }
         else{ cnt.textContent = arNum(idx+1)+' من '+arNum(hits.length); }
         btnNext.disabled = btnPrev.disabled = hits.length<2;
       }
@@ -118,32 +174,7 @@ document.addEventListener('DOMContentLoaded',function(){
         el.scrollIntoView({behavior:'smooth',block:'center'});
       }
       function clearAll(){
-        ayas.forEach(function(a){
-          a.classList.remove('is-hit','is-current');
-          if(a.dataset.orig){ a.innerHTML=a.dataset.orig; delete a.dataset.orig; }
-        });
-      }
-      /* تظليل الكلمة نفسها داخل الآية */
-      function highlight(a,q){
-        var num=a.querySelector('.s24-ayanum');
-        var numHTML=num?num.outerHTML:'';
-        if(!a.dataset.orig) a.dataset.orig=a.innerHTML;
-        var txt=a.dataset.orig.replace(numHTML,'');
-        var plain=a.getAttribute('data-plain');
-        var pos=plain.indexOf(q);
-        if(pos<0) return;
-        /* خريطة من النص المجرّد إلى النص الأصلي */
-        var map=[], j=0, raw=txt.replace(/<[^>]*>/g,'');
-        for(var i=0;i<raw.length;i++){
-          var c=raw[i];
-          if(!/[\u064B-\u0652\u0670\u0653-\u0655\u06D6-\u06ED\u0640]/.test(c)){ map[j]=i; j++; }
-        }
-        var st=map[pos], en=map[Math.min(pos+q.length,map.length-1)];
-        if(st===undefined||en===undefined) return;
-        while(en<raw.length && /[\u064B-\u0652\u0670\u0653-\u0655\u06D6-\u06ED]/.test(raw[en])) en++;
-        a.innerHTML = raw.slice(0,st)
-                    + '<span class="s24-hit-mark">'+raw.slice(st,en)+'</span>'
-                    + raw.slice(en) + numHTML;
+        ayas.forEach(function(a){ a.classList.remove('is-hit','is-current'); });
       }
       function runSearch(){
         var q=norm(inp.value);
@@ -153,7 +184,6 @@ document.addEventListener('DOMContentLoaded',function(){
         ayas.forEach(function(a){
           if(a.getAttribute('data-plain').indexOf(q)>-1){
             a.classList.add('is-hit');
-            highlight(a,q);
             hits.push(a);
           }
         });
@@ -227,8 +257,7 @@ document.addEventListener('DOMContentLoaded',function(){
                      + '</select>'
                      + '<span class="s24-audio-state"></span>'
                      + '<span class="s24-audio-credit">التلاوة من <a href="https://everyayah.com" rel="nofollow" target="_blank">everyayah.com</a> — الحقوق لأصحابها، والاستعمال لغرض التلاوة والحفظ.</span>';
-        var anchor=document.querySelector('.s24-quran-basmala')||quranHost;
-        anchor.parentNode.insertBefore(abar,anchor);
+        S24Tools.add('audio','\u25B6','التلاوة',abar);
 
         var bPlay=abar.querySelector('[data-a="play"]');
         var sel=abar.querySelector('.s24-reciter');
@@ -344,11 +373,12 @@ document.addEventListener('DOMContentLoaded',function(){
         if(!n || +n<2) return;
         resumeBtn=document.createElement('button');
         resumeBtn.type='button'; resumeBtn.className='s24-resume';
+        resumeBtn.style.order=0;
         resumeBtn.textContent='متابعة من الآية '+n;
         resumeBtn.addEventListener('click',function(){
           goTo(document.getElementById('aya-'+n));
         });
-        bar.appendChild(resumeBtn);
+        S24Tools.tabs.appendChild(resumeBtn);
       }
 
       var savedPos=null;
