@@ -244,8 +244,8 @@ document.addEventListener('DOMContentLoaded',function(){
           return '<option value="'+r[0]+'"'+(r[0]===reciter?' selected':'')+'>'+r[1]+'</option>';
         }).join('');
         abar.innerHTML='<button type="button" class="main" data-a="play">▶ تشغيل</button>'
-                     + '<button type="button" data-a="prev">الآية السابقة</button>'
-                     + '<button type="button" data-a="next">الآية التالية</button>'
+                     + '<button type="button" data-a="prev">السابقة</button>'
+                     + '<button type="button" data-a="next">التالية</button>'
                      + '<select class="s24-reciter">'+opts+'</select>'
                      + '<select class="s24-repeat">'
                      +   '<option value="0">بلا تكرار</option>'
