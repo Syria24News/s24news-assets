@@ -353,6 +353,7 @@
     '#s24-prayer-page *{box-sizing:border-box}',
     '.s24pt-bar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;padding-bottom:14px;border-bottom:1px solid rgba(128,128,128,.28)}',
     '.s24pt-bar select{font:inherit;font-size:15px;color:inherit;background:transparent;border:1px solid rgba(128,128,128,.35);border-radius:6px;padding:6px 10px}',
+    '.s24pt-bar select option{color:var(--text-main);background:var(--bg-card)}',
     '.s24pt-dates{font-size:14px;opacity:.85}',
     '.s24pt-dates b{font-weight:600;display:block;font-size:15px;opacity:1}',
     '.s24pt-next{margin:18px 0;padding:14px 16px;border:1px solid rgba(128,128,128,.35);border-radius:8px;font-size:17px;font-weight:600}',
@@ -366,15 +367,18 @@
     '.s24pt-calbar h3{margin:0;font-size:16px;font-weight:600;font-family:var(--font-title,inherit)}',
     '.s24pt-calbar button{font:inherit;font-size:14px;color:inherit;background:transparent;border:1px solid rgba(128,128,128,.35);border-radius:6px;padding:5px 12px;cursor:pointer}',
     '.s24pt-calbar button:hover{background:rgba(128,128,128,.12)}',
-    '.s24pt-scroll{overflow-x:auto;-webkit-overflow-scrolling:touch}',
-    '.s24pt-table{width:100%;min-width:520px;border-collapse:collapse;font-size:14px}',
-    '.s24pt-table th,.s24pt-table td{padding:8px 6px;text-align:center;border-bottom:1px solid rgba(128,128,128,.22);font-variant-numeric:tabular-nums}',
-    '.s24pt-table th{font-weight:600;font-size:13px;opacity:.8;white-space:nowrap}',
-    '.s24pt-table td:first-child,.s24pt-table th:first-child{text-align:right;white-space:nowrap}',
-    '.s24pt-table tr.is-today td{background:rgba(128,128,128,.14);font-weight:600}',
-    '.s24pt-note{margin-top:18px;font-size:13px;opacity:.7}',
+    '.s24pt-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px}',
+    '.s24pt-day-card{border:1px solid rgba(128,128,128,.22);border-radius:10px;padding:12px 14px}',
+    '.s24pt-day-card.is-today{background:rgba(128,128,128,.14);border-color:rgba(128,128,128,.45)}',
+    '.s24pt-day-card h4{margin:0 0 10px;font-size:15px;font-weight:600;font-family:var(--font-title,inherit)}',
+    '.s24pt-day-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px 6px}',
+    '.s24pt-day-grid div{text-align:center}',
+    '.s24pt-day-grid em{display:block;font-style:normal;font-size:12px;opacity:.75;margin-bottom:2px}',
+    '.s24pt-day-grid strong{font-size:15px;font-weight:600;font-variant-numeric:tabular-nums}',
+    '.s24pt-note{margin-top:18px;margin-bottom:24px;font-size:13px;opacity:.7}',
     '.s24pt-msg{padding:24px 0;font-size:15px;opacity:.8}',
-    '@media(max-width:600px){.s24pt-next{font-size:16px}.s24pt-cell strong{font-size:16px}}'
+    '@media(max-width:600px){.s24pt-next{font-size:16px}.s24pt-cell strong{font-size:16px}}',
+    '@media(max-width:380px){.s24pt-day-grid{grid-template-columns:repeat(3,1fr)}}'
   ].join('');
 
   function initPage() {
@@ -397,7 +401,7 @@
     var today  = el('div', 's24pt-today');
     var calbar = el('div', 's24pt-calbar');
     var scroll = el('div', 's24pt-scroll');
-    var table  = el('table', 's24pt-table');
+    var table  = el('div', 's24pt-cards');
     var note   = el('div', 's24pt-note');
 
     var select = el('select');
@@ -475,21 +479,20 @@
     function renderTable(days) {
       mlabel.textContent = MONTHS[state.m - 1] + ' ' + state.y;
 
-      var head = '<tr><th>اليوم</th>';
-      ROWS.forEach(function (r) { head += '<th>' + r.label + '</th>'; });
-      head += '</tr>';
-
-      var body = '', t = damascusNow();
+      var out = '', t = damascusNow();
       days.forEach(function (day) {
         var g = day.date.gregorian, h = day.date.hijri;
         var isToday = (+g.day === t.d && +g.month.number === t.m && +g.year === t.y);
-        body += '<tr' + (isToday ? ' class="is-today"' : '') + '>';
-        body += '<td>' + parseInt(g.day, 10) + ' — ' + h.weekday.ar + '</td>';
-        ROWS.forEach(function (r) { body += '<td>' + fmt(day.timings[r.key]) + '</td>'; });
-        body += '</tr>';
+        out += '<div class="s24pt-day-card' + (isToday ? ' is-today' : '') + '">';
+        out += '<h4>' + parseInt(g.day, 10) + ' — ' + h.weekday.ar + '</h4>';
+        out += '<div class="s24pt-day-grid">';
+        ROWS.forEach(function (r) {
+          out += '<div><em>' + r.label + '</em><strong>' + fmt(day.timings[r.key]) + '</strong></div>';
+        });
+        out += '</div></div>';
       });
 
-      table.innerHTML = '<thead>' + head + '</thead><tbody>' + body + '</tbody>';
+      table.innerHTML = out;
     }
 
     function fail() {
