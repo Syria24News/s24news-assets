@@ -375,7 +375,10 @@
     '.s24pt-table tr.is-today td{background:rgba(128,128,128,.14);font-weight:600}',
    '.s24pt-note{margin-top:18px;margin-bottom:24px;font-size:13px;opacity:.7}',
     '.s24pt-msg{padding:24px 0;font-size:15px;opacity:.8}',
-    '@media(max-width:600px){.s24pt-next{font-size:16px}.s24pt-cell strong{font-size:16px}}'
+    '@media(max-width:600px){.s24pt-next{font-size:16px}.s24pt-cell strong{font-size:16px}' +
+    '.s24pt-table{min-width:0;font-size:11px}' +
+    '.s24pt-table th,.s24pt-table td{padding:5px 2px}' +
+    '.s24pt-day-wd{display:none}}'    
   ].join('');
 
   function initPage() {
@@ -484,8 +487,9 @@
       days.forEach(function (day) {
         var g = day.date.gregorian, h = day.date.hijri;
         var isToday = (+g.day === t.d && +g.month.number === t.m && +g.year === t.y);
-        body += '<tr' + (isToday ? ' class="is-today"' : '') + '>';
-        body += '<td>' + parseInt(g.day, 10) + ' — ' + h.weekday.ar + '</td>';
+        body += '<tr' + (isToday ? ' class="is-today"' : '') + '>';  
+        body += '<td><span class="s24pt-day-num">' + parseInt(g.day, 10) +
+                '</span><span class="s24pt-day-wd"> — ' + h.weekday.ar + '</span></td>';
         ROWS.forEach(function (r) { body += '<td>' + fmt(day.timings[r.key]) + '</td>'; });
         body += '</tr>';
       });
