@@ -353,7 +353,6 @@
     '#s24-prayer-page *{box-sizing:border-box}',
     '.s24pt-bar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;padding-bottom:14px;border-bottom:1px solid rgba(128,128,128,.28)}',
     '.s24pt-bar select{font:inherit;font-size:15px;color:inherit;background:transparent;border:1px solid rgba(128,128,128,.35);border-radius:6px;padding:6px 10px}',
-    '.s24pt-bar select option{color:var(--text-main);background:var(--bg-card)}',
     '.s24pt-dates{font-size:14px;opacity:.85}',
     '.s24pt-dates b{font-weight:600;display:block;font-size:15px;opacity:1}',
     '.s24pt-next{margin:18px 0;padding:14px 16px;border:1px solid rgba(128,128,128,.35);border-radius:8px;font-size:17px;font-weight:600}',
@@ -373,12 +372,9 @@
     '.s24pt-table th{font-weight:600;font-size:13px;opacity:.8;white-space:nowrap}',
     '.s24pt-table td:first-child,.s24pt-table th:first-child{text-align:right;white-space:nowrap}',
     '.s24pt-table tr.is-today td{background:rgba(128,128,128,.14);font-weight:600}',
-   '.s24pt-note{margin-top:18px;margin-bottom:24px;font-size:13px;opacity:.7}',
+    '.s24pt-note{margin-top:18px;font-size:13px;opacity:.7}',
     '.s24pt-msg{padding:24px 0;font-size:15px;opacity:.8}',
-    '@media(max-width:600px){.s24pt-next{font-size:16px}.s24pt-cell strong{font-size:16px}' +
-    '.s24pt-table{min-width:0;font-size:11px}' +
-    '.s24pt-table th,.s24pt-table td{padding:5px 2px}' +
-    '.s24pt-day-wd{display:none}}'    
+    '@media(max-width:600px){.s24pt-next{font-size:16px}.s24pt-cell strong{font-size:16px}}'
   ].join('');
 
   function initPage() {
@@ -487,9 +483,8 @@
       days.forEach(function (day) {
         var g = day.date.gregorian, h = day.date.hijri;
         var isToday = (+g.day === t.d && +g.month.number === t.m && +g.year === t.y);
-        body += '<tr' + (isToday ? ' class="is-today"' : '') + '>';  
-        body += '<td><span class="s24pt-day-num">' + parseInt(g.day, 10) +
-                '</span><span class="s24pt-day-wd"> — ' + h.weekday.ar + '</span></td>';
+        body += '<tr' + (isToday ? ' class="is-today"' : '') + '>';
+        body += '<td>' + parseInt(g.day, 10) + ' — ' + h.weekday.ar + '</td>';
         ROWS.forEach(function (r) { body += '<td>' + fmt(day.timings[r.key]) + '</td>'; });
         body += '</tr>';
       });
