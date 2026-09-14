@@ -372,7 +372,7 @@
     '.s24pt-table th{font-weight:600;font-size:13px;opacity:.8;white-space:nowrap}',
     '.s24pt-table td:first-child,.s24pt-table th:first-child{text-align:right;white-space:nowrap}',
     '.s24pt-table tr.is-today td{background:rgba(128,128,128,.14);font-weight:600}',
-    '.s24pt-note{margin-top:18px;font-size:13px;opacity:.7}',
+   '.s24pt-note{margin-top:18px;margin-bottom:24px;font-size:13px;opacity:.7}',
     '.s24pt-msg{padding:24px 0;font-size:15px;opacity:.8}',
     '@media(max-width:600px){.s24pt-next{font-size:16px}.s24pt-cell strong{font-size:16px}}'
   ].join('');
