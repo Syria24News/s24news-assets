@@ -375,7 +375,7 @@
     '.s24pt-table thead th:first-child{z-index:2}',
     '.s24pt-table tbody td:first-child{z-index:1}',
     '.s24pt-table tr.is-today td{background:rgba(128,128,128,.14);font-weight:600}',
-    '.s24pt-table tr.is-today td:first-child{background:rgba(128,128,128,.14)}',
+    '.s24pt-table tr.is-today td:first-child{background-color:var(--bg-card,#fff);background-image:linear-gradient(rgba(128,128,128,.14),rgba(128,128,128,.14))}',
     '.s24pt-note{margin-top:18px;margin-bottom:24px;font-size:13px;opacity:.7}',
     '.s24pt-msg{padding:24px 0;font-size:15px;opacity:.8}',
     '@media(max-width:600px){.s24pt-next{font-size:16px}.s24pt-cell strong{font-size:16px}}'
