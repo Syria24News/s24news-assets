@@ -353,6 +353,7 @@
     '#s24-prayer-page *{box-sizing:border-box}',
     '.s24pt-bar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;padding-bottom:14px;border-bottom:1px solid rgba(128,128,128,.28)}',
     '.s24pt-bar select{font:inherit;font-size:15px;color:inherit;background:transparent;border:1px solid rgba(128,128,128,.35);border-radius:6px;padding:6px 10px}',
+    '.s24pt-bar select option{color:var(--text-main);background:var(--bg-card)}',
     '.s24pt-dates{font-size:14px;opacity:.85}',
     '.s24pt-dates b{font-weight:600;display:block;font-size:15px;opacity:1}',
     '.s24pt-next{margin:18px 0;padding:14px 16px;border:1px solid rgba(128,128,128,.35);border-radius:8px;font-size:17px;font-weight:600}',
