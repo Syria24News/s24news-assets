@@ -502,6 +502,17 @@ body.dark .s24-aya.is-playing,
   body.s24-quran-text-page .s24-ending-divider{margin-bottom:84px}
 }
 
+/* ── الحاسوب والشاشات الكبيرة: التصاق الشريط بأسفل نافذة العرض أثناء التمرير ── */
+@media (min-width:769px){
+  .s24-tools{
+    position:-webkit-sticky;
+    position:sticky;
+    bottom:12px;
+    z-index:40;
+    box-shadow:0 6px 20px rgba(0,0,0,.12);
+  }
+}
+
 /* ═══ ١٧. إخفاء الغلاف عند وجود فيديو ═══ */
 body.s24-glossary-article.s24-has-enc-video .post-body .s24-cover-injected{display:none!important}
 /* مقالة نص السورة: إخفاء الغلاف المحقون مع بقاء الصورة للمصغّرة */
