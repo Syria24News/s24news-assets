@@ -505,11 +505,13 @@ body.dark .s24-aya.is-playing,
 /* ── الحاسوب والشاشات الكبيرة: التصاق الشريط بأسفل نافذة العرض أثناء التمرير ── */
 @media (min-width:769px){
   .s24-tools{
-    position:-webkit-sticky;
-    position:sticky;
-    bottom:12px;
-    z-index:40;
-    box-shadow:0 6px 20px rgba(0,0,0,.12);
+    position:fixed;
+    left:50%;
+    transform:translateX(-50%);
+    bottom:16px;
+    width:min(94vw,900px);
+    z-index:500;
+    box-shadow:0 6px 20px rgba(0,0,0,.18);
   }
 }
 
