@@ -258,7 +258,7 @@
 
 /* ═══ ١٤. مبدّل الخط القرآني ═══ */
 .s24-font-switch{
-  display:flex;gap:12px;align-items:center;flex-wrap:wrap;
+  display:flex;gap:20px;align-items:center;flex-wrap:wrap;
   margin:0 0 18px;padding:10px 14px;
   border:1px solid var(--border-color,#dddddd);border-radius:10px;
   background:var(--bg-card,#ffffff);
@@ -314,7 +314,7 @@ body.s24-font-lateef .s24-quran-basmala{
 
 /* ═══ ١٥. البحث في النص وحفظ موضع القراءة ═══ */
 .s24-quran-bar{
-  display:flex;gap:12px;align-items:center;flex-wrap:wrap;
+  display:flex;gap:20px;align-items:center;flex-wrap:wrap;
   margin:0 0 14px;padding:10px 14px;
   border:1px solid var(--border-color,#dddddd);border-radius:10px;
   background:var(--bg-card,#ffffff);
@@ -361,7 +361,7 @@ body.s24-font-lateef .s24-quran-basmala{
 
 /* ═══ ١٦. مشغّل التلاوة آية آية ═══ */
 .s24-audio-bar{
-  display:flex;gap:12px;align-items:center;flex-wrap:wrap;
+  display:flex;gap:20px;align-items:center;flex-wrap:wrap;
   margin:0;padding:0;border:0;background:none;
 }
 .s24-audio-bar select{
