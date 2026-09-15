@@ -11,7 +11,8 @@
 /* ---------- 01.1 تهيئة الصفحة وتدفق العناصر ---------- */
 /* السماح بظهور العناصر التي تتجاوز حدود الصفحة (قوائم منسدلة، تلميحات...) */
 html {
-    overflow: visible;
+    overflow-x: hidden;
+    overflow-y: visible;
 }
 
 /* ---------- 01.2 حساب أبعاد العناصر الموحد ---------- */
@@ -24,7 +25,6 @@ html {
 
 /* ---------- 01.3 إعدادات الجسم الأساسية للموقع ---------- */
 body {
-    overflow-x: hidden;
     max-width: 100%;
     background-color: var(--color-main-bg);
     color: var(--text-main);
