@@ -336,7 +336,7 @@ body.s24-font-lateef .s24-quran-basmala{
 .s24-quran-bar .s24-hit-count{
   font-family:"IBM Plex Sans Arabic",sans-serif;
   font-size:13px;color:var(--text-sec,#666);min-width:60px;
-  margin-inline-start:10px;
+  margin-right:10px;
 }
 .s24-resume{
   background:var(--bs-main,#77bd1d)!important;color:#fff!important;
