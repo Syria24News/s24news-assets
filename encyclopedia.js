@@ -389,7 +389,7 @@ document.addEventListener('DOMContentLoaded',function(){
             play(+a.getAttribute('data-n'));
           });
         });
-        st.textContent='عدد الآيات: '+arNum(last());
+        st.textContent='عدد الآيات: '+last();
       })();
 
       /* علامة القراءة — حفظ آلي أثناء التمرير */
