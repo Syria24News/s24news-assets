@@ -258,11 +258,12 @@
 
 /* ═══ ١٤. مبدّل الخط القرآني ═══ */
 .s24-font-switch{
-  display:flex;gap:20px;align-items:center;flex-wrap:wrap;
+  display:flex;align-items:center;flex-wrap:wrap;
   margin:0 0 18px;padding:10px 14px;
   border:1px solid var(--border-color,#dddddd);border-radius:10px;
   background:var(--bg-card,#ffffff);
 }
+.s24-font-switch > *{margin-left:16px}
 .s24-font-switch b{
   font-family:"IBM Plex Sans Arabic",sans-serif;
   font-size:14px;font-weight:700;color:var(--text-sec,#555);
@@ -314,11 +315,12 @@ body.s24-font-lateef .s24-quran-basmala{
 
 /* ═══ ١٥. البحث في النص وحفظ موضع القراءة ═══ */
 .s24-quran-bar{
-  display:flex;gap:20px;align-items:center;flex-wrap:wrap;
+  display:flex;align-items:center;flex-wrap:wrap;
   margin:0 0 14px;padding:10px 14px;
   border:1px solid var(--border-color,#dddddd);border-radius:10px;
   background:var(--bg-card,#ffffff);
 }
+.s24-quran-bar > *{margin-left:16px}
 .s24-quran-bar input{
   flex:1;min-width:150px;padding:9px 12px;font-size:15px;
   font-family:"Readex Pro",Tahoma,sans-serif;
@@ -336,7 +338,6 @@ body.s24-font-lateef .s24-quran-basmala{
 .s24-quran-bar .s24-hit-count{
   font-family:"IBM Plex Sans Arabic",sans-serif;
   font-size:13px;color:var(--text-sec,#666);min-width:60px;
-  margin-right:10px;
 }
 .s24-resume{
   background:var(--bs-main,#77bd1d)!important;color:#fff!important;
@@ -361,9 +362,10 @@ body.s24-font-lateef .s24-quran-basmala{
 
 /* ═══ ١٦. مشغّل التلاوة آية آية ═══ */
 .s24-audio-bar{
-  display:flex;gap:20px;align-items:center;flex-wrap:wrap;
+  display:flex;align-items:center;flex-wrap:wrap;
   margin:0;padding:0;border:0;background:none;
 }
+.s24-audio-bar > *{margin-left:16px}
 .s24-audio-bar select{
   flex:1;min-width:130px;padding:9px 10px;font-size:14px;
   font-family:"Readex Pro",Tahoma,sans-serif;
@@ -381,7 +383,7 @@ body.s24-font-lateef .s24-quran-basmala{
   background:var(--bs-main,#77bd1d);color:#fff;border-color:var(--bs-main,#77bd1d);
   min-width:92px;order:1;
 }
-.s24-audio-bar [data-a="prev"]{order:2;margin-left:20px}
+.s24-audio-bar [data-a="prev"]{order:2}
 .s24-audio-bar [data-a="next"]{order:3}
 .s24-audio-bar .s24-reciter{order:4}
 .s24-audio-bar .s24-repeat{order:5}
