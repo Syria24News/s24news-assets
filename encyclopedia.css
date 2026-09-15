@@ -263,7 +263,7 @@
   border:1px solid var(--border-color,#dddddd);border-radius:10px;
   background:var(--bg-card,#ffffff);
 }
-.s24-font-switch > *{margin-left:16px}
+.s24-font-switch > *{margin:5px}
 .s24-font-switch b{
   font-family:"IBM Plex Sans Arabic",sans-serif;
   font-size:14px;font-weight:700;color:var(--text-sec,#555);
@@ -320,7 +320,7 @@ body.s24-font-lateef .s24-quran-basmala{
   border:1px solid var(--border-color,#dddddd);border-radius:10px;
   background:var(--bg-card,#ffffff);
 }
-.s24-quran-bar > *{margin-left:16px}
+.s24-quran-bar > *{margin:5px}
 .s24-quran-bar input{
   flex:1;min-width:150px;padding:9px 12px;font-size:15px;
   font-family:"Readex Pro",Tahoma,sans-serif;
@@ -365,7 +365,7 @@ body.s24-font-lateef .s24-quran-basmala{
   display:flex;align-items:center;flex-wrap:wrap;
   margin:0;padding:0;border:0;background:none;
 }
-.s24-audio-bar > *{margin-left:16px}
+.s24-audio-bar > *{margin:5px}
 .s24-audio-bar select{
   flex:1;min-width:130px;padding:9px 10px;font-size:14px;
   font-family:"Readex Pro",Tahoma,sans-serif;
