@@ -414,8 +414,7 @@ document.addEventListener('DOMContentLoaded',function(){
         resumeBtn=document.createElement('button');
         resumeBtn.type='button'; resumeBtn.className='s24-resume';
         resumeBtn.style.order=0;
-        resumeBtn.innerHTML='<span class="ico">\u21A9</span><span class="num">'+
-          String(n).replace(/[0-9]/g,function(d){return '٠١٢٣٤٥٦٧٨٩'[d];})+'</span>';
+        resumeBtn.innerHTML='<span class="ico">\u21A9</span><span class="num">'+n+'</span>';
         resumeBtn.title='متابعة القراءة من الآية '+n;
         resumeBtn.addEventListener('click',function(){
           var el=document.getElementById('aya-'+n);
