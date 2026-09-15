@@ -247,7 +247,7 @@ document.addEventListener('DOMContentLoaded',function(){
         var au=new Audio();
         au.preload='auto';
         var pre=new Audio(); pre.preload='auto';
-        var cur=0, playing=false;
+        var cur=0, playing=false, retryLeft=0;
 
         var abar=document.createElement('div');
         abar.className='s24-audio-bar';
@@ -332,7 +332,7 @@ document.addEventListener('DOMContentLoaded',function(){
         }
         function last(){ return ayas.length?+ayas[ayas.length-1].getAttribute('data-n'):1; }
 
-        function play(n,keepRepeat){
+        function play(n,keepRepeat,isRetry){
           if(n<1) n=1;
           if(n>last()){ stop(); return; }
           if(!keepRepeat){
@@ -340,16 +340,27 @@ document.addEventListener('DOMContentLoaded',function(){
             repLeft=(m==='0'||m==='sura')?0:parseInt(m,10);
           }
           cur=n;
+          if(!isRetry) retryLeft=3;   /* عدد محاولات إعادة الاتصال عند انقطاع الشبكة */
           au.src=url(n);
           applyVol();
           au.play().then(function(){
+            retryLeft=3;
             playing=true; bPlay.textContent='⏸ إيقاف';
             st.textContent='الآية '+n+' / '+last()+(repLeft>1?' — تكرار '+repLeft:'');
             mark(n); session(n);
             if(n<last()){ pre.src=url(n+1); }   /* تحميل مسبق للآية التالية */
           }).catch(function(){
-            st.textContent='تعذّر التشغيل';
+            retryFail();
           });
+        }
+        function retryFail(){
+          if(retryLeft>0){
+            retryLeft--;
+            st.textContent='انقطع الاتصال — إعادة المحاولة...';
+            setTimeout(function(){ play(cur,true,true); },1200);
+          }else{
+            st.textContent='تعذّر التشغيل — تحقق من اتصال الإنترنت';
+          }
         }
         function pause(){ au.pause(); playing=false; bPlay.textContent='▶ تشغيل'; }
         function stop(){
@@ -365,7 +376,7 @@ document.addEventListener('DOMContentLoaded',function(){
           play(cur+1);
         });
         au.addEventListener('error',function(){
-          st.textContent='تعذّر تحميل التلاوة';
+          retryFail();
         });
 
         bPlay.addEventListener('click',function(){
