@@ -381,7 +381,7 @@ body.s24-font-lateef .s24-quran-basmala{
   background:var(--bs-main,#77bd1d);color:#fff;border-color:var(--bs-main,#77bd1d);
   min-width:92px;order:1;
 }
-.s24-audio-bar [data-a="prev"]{order:2}
+.s24-audio-bar [data-a="prev"]{order:2;margin-inline-end:20px}
 .s24-audio-bar [data-a="next"]{order:3}
 .s24-audio-bar .s24-reciter{order:4}
 .s24-audio-bar .s24-repeat{order:5}
