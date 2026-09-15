@@ -389,7 +389,9 @@ body.s24-font-lateef .s24-quran-basmala{
 .s24-audio-bar .s24-repeat{order:5}
 .s24-audio-vol{
   order:6;display:flex;align-items:center;gap:8px;
-  flex:1 1 100%;margin-top:4px;
+  flex:1 1 0%;min-width:120px;
+  margin-top:6px;padding-top:10px;
+  border-top:1px solid var(--border-color,#dddddd);
 }
 .s24-audio-vol button{
   padding:6px 10px;font-size:15px;line-height:1;
@@ -410,7 +412,7 @@ body.s24-font-lateef .s24-quran-basmala{
 .s24-audio-bar button.on{color:var(--bs-main,#77bd1d);border-color:var(--bs-main,#77bd1d)}
 .s24-audio-bar select.s24-repeat{flex:0 1 190px;min-width:160px}
 .s24-audio-state{
-  flex:1 1 100%;
+  flex:0 0 auto;
   font-family:"IBM Plex Sans Arabic",sans-serif;
   font-size:13px;font-weight:700;color:var(--text-sec,#666);
   white-space:nowrap;
