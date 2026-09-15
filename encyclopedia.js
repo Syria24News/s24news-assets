@@ -84,6 +84,26 @@ document.addEventListener('DOMContentLoaded',function(){
         });
       },{passive:true});
 
+      /* الحاسوب: محاذاة الشريط أفقياً ليبقى ضمن حدود العمود الأوسط
+         بمسافة داخلية عن حوافه بدل الامتداد فوق الشريطين الجانبيين */
+      function alignDesktop(){
+        if(window.innerWidth<769){
+          wrap.style.left=''; wrap.style.width=''; wrap.style.transform='';
+          return;
+        }
+        var col=document.querySelector('.main-container');
+        if(!col) return;
+        var r=col.getBoundingClientRect();
+        var inset=28;   /* المسافة المطلوبة عن حافتي العمود */
+        var w=r.width-inset*2;
+        if(w<280) w=280;
+        wrap.style.left=(r.left+inset)+'px';
+        wrap.style.width=w+'px';
+        wrap.style.transform='none';
+      }
+      alignDesktop();
+      window.addEventListener('resize',alignDesktop);
+
       return {add:add, open:open, wrap:wrap, tabs:tabs};
     })();
   }
