@@ -174,8 +174,8 @@ document.addEventListener('DOMContentLoaded',function(){
       function arNum(n){ return String(n).replace(/[0-9]/g,function(d){return '٠١٢٣٤٥٦٧٨٩'[d];}); }
 
       function updateCount(){
-        if(!hits.length){ cnt.textContent = (inp.value||'').trim().length>1 ? 'لا نتائج' : ''; }
-        else{ cnt.textContent = arNum(idx+1)+' من '+arNum(hits.length); }
+        if(!hits.length){ cnt.textContent = (inp.value||'').trim().length>1 ? 'لا نتائج' : ''; }           
+        else{ cnt.textContent = (idx+1)+' من '+hits.length; }      
         btnNext.disabled = btnPrev.disabled = hits.length<2;
       }
       function goTo(el){
