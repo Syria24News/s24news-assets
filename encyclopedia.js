@@ -84,25 +84,47 @@ document.addEventListener('DOMContentLoaded',function(){
         });
       },{passive:true});
 
-      /* الحاسوب: محاذاة الشريط أفقياً ليبقى ضمن حدود العمود الأوسط
-         بمسافة داخلية عن حوافه بدل الامتداد فوق الشريطين الجانبيين */
+      /* الحاسوب: الشريط ثابت (fixed) أثناء التمرير داخل المقال،
+         ثم "يلتحم" طبيعياً عند نهاية المقال بدل الاستمرار فوق الفوتر —
+         نفس السلوك الذي كان يُفترض أن يقدّمه sticky، مُعاد بناؤه يدوياً. */
+      var dockContainer=document.querySelector('.s24-enc-body');
+      var TOOLS_GAP=16, TOOLS_INSET=28;
+
+      function containDesktop(){
+        if(window.innerWidth<769 || !dockContainer) return;
+        var rect=dockContainer.getBoundingClientRect();
+        var docked=rect.bottom<=window.innerHeight;
+        if(docked){
+          var h=wrap.offsetHeight;
+          wrap.classList.add('s24-tools-docked');
+          wrap.style.position='absolute';
+          wrap.style.left=TOOLS_INSET+'px';
+          wrap.style.top=(dockContainer.offsetHeight-h-TOOLS_GAP)+'px';
+          wrap.style.bottom='';
+          wrap.style.transform='none';
+        }else{
+          wrap.classList.remove('s24-tools-docked');
+          wrap.style.position='fixed';
+          wrap.style.left=(rect.left+TOOLS_INSET)+'px';
+          wrap.style.top='';
+          wrap.style.bottom=TOOLS_GAP+'px';
+          wrap.style.transform='none';
+        }
+      }
       function alignDesktop(){
-        if(window.innerWidth<769){
-          wrap.style.left=''; wrap.style.width=''; wrap.style.transform='';
+        if(window.innerWidth<769 || !dockContainer){
+          wrap.style.left=''; wrap.style.width=''; wrap.style.top=''; wrap.style.bottom='';
+          wrap.style.position=''; wrap.style.transform=''; wrap.classList.remove('s24-tools-docked');
           return;
         }
-        var col=document.querySelector('.main-container');
-        if(!col) return;
-        var r=col.getBoundingClientRect();
-        var inset=28;   /* المسافة المطلوبة عن حافتي العمود */
-        var w=r.width-inset*2;
+        var w=dockContainer.clientWidth-TOOLS_INSET*2;
         if(w<280) w=280;
-        wrap.style.left=(r.left+inset)+'px';
         wrap.style.width=w+'px';
-        wrap.style.transform='none';
+        containDesktop();
       }
       alignDesktop();
       window.addEventListener('resize',alignDesktop);
+      window.addEventListener('scroll',containDesktop,{passive:true});
 
       return {add:add, open:open, wrap:wrap, tabs:tabs};
     })();
@@ -269,33 +291,6 @@ document.addEventListener('DOMContentLoaded',function(){
         var pre=new Audio(); pre.preload='auto';
         var cur=0, playing=false, retryLeft=0;
 
-        /* إن كانت الآية التالية محمَّلة مسبقاً بالفعل، نُبدِّل العنصرَين
-           بدل طلب الملف من الشبكة من جديد — هذا هو الإصلاح الجوهري */
-        function swapToPreloaded(n){
-          if(pre.src===url(n) && pre.readyState>=2){
-            var tmp=au; au=pre; pre=tmp;
-            return true;
-          }
-          return false;
-        }
-
-        /* منع إطفاء الشاشة تلقائياً أثناء التلاوة — يبقى فعّالاً ما دامت السورة تُقرأ،
-           ولا يمنع المستخدم من إطفاء الشاشة يدوياً بزر الطاقة */
-        var wakeLock=null;
-        function requestWakeLock(){
-          if(!('wakeLock' in navigator)) return;
-          navigator.wakeLock.request('screen').then(function(wl){
-            wakeLock=wl;
-            wakeLock.addEventListener('release',function(){ wakeLock=null; });
-          }).catch(function(){ /* رفض المتصفح الطلب — نتجاهل بصمت */ });
-        }
-        function releaseWakeLock(){
-          if(wakeLock){ wakeLock.release(); wakeLock=null; }
-        }
-        document.addEventListener('visibilitychange',function(){
-          if(document.visibilityState==='visible' && playing) requestWakeLock();
-        });
-         
         var abar=document.createElement('div');
         abar.className='s24-audio-bar';
         var opts=RECITERS.map(function(r){
@@ -388,13 +383,13 @@ document.addEventListener('DOMContentLoaded',function(){
           }
           cur=n;
           if(!isRetry) retryLeft=3;   /* عدد محاولات إعادة الاتصال عند انقطاع الشبكة */
-          if(!swapToPreloaded(n)){ au.src=url(n); }
+          au.src=url(n);
           applyVol();
           au.play().then(function(){
             retryLeft=3;
             playing=true; bPlay.textContent='⏸ إيقاف';
             st.textContent='الآية '+n+' / '+last()+(repLeft>1?' — تكرار '+repLeft:'');
-            mark(n); session(n); requestWakeLock();
+            mark(n); session(n);
             if(n<last()){ pre.src=url(n+1); }   /* تحميل مسبق للآية التالية */
           }).catch(function(){
             retryFail();
@@ -409,28 +404,22 @@ document.addEventListener('DOMContentLoaded',function(){
             st.textContent='تعذّر التشغيل — تحقق من اتصال الإنترنت';
           }
         }
-        function pause(){ au.pause(); playing=false; bPlay.textContent='▶ تشغيل'; releaseWakeLock(); }
+        function pause(){ au.pause(); playing=false; bPlay.textContent='▶ تشغيل'; }
         function stop(){
           pause(); cur=0; st.textContent='انتهت السورة';
           ayas.forEach(function(a){ a.classList.remove('is-playing'); });
         }
-                function onAyaEnded(){
-          if(this!==au) return;   /* تجاهل الحدث إن صدر عن عنصر التحميل المسبق غير النشط */
+        au.addEventListener('ended',function(){
           var mode=rep.value;
           if(mode!=='0' && mode!=='sura'){
             if(repLeft>1){ repLeft--; play(cur,true); return; }
           }
           if(cur>=last() && mode==='sura'){ play(1); return; }
           play(cur+1);
-        }
-        function onAyaError(){
-          if(this!==au) return;
+        });
+        au.addEventListener('error',function(){
           retryFail();
-        }
-        au.addEventListener('ended',onAyaEnded);
-        au.addEventListener('error',onAyaError);
-        pre.addEventListener('ended',onAyaEnded);
-        pre.addEventListener('error',onAyaError);
+        });
 
         bPlay.addEventListener('click',function(){
           if(playing) pause();
