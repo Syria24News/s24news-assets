@@ -269,6 +269,16 @@ document.addEventListener('DOMContentLoaded',function(){
         var pre=new Audio(); pre.preload='auto';
         var cur=0, playing=false, retryLeft=0;
 
+        /* إن كانت الآية التالية محمَّلة مسبقاً بالفعل، نُبدِّل العنصرَين
+           بدل طلب الملف من الشبكة من جديد — هذا هو الإصلاح الجوهري */
+        function swapToPreloaded(n){
+          if(pre.src===url(n) && pre.readyState>=2){
+            var tmp=au; au=pre; pre=tmp;
+            return true;
+          }
+          return false;
+        }
+         
         var abar=document.createElement('div');
         abar.className='s24-audio-bar';
         var opts=RECITERS.map(function(r){
@@ -361,7 +371,7 @@ document.addEventListener('DOMContentLoaded',function(){
           }
           cur=n;
           if(!isRetry) retryLeft=3;   /* عدد محاولات إعادة الاتصال عند انقطاع الشبكة */
-          au.src=url(n);
+          if(!swapToPreloaded(n)){ au.src=url(n); }
           applyVol();
           au.play().then(function(){
             retryLeft=3;
@@ -387,17 +397,23 @@ document.addEventListener('DOMContentLoaded',function(){
           pause(); cur=0; st.textContent='انتهت السورة';
           ayas.forEach(function(a){ a.classList.remove('is-playing'); });
         }
-        au.addEventListener('ended',function(){
+                function onAyaEnded(){
+          if(this!==au) return;   /* تجاهل الحدث إن صدر عن عنصر التحميل المسبق غير النشط */
           var mode=rep.value;
           if(mode!=='0' && mode!=='sura'){
             if(repLeft>1){ repLeft--; play(cur,true); return; }
           }
           if(cur>=last() && mode==='sura'){ play(1); return; }
           play(cur+1);
-        });
-        au.addEventListener('error',function(){
+        }
+        function onAyaError(){
+          if(this!==au) return;
           retryFail();
-        });
+        }
+        au.addEventListener('ended',onAyaEnded);
+        au.addEventListener('error',onAyaError);
+        pre.addEventListener('ended',onAyaEnded);
+        pre.addEventListener('error',onAyaError);
 
         bPlay.addEventListener('click',function(){
           if(playing) pause();
