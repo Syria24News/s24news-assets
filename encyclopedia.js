@@ -463,6 +463,8 @@ document.addEventListener('DOMContentLoaded',function(){
         }
         function repDdOpen(){
           if(typeof ddClose==='function') ddClose();
+          var r=repDdBtn.getBoundingClientRect();
+          repDdList.style.maxHeight=Math.max(120,Math.min(260,r.top-12))+'px';
           repDdList.hidden=false;
           repDdBtn.setAttribute('aria-expanded','true');
           S24Tools.wrap.classList.add('s24-dd-open');
@@ -506,6 +508,8 @@ document.addEventListener('DOMContentLoaded',function(){
         }
         function ddOpen(){
           if(typeof repDdClose==='function') repDdClose();
+          var r=ddBtn.getBoundingClientRect();
+          ddList.style.maxHeight=Math.max(120,Math.min(260,r.top-12))+'px';
           ddList.hidden=false;
           ddBtn.setAttribute('aria-expanded','true');
           S24Tools.wrap.classList.add('s24-dd-open');   /* تعطيل overflow:hidden مؤقتاً كي لا تُقصّ القائمة */
