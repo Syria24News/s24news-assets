@@ -414,42 +414,11 @@ body.s24-font-lateef .s24-quran-basmala{
 
 /* القائمة المخصصة لاختيار القارئ — بديل عن select الأصلية لضمان
    التحكم الكامل بلون التظليل (بدل الأزرق الافتراضي للمتصفح) */
-.s24-reciter-dd{position:relative;flex:0 1 220px;min-width:170px}
-.s24-reciter-dd-btn{
-  width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;
-  padding:9px 14px;border-radius:8px;cursor:pointer;
-  font-family:"IBM Plex Sans Arabic",sans-serif;font-size:13px;font-weight:700;
-  border:1px solid var(--border-color,#dddddd);
-  background:transparent;color:var(--text-main,#000);transition:.2s;
-}
-.s24-reciter-dd-btn:hover,
-.s24-reciter-dd-btn[aria-expanded="true"]{border-color:var(--bs-main,#77bd1d)}
-.s24-reciter-dd-arrow{font-size:10px;color:var(--text-sec,#666)}
-.s24-reciter-dd-list{
-  position:absolute;z-index:60;bottom:calc(100% + 6px);top:auto;inset-inline-start:0;
-  min-width:100%;max-height:260px;overflow-y:auto;
-  margin:0;padding:4px;list-style:none;
-  background:var(--bg-card,#ffffff);border:1px solid var(--border-color,#dddddd);border-radius:10px;
-  box-shadow:0 -8px 24px rgba(0,0,0,.18);
-}
-.s24-reciter-dd-list li{
-  padding:9px 12px;border-radius:6px;cursor:pointer;
-  font-family:"IBM Plex Sans Arabic",sans-serif;font-size:13.5px;color:var(--text-main,#000);
-  white-space:nowrap;
-}
-.s24-reciter-dd-list li:hover,
-.s24-reciter-dd-list li:focus{
-  background:var(--bs-main,#77bd1d);color:#fff;outline:none;
-}
-.s24-reciter-dd-list li[aria-selected="true"]{
-  background:rgba(119,189,29,.15);font-weight:700;color:var(--bs-main,#77bd1d);
-}
-.s24-reciter-dd-list li[aria-selected="true"]:hover,
-.s24-reciter-dd-list li[aria-selected="true"]:focus{
-  background:var(--bs-main,#77bd1d);color:#fff;
-}
-
-.s24-repeat-dd{position:relative;flex:0 1 190px;min-width:160px}
+/* أزرار فتح نافذة الاختيار (قارئ/تكرار) — النافذة نفسها مبنية مرة واحدة
+   وملحقة بجسم الصفحة، تنسيقها في قسم "نافذة الاختيار المشتركة" أدناه */
+.s24-reciter-dd{flex:0 1 220px;min-width:170px}
+.s24-repeat-dd{flex:0 1 190px;min-width:160px}
+.s24-reciter-dd-btn,
 .s24-repeat-dd-btn{
   width:100%;display:flex;align-items:center;justify-content:space-between;gap:8px;
   padding:9px 14px;border-radius:8px;cursor:pointer;
@@ -457,34 +426,45 @@ body.s24-font-lateef .s24-quran-basmala{
   border:1px solid var(--border-color,#dddddd);
   background:transparent;color:var(--text-main,#000);transition:.2s;
 }
-.s24-repeat-dd-btn:hover,
-.s24-repeat-dd-btn[aria-expanded="true"]{border-color:var(--bs-main,#77bd1d)}
+.s24-reciter-dd-btn:hover,
+.s24-repeat-dd-btn:hover{border-color:var(--bs-main,#77bd1d)}
+.s24-reciter-dd-arrow,
 .s24-repeat-dd-arrow{font-size:10px;color:var(--text-sec,#666)}
-.s24-repeat-dd-list{
-  position:absolute;z-index:60;bottom:calc(100% + 6px);top:auto;inset-inline-start:0;
-  min-width:100%;max-height:260px;overflow-y:auto;
-  margin:0;padding:4px;list-style:none;
-  background:var(--bg-card,#ffffff);border:1px solid var(--border-color,#dddddd);border-radius:10px;
-  box-shadow:0 -8px 24px rgba(0,0,0,.18);
+
+/* نافذة الاختيار المشتركة — نافذة مركزية ثابتة بمنتصف الشاشة تماماً،
+   بمعزل كامل عن موضع الشريط وحدوده، فتعمل بنفس الشكل على كل حجم شاشة */
+.s24-dd-overlay{
+  position:fixed;inset:0;z-index:2000;
+  background:rgba(0,0,0,.45);
+  display:flex;align-items:center;justify-content:center;
+  padding:20px;
 }
-.s24-repeat-dd-list li{
-  padding:9px 12px;border-radius:6px;cursor:pointer;
-  font-family:"IBM Plex Sans Arabic",sans-serif;font-size:13.5px;color:var(--text-main,#000);
-  white-space:nowrap;
+.s24-dd-overlay[hidden]{display:none}
+.s24-dd-sheet{
+  width:100%;max-width:340px;max-height:min(70vh,420px);
+  background:var(--bg-card,#ffffff);border-radius:14px;
+  box-shadow:0 20px 50px rgba(0,0,0,.35);
+  display:flex;flex-direction:column;overflow:hidden;
 }
-.s24-repeat-dd-list li:hover,
-.s24-repeat-dd-list li:focus{
-  background:var(--bs-main,#77bd1d);color:#fff;outline:none;
+.s24-dd-sheet-title{
+  flex:0 0 auto;padding:14px 16px;text-align:center;
+  font-family:"IBM Plex Sans Arabic",sans-serif;font-weight:700;font-size:15px;
+  color:var(--text-main,#000);border-bottom:1px solid var(--border-color,#dddddd);
 }
-.s24-repeat-dd-list li[aria-selected="true"]{
+.s24-dd-sheet ul{
+  flex:1 1 auto;overflow-y:auto;margin:0;padding:6px;list-style:none;
+}
+.s24-dd-sheet li{
+  padding:12px 14px;border-radius:8px;cursor:pointer;text-align:center;
+  font-family:"IBM Plex Sans Arabic",sans-serif;font-size:14px;color:var(--text-main,#000);
+}
+.s24-dd-sheet li:hover,
+.s24-dd-sheet li:focus{background:var(--bs-main,#77bd1d);color:#fff;outline:none}
+.s24-dd-sheet li[aria-selected="true"]{
   background:rgba(119,189,29,.15);font-weight:700;color:var(--bs-main,#77bd1d);
 }
-.s24-repeat-dd-list li[aria-selected="true"]:hover,
-.s24-repeat-dd-list li[aria-selected="true"]:focus{
-  background:var(--bs-main,#77bd1d);color:#fff;
-}
-/* تعطيل قصّ الحواف المستديرة مؤقتاً أثناء فتح القائمة كي لا تُقصّ خارج الحاوية */
-.s24-tools.s24-dd-open{overflow:visible}
+.s24-dd-sheet li[aria-selected="true"]:hover,
+.s24-dd-sheet li[aria-selected="true"]:focus{background:var(--bs-main,#77bd1d);color:#fff}
 .s24-audio-state{
   flex:0 0 auto;
   font-family:"IBM Plex Sans Arabic",sans-serif;

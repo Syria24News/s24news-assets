@@ -290,22 +290,15 @@ document.addEventListener('DOMContentLoaded',function(){
 
         var abar=document.createElement('div');
         abar.className='s24-audio-bar';
-        var opts=RECITERS.map(function(r){
-          return '<li role="option" data-value="'+r[0]+'" aria-selected="'+(r[0]===reciter?'true':'false')+'" tabindex="-1">'+r[1]+'</li>';
-        }).join('');
         var curReciter=(RECITERS.filter(function(r){return r[0]===reciter;})[0]||RECITERS[0]);
-        var repOpts=REPEAT_OPTIONS.map(function(r){
-          return '<li role="option" data-value="'+r[0]+'" aria-selected="'+(r[0]==='0'?'true':'false')+'" tabindex="-1">'+r[1]+'</li>';
-        }).join('');
         abar.innerHTML='<button type="button" class="main" data-a="play">▶ تشغيل</button>'
                      + '<button type="button" data-a="prev">السابقة</button>'
                      + '<button type="button" data-a="next">التالية</button>'
                      + '<div class="s24-reciter-dd">'
-                     +   '<button type="button" class="s24-reciter-dd-btn" aria-haspopup="listbox" aria-expanded="false">'
+                     +   '<button type="button" class="s24-reciter-dd-btn">'
                      +     '<span class="s24-reciter-dd-label">'+curReciter[1]+'</span>'
                      +     '<span class="s24-reciter-dd-arrow">\u25BE</span>'
                      +   '</button>'
-                     +   '<ul class="s24-reciter-dd-list" role="listbox" aria-label="اختيار القارئ" hidden>'+opts+'</ul>'
                      + '</div>'
                      + '<select class="s24-repeat" hidden>'
                      +   '<option value="0">بلا تكرار</option>'
@@ -316,11 +309,10 @@ document.addEventListener('DOMContentLoaded',function(){
                      +   '<option value="sura">إعادة السورة عند انتهائها</option>'
                      + '</select>'
                      + '<div class="s24-repeat-dd">'
-                     +   '<button type="button" class="s24-repeat-dd-btn" aria-haspopup="listbox" aria-expanded="false">'
+                     +   '<button type="button" class="s24-repeat-dd-btn">'
                      +     '<span class="s24-repeat-dd-label">بلا تكرار</span>'
                      +     '<span class="s24-repeat-dd-arrow">\u25BE</span>'
                      +   '</button>'
-                     +   '<ul class="s24-repeat-dd-list" role="listbox" aria-label="عدد مرات التكرار" hidden>'+repOpts+'</ul>'
                      + '</div>'
                      + '<span class="s24-audio-vol">'
                      +   '<button type="button" data-a="mute" title="كتم/تشغيل الصوت">\uD83D\uDD0A</button>'
@@ -336,10 +328,6 @@ document.addEventListener('DOMContentLoaded',function(){
         try{ var sv=localStorage.getItem(VKEY); if(sv!==null) vol=Math.max(0,Math.min(100,+sv)); }catch(e){}
 
         var bPlay=abar.querySelector('[data-a="play"]');
-        var ddBtn=abar.querySelector('.s24-reciter-dd-btn');
-        var ddLabel=abar.querySelector('.s24-reciter-dd-label');
-        var ddList=abar.querySelector('.s24-reciter-dd-list');
-        var ddItems=Array.prototype.slice.call(abar.querySelectorAll('.s24-reciter-dd-list li'));
         var rep=abar.querySelector('.s24-repeat');
         var repLeft=0;
         var bMute=abar.querySelector('[data-a="mute"]');
@@ -449,102 +437,79 @@ document.addEventListener('DOMContentLoaded',function(){
           repLeft=(m==='0'||m==='sura')?0:parseInt(m,10);
         });
 
-        /* القائمة المخصّصة لعدد مرات التكرار — نفس معالجة قائمة القارئ،
-           مع إبقاء select الأصلي مخفياً كمخزن للقيمة فقط (rep.value) كي لا
-           يتطلّب الأمر تعديل بقية الكود الذي يقرأ منه مباشرة. */
+        /* نافذة اختيار مشتركة (قارئ/تكرار) — تُبنى مرة واحدة وتُلحَق بجسم
+           الصفحة مباشرة (لا داخل شريط الأدوات)، فتظهر كنافذة مركزية ثابتة
+           بمنتصف الشاشة تماماً، بلا أي تعارض مع تموضع الشريط أو قصّ حوافه
+           أو حسابات ارتفاع/موضع معقّدة — نفس السلوك على كل حجم شاشة. */
+        var ddOverlay=document.querySelector('.s24-dd-overlay');
+        if(!ddOverlay){
+          ddOverlay=document.createElement('div');
+          ddOverlay.className='s24-dd-overlay';
+          ddOverlay.hidden=true;
+          ddOverlay.innerHTML='<div class="s24-dd-sheet" role="listbox">'
+                             +   '<div class="s24-dd-sheet-title"></div>'
+                             +   '<ul></ul>'
+                             + '</div>';
+          document.body.appendChild(ddOverlay);
+          ddOverlay.addEventListener('click',function(e){
+            if(e.target===ddOverlay) ddOverlayClose();   /* الضغط خارج الصندوق يغلق */
+          });
+        }
+        var ddSheetTitle=ddOverlay.querySelector('.s24-dd-sheet-title');
+        var ddSheetList=ddOverlay.querySelector('ul');
+        var ddReturnFocus=null;
+
+        function ddOverlayKeydown(e){
+          var items=Array.prototype.slice.call(ddSheetList.querySelectorAll('li'));
+          var idx=items.indexOf(document.activeElement);
+          if(e.key==='ArrowDown'){ e.preventDefault(); (items[(idx+1)%items.length]||items[0]).focus(); }
+          else if(e.key==='ArrowUp'){ e.preventDefault(); (items[(idx-1+items.length)%items.length]||items[0]).focus(); }
+          else if(e.key==='Escape'){ ddOverlayClose(); }
+        }
+        function ddOverlayClose(){
+          ddOverlay.hidden=true;
+          document.removeEventListener('keydown',ddOverlayKeydown);
+          if(ddReturnFocus) ddReturnFocus.focus();
+        }
+        function ddOverlayOpen(title,list,current,onPick,triggerBtn){
+          ddReturnFocus=triggerBtn;
+          ddSheetTitle.textContent=title;
+          ddSheetList.innerHTML=list.map(function(item){
+            return '<li data-value="'+item[0]+'" role="option" tabindex="-1" aria-selected="'+(item[0]===current?'true':'false')+'">'+item[1]+'</li>';
+          }).join('');
+          Array.prototype.slice.call(ddSheetList.querySelectorAll('li')).forEach(function(li){
+            li.addEventListener('click',function(){
+              onPick(li.getAttribute('data-value'),li.textContent);
+              ddOverlayClose();
+            });
+          });
+          ddOverlay.hidden=false;
+          document.addEventListener('keydown',ddOverlayKeydown);
+          var active=ddSheetList.querySelector('[aria-selected="true"]')||ddSheetList.querySelector('li');
+          if(active) active.focus();
+        }
+
         var repDdBtn=abar.querySelector('.s24-repeat-dd-btn');
         var repDdLabel=abar.querySelector('.s24-repeat-dd-label');
-        var repDdList=abar.querySelector('.s24-repeat-dd-list');
-        var repDdItems=Array.prototype.slice.call(abar.querySelectorAll('.s24-repeat-dd-list li'));
-        function repDdClose(){
-          repDdList.hidden=true;
-          repDdBtn.setAttribute('aria-expanded','false');
-          S24Tools.wrap.classList.remove('s24-dd-open');
-        }
-        function repDdOpen(){
-          if(typeof ddClose==='function') ddClose();
-          var r=repDdBtn.getBoundingClientRect();
-          repDdList.style.maxHeight=Math.max(120,Math.min(260,r.top-12))+'px';
-          repDdList.hidden=false;
-          repDdBtn.setAttribute('aria-expanded','true');
-          S24Tools.wrap.classList.add('s24-dd-open');
-          var active=repDdItems.filter(function(li){return li.getAttribute('aria-selected')==='true';})[0]||repDdItems[0];
-          if(active) active.focus();
-        }
-        function selectRepeat(value){
-          rep.value=value;
-          repLeft=(value==='0'||value==='sura')?0:parseInt(value,10);
-          repDdItems.forEach(function(li){
-            var on=(li.getAttribute('data-value')===value);
-            li.setAttribute('aria-selected',on?'true':'false');
-            if(on) repDdLabel.textContent=li.textContent;
-          });
-        }
         repDdBtn.addEventListener('click',function(){
-          if(repDdList.hidden) repDdOpen(); else repDdClose();
+          ddOverlayOpen('عدد مرات التكرار',REPEAT_OPTIONS,rep.value,function(value,text){
+            rep.value=value;
+            repLeft=(value==='0'||value==='sura')?0:parseInt(value,10);
+            repDdLabel.textContent=text;
+          },repDdBtn);
         });
-        repDdItems.forEach(function(li){
-          li.addEventListener('click',function(){
-            selectRepeat(li.getAttribute('data-value'));
-            repDdClose(); repDdBtn.focus();
-          });
-        });
-        repDdList.addEventListener('keydown',function(e){
-          var idx=repDdItems.indexOf(document.activeElement);
-          if(e.key==='ArrowDown'){ e.preventDefault(); (repDdItems[(idx+1)%repDdItems.length]||repDdItems[0]).focus(); }
-          else if(e.key==='ArrowUp'){ e.preventDefault(); (repDdItems[(idx-1+repDdItems.length)%repDdItems.length]||repDdItems[0]).focus(); }
-          else if(e.key==='Enter'||e.key===' '){ e.preventDefault(); selectRepeat(document.activeElement.getAttribute('data-value')); repDdClose(); repDdBtn.focus(); }
-          else if(e.key==='Escape'){ repDdClose(); repDdBtn.focus(); }
-        });
-        document.addEventListener('click',function(e){
-          if(!repDdList.hidden && !abar.contains(e.target)) repDdClose();
-        });
-        /* القائمة المخصّصة لاختيار القارئ — بديل عن select الأصلية لضمان
-           التحكم الكامل بلون التظليل (بدل الأزرق الافتراضي للمتصفح) */
-        function ddClose(){
-          ddList.hidden=true;
-          ddBtn.setAttribute('aria-expanded','false');
-          S24Tools.wrap.classList.remove('s24-dd-open');   /* استعادة overflow:hidden الأصلي */
-        }
-        function ddOpen(){
-          if(typeof repDdClose==='function') repDdClose();
-          var r=ddBtn.getBoundingClientRect();
-          ddList.style.maxHeight=Math.max(120,Math.min(260,r.top-12))+'px';
-          ddList.hidden=false;
-          ddBtn.setAttribute('aria-expanded','true');
-          S24Tools.wrap.classList.add('s24-dd-open');   /* تعطيل overflow:hidden مؤقتاً كي لا تُقصّ القائمة */
-          var active=ddItems.filter(function(li){return li.getAttribute('aria-selected')==='true';})[0]||ddItems[0];
-          if(active) active.focus();
-        }
-        function selectReciter(value){
-          reciter=value;
-          ddItems.forEach(function(li){
-            var on=(li.getAttribute('data-value')===value);
-            li.setAttribute('aria-selected',on?'true':'false');
-            if(on) ddLabel.textContent=li.textContent;
-          });
-          try{ localStorage.setItem(RKEY,reciter); }catch(e){}
-          if(playing) play(cur); else st.textContent='القارئ: '+ddLabel.textContent;
-        }
+
+        var ddBtn=abar.querySelector('.s24-reciter-dd-btn');
+        var ddLabel=abar.querySelector('.s24-reciter-dd-label');
         ddBtn.addEventListener('click',function(){
-          if(ddList.hidden) ddOpen(); else ddClose();
+          ddOverlayOpen('اختر القارئ',RECITERS,reciter,function(value,text){
+            reciter=value;
+            ddLabel.textContent=text;
+            try{ localStorage.setItem(RKEY,reciter); }catch(e){}
+            if(playing) play(cur); else st.textContent='القارئ: '+text;
+          },ddBtn);
         });
-        ddItems.forEach(function(li){
-          li.addEventListener('click',function(){
-            selectReciter(li.getAttribute('data-value'));
-            ddClose(); ddBtn.focus();
-          });
-        });
-        ddList.addEventListener('keydown',function(e){
-          var idx=ddItems.indexOf(document.activeElement);
-          if(e.key==='ArrowDown'){ e.preventDefault(); (ddItems[(idx+1)%ddItems.length]||ddItems[0]).focus(); }
-          else if(e.key==='ArrowUp'){ e.preventDefault(); (ddItems[(idx-1+ddItems.length)%ddItems.length]||ddItems[0]).focus(); }
-          else if(e.key==='Enter'||e.key===' '){ e.preventDefault(); selectReciter(document.activeElement.getAttribute('data-value')); ddClose(); ddBtn.focus(); }
-          else if(e.key==='Escape'){ ddClose(); ddBtn.focus(); }
-        });
-        document.addEventListener('click',function(e){
-          if(!ddList.hidden && !abar.contains(e.target)) ddClose();
-        });
+
         /* الضغط على أي آية يبدأ التلاوة منها */
         ayas.forEach(function(a){
           a.addEventListener('click',function(){
