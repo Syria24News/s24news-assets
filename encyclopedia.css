@@ -513,6 +513,10 @@ body.dark .s24-aya.is-playing,
     z-index:500;
     box-shadow:0 6px 20px rgba(119,189,29,.25);
   }
+  .s24-tools.s24-tools-past-end{
+    opacity:0;
+    pointer-events:none;
+  }
 }
 
 /* ═══ ١٧. إخفاء الغلاف عند وجود فيديو ═══ */
