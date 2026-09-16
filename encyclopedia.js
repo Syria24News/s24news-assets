@@ -54,10 +54,6 @@ document.addEventListener('DOMContentLoaded',function(){
           it.panel.classList.toggle('on',on);
         });
         wrap.classList.toggle('is-open', !!id);
-        if(wrap.classList.contains('s24-tools-docked')){
-          wrap.style.height='auto';
-          wrap.style.height=wrap.offsetHeight+'px';
-        }
       }
       var ORDER={audio:1,search:2,font:3};
       function add(id,icon,label,panel){
@@ -88,50 +84,17 @@ document.addEventListener('DOMContentLoaded',function(){
         });
       },{passive:true});
 
-      /* الحاسوب: الشريط ثابت (fixed) أثناء التمرير داخل المقال،
-         ثم "يلتحم" طبيعياً عند نهاية المقال بدل الاستمرار فوق الفوتر —
-         نفس السلوك الذي كان يُفترض أن يقدّمه sticky، مُعاد بناؤه يدوياً. */
+      /* الحاسوب: إخفاء الشريط تدريجياً بمجرد تجاوز نهاية المقال،
+         بدل تركه عائماً فوق الفوتر أو محاولة تثبيته هناك. */
       var dockContainer=document.querySelector('.s24-enc-body');
-      var TOOLS_GAP=16, TOOLS_INSET=28;
-
-      function containDesktop(){
+      function checkArticleEnd(){
         if(window.innerWidth<769 || !dockContainer) return;
-        var rect=dockContainer.getBoundingClientRect();
-        var shouldDock=rect.bottom<=window.innerHeight;
-        var isDocked=wrap.classList.contains('s24-tools-docked');
-        if(shouldDock && !isDocked){
-          var h=wrap.offsetHeight;   /* يُقاس مرة واحدة فقط قبل التثبيت المطلق */
-          wrap.classList.add('s24-tools-docked');
-          wrap.style.position='absolute';
-          wrap.style.left=TOOLS_INSET+'px';
-          wrap.style.top=(dockContainer.offsetHeight-h-TOOLS_GAP)+'px';
-          wrap.style.height=h+'px';   /* تثبيت صريح يمنع انهيار الارتفاع تلقائياً */
-          wrap.style.bottom='';
-          wrap.style.transform='none';
-        }else if(!shouldDock && isDocked){
-          wrap.classList.remove('s24-tools-docked');
-          wrap.style.position='fixed';
-          wrap.style.left=(rect.left+TOOLS_INSET)+'px';
-          wrap.style.top='';
-          wrap.style.height='';   /* عودة للارتفاع التلقائي في وضع fixed */
-          wrap.style.bottom=TOOLS_GAP+'px';
-          wrap.style.transform='none';
-        }
+        var past=dockContainer.getBoundingClientRect().bottom<=window.innerHeight;
+        wrap.classList.toggle('s24-tools-past-end',past);
       }
-      function alignDesktop(){
-        if(window.innerWidth<769 || !dockContainer){
-          wrap.style.left=''; wrap.style.width=''; wrap.style.top=''; wrap.style.bottom='';
-          wrap.style.position=''; wrap.style.transform=''; wrap.classList.remove('s24-tools-docked');
-          return;
-        }
-        var w=dockContainer.clientWidth-TOOLS_INSET*2;
-        if(w<280) w=280;
-        wrap.style.width=w+'px';
-        containDesktop();
-      }
-      alignDesktop();
-      window.addEventListener('resize',alignDesktop);
-      window.addEventListener('scroll',containDesktop,{passive:true});
+      checkArticleEnd();
+      window.addEventListener('scroll',checkArticleEnd,{passive:true});
+      window.addEventListener('resize',checkArticleEnd);
 
       return {add:add, open:open, wrap:wrap, tabs:tabs};
     })();
