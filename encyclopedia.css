@@ -46,7 +46,7 @@
 }
 
 /* ═══ ٢. حاوية المتن والنص ═══ */
-.s24-enc-body{direction:rtl}
+.s24-enc-body{direction:rtl;position:relative}
 .s24-enc-body p,
 .s24-enc-body ul,
 .s24-enc-body ol{
@@ -437,7 +437,7 @@ body.dark .s24-aya.is-playing,
 /* ═══ حاوية أدوات القراءة الموحّدة ═══ */
 .s24-tools{
   margin:20px 0 18px;
-  border:1px solid var(--border-color,#dddddd);
+  border:2px solid var(--bs-main,#77bd1d);
   border-radius:12px;
   background:var(--bg-card,#ffffff);
   overflow:hidden;
@@ -490,7 +490,7 @@ body.dark .s24-aya.is-playing,
     inset-inline:8px;bottom:8px;
     margin:0;
     border-radius:14px;
-    box-shadow:0 6px 22px rgba(0,0,0,.18);
+    box-shadow:0 6px 22px rgba(119,189,29,.28);
     padding-bottom:env(safe-area-inset-bottom,0);
   }
   .s24-tools.is-hidden{transform:translateY(140%);opacity:0;pointer-events:none}
@@ -511,7 +511,7 @@ body.dark .s24-aya.is-playing,
     bottom:16px;
     width:min(94vw,900px);
     z-index:500;
-    box-shadow:0 6px 20px rgba(0,0,0,.18);
+    box-shadow:0 6px 20px rgba(119,189,29,.25);
   }
 }
 
