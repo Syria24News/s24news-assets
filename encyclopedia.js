@@ -260,12 +260,12 @@ document.addEventListener('DOMContentLoaded',function(){
         if(!sura) return;                       /* يحتاج data-sura على الحاوية */
 
         var RECITERS=[
-          ['Alafasy_128kbps','مشاري العفاسي','الكويت'],
-          ['Husary_128kbps','محمود خليل الحصري','مصر'],
-          ['Abdul_Basit_Murattal_192kbps','عبد الباسط عبد الصمد','مصر'],
-          ['Minshawy_Murattal_128kbps','محمد صديق المنشاوي','مصر'],
-          ['Abdurrahmaan_As-Sudais_192kbps','عبد الرحمن السديس','إمام الحرم المكي'],
-          ['Saood_ash-Shuraym_128kbps','سعود الشريم','إمام الحرم المكي']
+          ['Alafasy_128kbps','مشاري العفاسي'],
+          ['Husary_128kbps','محمود خليل الحصري'],
+          ['Abdul_Basit_Murattal_192kbps','عبد الباسط عبد الصمد (مرتّل)'],
+          ['Minshawy_Murattal_128kbps','محمد صديق المنشاوي'],
+          ['Abdurrahmaan_As-Sudais_192kbps','عبد الرحمن السديس'],
+          ['Saood_ash-Shuraym_128kbps','سعود الشريم']
         ];
         var RKEY='s24_quran_reciter';
         var reciter=null;
@@ -283,12 +283,19 @@ document.addEventListener('DOMContentLoaded',function(){
         var abar=document.createElement('div');
         abar.className='s24-audio-bar';
         var opts=RECITERS.map(function(r){
-          return '<option value="'+r[0]+'"'+(r[0]===reciter?' selected':'')+'>'+r[1]+' — '+r[2]+'</option>';
+          return '<li role="option" data-value="'+r[0]+'" aria-selected="'+(r[0]===reciter?'true':'false')+'" tabindex="-1">'+r[1]+'</li>';
         }).join('');
+        var curReciter=(RECITERS.filter(function(r){return r[0]===reciter;})[0]||RECITERS[0]);
         abar.innerHTML='<button type="button" class="main" data-a="play">▶ تشغيل</button>'
                      + '<button type="button" data-a="prev">السابقة</button>'
                      + '<button type="button" data-a="next">التالية</button>'
-                     + '<select class="s24-reciter">'+opts+'</select>'
+                     + '<div class="s24-reciter-dd">'
+                     +   '<button type="button" class="s24-reciter-dd-btn" aria-haspopup="listbox" aria-expanded="false">'
+                     +     '<span class="s24-reciter-dd-label">'+curReciter[1]+'</span>'
+                     +     '<span class="s24-reciter-dd-arrow">\u25BE</span>'
+                     +   '</button>'
+                     +   '<ul class="s24-reciter-dd-list" role="listbox" aria-label="اختيار القارئ" hidden>'+opts+'</ul>'
+                     + '</div>'
                      + '<select class="s24-repeat">'
                      +   '<option value="0">بلا تكرار</option>'
                      +   '<option value="2">تكرار الآية مرتين</option>'
@@ -311,7 +318,10 @@ document.addEventListener('DOMContentLoaded',function(){
         try{ var sv=localStorage.getItem(VKEY); if(sv!==null) vol=Math.max(0,Math.min(100,+sv)); }catch(e){}
 
         var bPlay=abar.querySelector('[data-a="play"]');
-        var sel=abar.querySelector('.s24-reciter');
+        var ddBtn=abar.querySelector('.s24-reciter-dd-btn');
+        var ddLabel=abar.querySelector('.s24-reciter-dd-label');
+        var ddList=abar.querySelector('.s24-reciter-dd-list');
+        var ddItems=Array.prototype.slice.call(abar.querySelectorAll('.s24-reciter-dd-list li'));
         var rep=abar.querySelector('.s24-repeat');
         var repLeft=0;
         var bMute=abar.querySelector('[data-a="mute"]');
@@ -420,10 +430,48 @@ document.addEventListener('DOMContentLoaded',function(){
           var m=this.value;
           repLeft=(m==='0'||m==='sura')?0:parseInt(m,10);
         });
-        sel.addEventListener('change',function(){
-          reciter=this.value;
+        /* القائمة المخصّصة لاختيار القارئ — بديل عن select الأصلية لضمان
+           التحكم الكامل بلون التظليل (بدل الأزرق الافتراضي للمتصفح) */
+        function ddClose(){
+          ddList.hidden=true;
+          ddBtn.setAttribute('aria-expanded','false');
+          S24Tools.wrap.classList.remove('s24-dd-open');   /* استعادة overflow:hidden الأصلي */
+        }
+        function ddOpen(){
+          ddList.hidden=false;
+          ddBtn.setAttribute('aria-expanded','true');
+          S24Tools.wrap.classList.add('s24-dd-open');   /* تعطيل overflow:hidden مؤقتاً كي لا تُقصّ القائمة */
+          var active=ddItems.filter(function(li){return li.getAttribute('aria-selected')==='true';})[0]||ddItems[0];
+          if(active) active.focus();
+        }
+        function selectReciter(value){
+          reciter=value;
+          ddItems.forEach(function(li){
+            var on=(li.getAttribute('data-value')===value);
+            li.setAttribute('aria-selected',on?'true':'false');
+            if(on) ddLabel.textContent=li.textContent;
+          });
           try{ localStorage.setItem(RKEY,reciter); }catch(e){}
-          if(playing) play(cur); else st.textContent='القارئ: '+this.options[this.selectedIndex].text;
+          if(playing) play(cur); else st.textContent='القارئ: '+ddLabel.textContent;
+        }
+        ddBtn.addEventListener('click',function(){
+          if(ddList.hidden) ddOpen(); else ddClose();
+        });
+        ddItems.forEach(function(li){
+          li.addEventListener('click',function(){
+            selectReciter(li.getAttribute('data-value'));
+            ddClose(); ddBtn.focus();
+          });
+        });
+        ddList.addEventListener('keydown',function(e){
+          var idx=ddItems.indexOf(document.activeElement);
+          if(e.key==='ArrowDown'){ e.preventDefault(); (ddItems[(idx+1)%ddItems.length]||ddItems[0]).focus(); }
+          else if(e.key==='ArrowUp'){ e.preventDefault(); (ddItems[(idx-1+ddItems.length)%ddItems.length]||ddItems[0]).focus(); }
+          else if(e.key==='Enter'||e.key===' '){ e.preventDefault(); selectReciter(document.activeElement.getAttribute('data-value')); ddClose(); ddBtn.focus(); }
+          else if(e.key==='Escape'){ ddClose(); ddBtn.focus(); }
+        });
+        document.addEventListener('click',function(e){
+          if(!ddList.hidden && !abar.contains(e.target)) ddClose();
         });
         /* الضغط على أي آية يبدأ التلاوة منها */
         ayas.forEach(function(a){
