@@ -267,6 +267,14 @@ document.addEventListener('DOMContentLoaded',function(){
           ['Abdurrahmaan_As-Sudais_192kbps','عبد الرحمن السديس'],
           ['Saood_ash-Shuraym_128kbps','سعود الشريم']
         ];
+        var REPEAT_OPTIONS=[
+          ['0','بلا تكرار'],
+          ['2','تكرار الآية مرتين'],
+          ['3','تكرار الآية ٣ مرات'],
+          ['5','تكرار الآية ٥ مرات'],
+          ['99','تكرار الآية بلا حد'],
+          ['sura','إعادة السورة عند انتهائها']
+        ];
         var RKEY='s24_quran_reciter';
         var reciter=null;
         try{ reciter=localStorage.getItem(RKEY); }catch(e){}
@@ -286,6 +294,9 @@ document.addEventListener('DOMContentLoaded',function(){
           return '<li role="option" data-value="'+r[0]+'" aria-selected="'+(r[0]===reciter?'true':'false')+'" tabindex="-1">'+r[1]+'</li>';
         }).join('');
         var curReciter=(RECITERS.filter(function(r){return r[0]===reciter;})[0]||RECITERS[0]);
+        var repOpts=REPEAT_OPTIONS.map(function(r){
+          return '<li role="option" data-value="'+r[0]+'" aria-selected="'+(r[0]==='0'?'true':'false')+'" tabindex="-1">'+r[1]+'</li>';
+        }).join('');
         abar.innerHTML='<button type="button" class="main" data-a="play">▶ تشغيل</button>'
                      + '<button type="button" data-a="prev">السابقة</button>'
                      + '<button type="button" data-a="next">التالية</button>'
@@ -296,7 +307,7 @@ document.addEventListener('DOMContentLoaded',function(){
                      +   '</button>'
                      +   '<ul class="s24-reciter-dd-list" role="listbox" aria-label="اختيار القارئ" hidden>'+opts+'</ul>'
                      + '</div>'
-                     + '<select class="s24-repeat">'
+                     + '<select class="s24-repeat" hidden>'
                      +   '<option value="0">بلا تكرار</option>'
                      +   '<option value="2">تكرار الآية مرتين</option>'
                      +   '<option value="3">تكرار الآية ٣ مرات</option>'
@@ -304,6 +315,13 @@ document.addEventListener('DOMContentLoaded',function(){
                      +   '<option value="99">تكرار الآية بلا حد</option>'
                      +   '<option value="sura">إعادة السورة عند انتهائها</option>'
                      + '</select>'
+                     + '<div class="s24-repeat-dd">'
+                     +   '<button type="button" class="s24-repeat-dd-btn" aria-haspopup="listbox" aria-expanded="false">'
+                     +     '<span class="s24-repeat-dd-label">بلا تكرار</span>'
+                     +     '<span class="s24-repeat-dd-arrow">\u25BE</span>'
+                     +   '</button>'
+                     +   '<ul class="s24-repeat-dd-list" role="listbox" aria-label="عدد مرات التكرار" hidden>'+repOpts+'</ul>'
+                     + '</div>'
                      + '<span class="s24-audio-vol">'
                      +   '<button type="button" data-a="mute" title="كتم/تشغيل الصوت">\uD83D\uDD0A</button>'
                      +   '<input type="range" min="0" max="100" step="5" value="100" aria-label="مستوى الصوت"/>'
@@ -430,6 +448,55 @@ document.addEventListener('DOMContentLoaded',function(){
           var m=this.value;
           repLeft=(m==='0'||m==='sura')?0:parseInt(m,10);
         });
+
+        /* القائمة المخصّصة لعدد مرات التكرار — نفس معالجة قائمة القارئ،
+           مع إبقاء select الأصلي مخفياً كمخزن للقيمة فقط (rep.value) كي لا
+           يتطلّب الأمر تعديل بقية الكود الذي يقرأ منه مباشرة. */
+        var repDdBtn=abar.querySelector('.s24-repeat-dd-btn');
+        var repDdLabel=abar.querySelector('.s24-repeat-dd-label');
+        var repDdList=abar.querySelector('.s24-repeat-dd-list');
+        var repDdItems=Array.prototype.slice.call(abar.querySelectorAll('.s24-repeat-dd-list li'));
+        function repDdClose(){
+          repDdList.hidden=true;
+          repDdBtn.setAttribute('aria-expanded','false');
+          S24Tools.wrap.classList.remove('s24-dd-open');
+        }
+        function repDdOpen(){
+          if(typeof ddClose==='function') ddClose();
+          repDdList.hidden=false;
+          repDdBtn.setAttribute('aria-expanded','true');
+          S24Tools.wrap.classList.add('s24-dd-open');
+          var active=repDdItems.filter(function(li){return li.getAttribute('aria-selected')==='true';})[0]||repDdItems[0];
+          if(active) active.focus();
+        }
+        function selectRepeat(value){
+          rep.value=value;
+          repLeft=(value==='0'||value==='sura')?0:parseInt(value,10);
+          repDdItems.forEach(function(li){
+            var on=(li.getAttribute('data-value')===value);
+            li.setAttribute('aria-selected',on?'true':'false');
+            if(on) repDdLabel.textContent=li.textContent;
+          });
+        }
+        repDdBtn.addEventListener('click',function(){
+          if(repDdList.hidden) repDdOpen(); else repDdClose();
+        });
+        repDdItems.forEach(function(li){
+          li.addEventListener('click',function(){
+            selectRepeat(li.getAttribute('data-value'));
+            repDdClose(); repDdBtn.focus();
+          });
+        });
+        repDdList.addEventListener('keydown',function(e){
+          var idx=repDdItems.indexOf(document.activeElement);
+          if(e.key==='ArrowDown'){ e.preventDefault(); (repDdItems[(idx+1)%repDdItems.length]||repDdItems[0]).focus(); }
+          else if(e.key==='ArrowUp'){ e.preventDefault(); (repDdItems[(idx-1+repDdItems.length)%repDdItems.length]||repDdItems[0]).focus(); }
+          else if(e.key==='Enter'||e.key===' '){ e.preventDefault(); selectRepeat(document.activeElement.getAttribute('data-value')); repDdClose(); repDdBtn.focus(); }
+          else if(e.key==='Escape'){ repDdClose(); repDdBtn.focus(); }
+        });
+        document.addEventListener('click',function(e){
+          if(!repDdList.hidden && !abar.contains(e.target)) repDdClose();
+        });
         /* القائمة المخصّصة لاختيار القارئ — بديل عن select الأصلية لضمان
            التحكم الكامل بلون التظليل (بدل الأزرق الافتراضي للمتصفح) */
         function ddClose(){
@@ -438,6 +505,7 @@ document.addEventListener('DOMContentLoaded',function(){
           S24Tools.wrap.classList.remove('s24-dd-open');   /* استعادة overflow:hidden الأصلي */
         }
         function ddOpen(){
+          if(typeof repDdClose==='function') repDdClose();
           ddList.hidden=false;
           ddBtn.setAttribute('aria-expanded','true');
           S24Tools.wrap.classList.add('s24-dd-open');   /* تعطيل overflow:hidden مؤقتاً كي لا تُقصّ القائمة */
