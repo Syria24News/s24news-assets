@@ -278,6 +278,23 @@ document.addEventListener('DOMContentLoaded',function(){
           }
           return false;
         }
+
+        /* منع إطفاء الشاشة تلقائياً أثناء التلاوة — يبقى فعّالاً ما دامت السورة تُقرأ،
+           ولا يمنع المستخدم من إطفاء الشاشة يدوياً بزر الطاقة */
+        var wakeLock=null;
+        function requestWakeLock(){
+          if(!('wakeLock' in navigator)) return;
+          navigator.wakeLock.request('screen').then(function(wl){
+            wakeLock=wl;
+            wakeLock.addEventListener('release',function(){ wakeLock=null; });
+          }).catch(function(){ /* رفض المتصفح الطلب — نتجاهل بصمت */ });
+        }
+        function releaseWakeLock(){
+          if(wakeLock){ wakeLock.release(); wakeLock=null; }
+        }
+        document.addEventListener('visibilitychange',function(){
+          if(document.visibilityState==='visible' && playing) requestWakeLock();
+        });
          
         var abar=document.createElement('div');
         abar.className='s24-audio-bar';
@@ -377,7 +394,7 @@ document.addEventListener('DOMContentLoaded',function(){
             retryLeft=3;
             playing=true; bPlay.textContent='⏸ إيقاف';
             st.textContent='الآية '+n+' / '+last()+(repLeft>1?' — تكرار '+repLeft:'');
-            mark(n); session(n);
+            mark(n); session(n); requestWakeLock();
             if(n<last()){ pre.src=url(n+1); }   /* تحميل مسبق للآية التالية */
           }).catch(function(){
             retryFail();
@@ -392,7 +409,7 @@ document.addEventListener('DOMContentLoaded',function(){
             st.textContent='تعذّر التشغيل — تحقق من اتصال الإنترنت';
           }
         }
-        function pause(){ au.pause(); playing=false; bPlay.textContent='▶ تشغيل'; }
+        function pause(){ au.pause(); playing=false; bPlay.textContent='▶ تشغيل'; releaseWakeLock(); }
         function stop(){
           pause(); cur=0; st.textContent='انتهت السورة';
           ayas.forEach(function(a){ a.classList.remove('is-playing'); });
