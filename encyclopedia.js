@@ -96,6 +96,25 @@ document.addEventListener('DOMContentLoaded',function(){
       window.addEventListener('scroll',checkArticleEnd,{passive:true});
       window.addEventListener('resize',checkArticleEnd);
 
+      /* الحاسوب: محاذاة عرض وموضع الشريط ليبقى ضمن حدود العمود الأوسط
+         (main-container) بمسافة عن حافتيه، بدل الامتداد فوق الشريطين الجانبيين. */
+      var mainCol=document.querySelector('.main-container');
+      var TOOLS_INSET=28;
+      function alignDesktop(){
+        if(window.innerWidth<769 || !mainCol){
+          wrap.style.left=''; wrap.style.width=''; wrap.style.transform='';
+          return;
+        }
+        var r=mainCol.getBoundingClientRect();
+        var w=r.width-TOOLS_INSET*2;
+        if(w<280) w=280;
+        wrap.style.left=(r.left+TOOLS_INSET)+'px';
+        wrap.style.width=w+'px';
+        wrap.style.transform='none';
+      }
+      alignDesktop();
+      window.addEventListener('resize',alignDesktop);
+
       return {add:add, open:open, wrap:wrap, tabs:tabs};
     })();
   }
@@ -241,12 +260,12 @@ document.addEventListener('DOMContentLoaded',function(){
         if(!sura) return;                       /* يحتاج data-sura على الحاوية */
 
         var RECITERS=[
-          ['Alafasy_128kbps','مشاري العفاسي'],
-          ['Husary_128kbps','محمود خليل الحصري'],
-          ['Abdul_Basit_Murattal_192kbps','عبد الباسط عبد الصمد (مرتّل)'],
-          ['Minshawy_Murattal_128kbps','محمد صديق المنشاوي'],
-          ['Abdurrahmaan_As-Sudais_192kbps','عبد الرحمن السديس'],
-          ['Saood_ash-Shuraym_128kbps','سعود الشريم']
+          ['Alafasy_128kbps','مشاري العفاسي','الكويت'],
+          ['Husary_128kbps','محمود خليل الحصري','مصر'],
+          ['Abdul_Basit_Murattal_192kbps','عبد الباسط عبد الصمد','مصر'],
+          ['Minshawy_Murattal_128kbps','محمد صديق المنشاوي','مصر'],
+          ['Abdurrahmaan_As-Sudais_192kbps','عبد الرحمن السديس','إمام الحرم المكي'],
+          ['Saood_ash-Shuraym_128kbps','سعود الشريم','إمام الحرم المكي']
         ];
         var RKEY='s24_quran_reciter';
         var reciter=null;
@@ -264,7 +283,7 @@ document.addEventListener('DOMContentLoaded',function(){
         var abar=document.createElement('div');
         abar.className='s24-audio-bar';
         var opts=RECITERS.map(function(r){
-          return '<option value="'+r[0]+'"'+(r[0]===reciter?' selected':'')+'>'+r[1]+'</option>';
+          return '<option value="'+r[0]+'"'+(r[0]===reciter?' selected':'')+'>'+r[1]+' — '+r[2]+'</option>';
         }).join('');
         abar.innerHTML='<button type="button" class="main" data-a="play">▶ تشغيل</button>'
                      + '<button type="button" data-a="prev">السابقة</button>'
