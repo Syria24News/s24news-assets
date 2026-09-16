@@ -54,6 +54,10 @@ document.addEventListener('DOMContentLoaded',function(){
           it.panel.classList.toggle('on',on);
         });
         wrap.classList.toggle('is-open', !!id);
+        if(wrap.classList.contains('s24-tools-docked')){
+          wrap.style.height='auto';
+          wrap.style.height=wrap.offsetHeight+'px';
+        }
       }
       var ORDER={audio:1,search:2,font:3};
       function add(id,icon,label,panel){
@@ -93,20 +97,23 @@ document.addEventListener('DOMContentLoaded',function(){
       function containDesktop(){
         if(window.innerWidth<769 || !dockContainer) return;
         var rect=dockContainer.getBoundingClientRect();
-        var docked=rect.bottom<=window.innerHeight;
-        if(docked){
-          var h=wrap.offsetHeight;
+        var shouldDock=rect.bottom<=window.innerHeight;
+        var isDocked=wrap.classList.contains('s24-tools-docked');
+        if(shouldDock && !isDocked){
+          var h=wrap.offsetHeight;   /* يُقاس مرة واحدة فقط قبل التثبيت المطلق */
           wrap.classList.add('s24-tools-docked');
           wrap.style.position='absolute';
           wrap.style.left=TOOLS_INSET+'px';
           wrap.style.top=(dockContainer.offsetHeight-h-TOOLS_GAP)+'px';
+          wrap.style.height=h+'px';   /* تثبيت صريح يمنع انهيار الارتفاع تلقائياً */
           wrap.style.bottom='';
           wrap.style.transform='none';
-        }else{
+        }else if(!shouldDock && isDocked){
           wrap.classList.remove('s24-tools-docked');
           wrap.style.position='fixed';
           wrap.style.left=(rect.left+TOOLS_INSET)+'px';
           wrap.style.top='';
+          wrap.style.height='';   /* عودة للارتفاع التلقائي في وضع fixed */
           wrap.style.bottom=TOOLS_GAP+'px';
           wrap.style.transform='none';
         }
