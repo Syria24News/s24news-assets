@@ -249,7 +249,7 @@
   color:var(--text-main,#000000);
 }
 .s24-quran-read{
-  display:block!important;text-align:center;padding:16px 20px;margin:26px 0;
+  display:block!important;clear:both;text-align:center;padding:16px 20px;margin:26px 0;
   border-radius:10px;border:2px solid var(--bs-main,#77bd1d);
   color:var(--bs-main,#77bd1d);
   font-family:"IBM Plex Sans Arabic",sans-serif;
