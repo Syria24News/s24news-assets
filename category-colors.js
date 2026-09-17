@@ -338,8 +338,8 @@ document.addEventListener("DOMContentLoaded", function() {
             "*SW",
             "الطقس",
             
-            "سوريا",
-            "*Sy",
+            "",
+            "",
             "منوعات",
             "*M",
             "تقارير",
@@ -357,7 +357,8 @@ document.addEventListener("DOMContentLoaded", function() {
             "تعليم",
             "اقتصاد",
             "صحة",
-            
+            "سوريا",
+           "*Sy",
             "منوعات"
         ];
 
