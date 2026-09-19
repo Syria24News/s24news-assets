@@ -1321,9 +1321,7 @@ h3.post-title a:hover {
    وتستثني الروابط ذات class والروابط التي تحوي صورة */
 body.item-page .post-body a:not([class]):not(:has(img)) {
     color: inherit;
-    font-size: inherit;
     font-weight: inherit;
-    line-height: inherit !important;
     text-shadow: var(--s24-link-shadow, 0 1px 2px rgba(0, 0, 0, 0.28));
 }
 [data-theme="dark"] { --s24-link-shadow: 0 1px 5px rgba(119, 189, 29, 0.85); }
