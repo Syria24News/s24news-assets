@@ -1317,9 +1317,9 @@ h3.post-title a:hover {
 .post-body a:hover {opacity: 0.8; text-decoration: none;}
 
 /* روابط نص المقال: نفس لون الفقرة ومقاساتها، وتمييزها بظل حرفي فقط.
-   محصورة بالمقال لأن .post-body شفاف (color:transparent) في الصفحات الأخرى؛
+   محصورة بالمقالات دون الصفحات الثابتة (static-page-view) لأن لها تنسيقها الخاص؛
    وتستثني الروابط ذات class والروابط التي تحوي صورة */
-body.item-page .post-body a:not([class]):not(:has(img)) {
+body.item-page:not(.static-page-view) .post-body a:not([class]):not(:has(img)) {
     color: inherit;
     font-weight: inherit;
     text-shadow: var(--s24-link-shadow, 0 1px 2px rgba(0, 0, 0, 0.28));
