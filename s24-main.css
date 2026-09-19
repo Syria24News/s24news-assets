@@ -1312,9 +1312,12 @@ h3.post-title a:hover {
     font-size: 0;
     color: transparent;
 }
-.post-body a {display: inline; cursor: pointer; color: var(--sy-green); text-decoration: none;font-weight: 600;transition: color 0.3s ease;}
-.post-body a:hover {opacity: 0.8; text-decoration: none;}
 
+/* لون روابط المقال: أغمق من أخضر الهوية لبلوغ تباين 4.5:1 على الأبيض؛ الوضع الليلي يبقى بأخضر الهوية */
+.post-body { --s24-link: #4e7c13; }
+[data-theme="dark"] .post-body { --s24-link: var(--sy-green); }
+.post-body a {display: inline; cursor: pointer; color: var(--s24-link); text-decoration: none;font-weight: 600;transition: color 0.3s ease;}
+.post-body a:hover {opacity: 0.8; text-decoration: none;}
 
 /* جدول محتويات مقالات الموسوعة */
 .s24-toc {
@@ -3194,7 +3197,7 @@ body.most-read-page .main-layout {
 .post-body a {
     display: inline;
     cursor: pointer;
-    color: var(--sy-green);
+    color: var(--s24-link);
     text-decoration: none !important;
 }
 
