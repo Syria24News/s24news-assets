@@ -1932,6 +1932,14 @@ body.item-page .post-body {
     line-height: 1.8;
 }
 
+/* ضبط نص المقالة (Justify): بديل style="text-align: justify" السطري على كل فقرة.
+   محصور بالفقرات المباشرة داخل غلاف div[dir="rtl"] في المقالات العادية، ويستثني
+   الصفحات الثابتة ومقالات الموسوعة (لها تنسيقها الخاص). الأنماط السطرية القديمة
+   تبقى الأقوى ولا تتأثر. */
+body.item-page:not(.static-page-view):not(.s24-glossary-article) .post-body > div[dir="rtl"] > p {
+    text-align: justify;
+}
+
 /* 2. التعامل مع حاوية بلوجر (separator) */
 /* نستخدم !important هنا للتغلب على الستايل السطري الذي يضيفه بلوجر تلقائياً */
 body.item-page .post-body .separator {
