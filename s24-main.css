@@ -1318,6 +1318,7 @@ h3.post-title a:hover {
 [data-theme="dark"] .post-body { --s24-link: var(--sy-green); }
 .post-body a {display: inline; cursor: pointer; color: var(--s24-link); text-decoration: none;font-weight: 600;transition: color 0.3s ease;}
 .post-body a:hover {opacity: 0.8; text-decoration: none;}
+.post-body strong a, .post-body b a { font-weight: inherit; }
 
 /* جدول محتويات مقالات الموسوعة */
 .s24-toc {
