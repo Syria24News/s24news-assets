@@ -1313,12 +1313,20 @@ h3.post-title a:hover {
     color: transparent;
 }
 
-/* لون روابط المقال: أغمق من أخضر الهوية لبلوغ تباين 4.5:1 على الأبيض؛ الوضع الليلي يبقى بأخضر الهوية */
-.post-body { --s24-link: #4e7c13; }
-[data-theme="dark"] .post-body { --s24-link: var(--sy-green); }
-.post-body a {display: inline; cursor: pointer; color: var(--s24-link); text-decoration: none;font-weight: 600;transition: color 0.3s ease;}
+.post-body a {display: inline; cursor: pointer; color: var(--sy-green); text-decoration: none;font-weight: 600;transition: color 0.3s ease;}
 .post-body a:hover {opacity: 0.8; text-decoration: none;}
-.post-body strong a, .post-body b a { font-weight: inherit; }
+
+/* روابط نص المقال: نفس لون الفقرة ومقاساتها، وتمييزها بظل حرفي فقط.
+   محصورة بالمقال لأن .post-body شفاف (color:transparent) في الصفحات الأخرى؛
+   وتستثني الروابط ذات class والروابط التي تحوي صورة */
+body.item-page .post-body a:not([class]):not(:has(img)) {
+    color: inherit;
+    font-size: inherit;
+    font-weight: inherit;
+    line-height: inherit !important;
+    text-shadow: var(--s24-link-shadow, 0 2px 3px rgba(0, 0, 0, 0.35));
+}
+[data-theme="dark"] { --s24-link-shadow: 0 1px 5px rgba(119, 189, 29, 0.85); }
 
 /* جدول محتويات مقالات الموسوعة */
 .s24-toc {
@@ -3198,7 +3206,7 @@ body.most-read-page .main-layout {
 .post-body a {
     display: inline;
     cursor: pointer;
-    color: var(--s24-link);
+    color: var(--sy-green);
     text-decoration: none !important;
 }
 
