@@ -23,6 +23,42 @@ document.addEventListener('DOMContentLoaded',function(){
     if(!isNaN(age))el.textContent=age;
   });
 
+     /* ═══ الإحالات المرجعية المختصرة ═══
+     الصيغة المختصرة في المقالة:
+       داخل النص:  <sup class="s24-ref">1</sup>
+       في القائمة: <li>نص المرجع</li> داخل <div class="s24-enc-refs"><ol>
+     يُكمل هذا الكود الروابط تلقائياً: id لكل مرجع (بترتيبه)، وسهم العودة، ورابط [N] في النص.
+     الصيغة الكاملة القديمة (id + رابط + سهم) تبقى تعمل ولا تُمس. */
+  (function(){
+    var body=document.querySelector('.s24-enc-body');
+    if(!body)return;
+    body.querySelectorAll('.s24-enc-refs ol > li').forEach(function(li,i){
+      var n=i+1;
+      if(!li.id)li.id='s24-ref-'+n;
+      if(!li.querySelector('.s24-backref')){
+        var back=document.createElement('a');
+        back.className='s24-backref';
+        back.setAttribute('href','#s24-src-'+n);
+        back.textContent='↑';
+        li.insertBefore(document.createTextNode(' '),li.firstChild);
+        li.insertBefore(back,li.firstChild);
+      }
+    });
+    var seen={};
+    body.querySelectorAll('sup.s24-ref').forEach(function(sup){
+      var m=sup.textContent.match(/\d+/);
+      if(!m)return;
+      var n=m[0];
+      if(sup.querySelector('a')){seen[n]=true;return;}
+      var a=document.createElement('a');
+      a.setAttribute('href','#s24-ref-'+n);
+      a.textContent='['+n+']';
+      sup.textContent='';
+      sup.appendChild(a);
+      if(!seen[n]){sup.id='s24-src-'+n;seen[n]=true;}
+    });
+  })();
+
   /* ═══ حاوية أدوات القراءة الموحّدة ═══
      شريط واحد بثلاث أيقونات: بحث، خط، تلاوة.
      على الحاسوب فوق النص، وعلى الجوال ملتصق بأسفل الشاشة ويختفي مع التمرير. */
