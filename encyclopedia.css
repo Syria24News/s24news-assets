@@ -148,7 +148,7 @@
 .s24-enc-links ul{margin:8px 0 0;padding-right:20px;font-size:17px}
 .s24-enc-refs{margin:24px 0}
 .s24-enc-refs ol{font-size:15px;line-height:1.9;padding-right:22px}
-.s24-enc-refs li{margin-bottom:6px;color:var(--text-sec,#555555)}
+.s24-enc-refs li{margin-bottom:6px;color:var(--text-sec,#555555);text-align:start;overflow-wrap:anywhere}
 .s24-enc-seealso .s24-enc-box-title,
 .s24-enc-links .s24-enc-box-title,
 .s24-enc-refs .s24-enc-box-title{
