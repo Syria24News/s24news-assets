@@ -4732,8 +4732,10 @@ body.item-page h1.post-title, body.item-page h3.post-title, body.item-page .post
 #special-news-grid .grid-item .grid-content,#category-special-grid .grid-item .grid-content{flex-grow:1;display:flex;flex-direction:column;justify-content:center}
 #special-news-grid .grid-item .grid-title,#category-special-grid .grid-item .grid-title{font-size:14px !important;font-weight:bold;line-height:1.5;margin:0 !important;color:var(--text-main) !important;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
 
-/* تضمينات التواصل الاجتماعي في المقالة */
-.post-body iframe:not([id^="BLOGGER-video"]), .post-body video, .post-body embed, .post-body object.BLOG_video_class { width: 85% !important; max-width: 85% !important; margin: 20px auto !important; border-radius: 4px; }
+/* تضمينات الفيديو والتواصل الاجتماعي في المقالة (موبايل) — 85% موحّدة
+   تشمل فيديو بلوجر المرفوع بصيغتيه (object أو iframe BLOGGER-video)؛
+   الفيديو القائد محميّ بقواعد 100% الأعلى أولوية فلا يتأثر */
+.post-body iframe, .post-body video, .post-body embed, .post-body object.BLOG_video_class { width: 85% !important; max-width: 85% !important; margin: 20px auto !important; border-radius: 4px; }
 
 /* أ) تويتر/X على الموبايل - منفصل لأن ارتفاعه متغير حسب طول التغريدة */
 body.item-page .post-body iframe[id^="twitter-widget-"],
