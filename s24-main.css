@@ -4046,7 +4046,8 @@ body.item-page .post-body > .s24-cover-injected:has(~ div[dir="rtl"] .s24-galler
 /* --- تنسيق التلميح الذكي (Tooltip) المطور --- */
 .sy-tooltip {
     position: relative;
-    display: inline;
+    display: inline-block;   /* يمنع انقسام العبارة على سطرين فيبقى للصندوق مرجع موضع واحد */
+    max-width: 100%;         /* العبارة الأطول من العمود تلتفّ داخل إطارها بدل الخروج منه */
     border-bottom: none;
     cursor: help;
     color: var(--sy-tooltip-color) !important;
@@ -4077,7 +4078,7 @@ body.item-page .post-body > .s24-cover-injected:has(~ div[dir="rtl"] .s24-galler
     /* 🟢 التعديلات الجديدة للموبايل: */
     white-space: normal;       /* السماح بنزول السطر */
     width: max-content;        /* العرض حسب المحتوى */
-    max-width: 280px;          /* أقصى عرض للصندوق حتى لا يملأ الشاشة */
+    max-width: 200px;          /* أقصى عرض للصندوق حتى لا يملأ الشاشة */
     min-width: 120px;          /* أقل عرض */
     line-height: 1.4;
 
