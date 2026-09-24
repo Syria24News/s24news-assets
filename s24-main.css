@@ -4107,25 +4107,25 @@ body.item-page .post-body > .s24-cover-injected:has(~ div[dir="rtl"] .s24-galler
 /* إذا كانت الكلمة في أقصى اليمين، اجعل الشرح ينزاح لليسار */
 .sy-tooltip.pos-right::after {
     left: auto;
-    right: 0;
-    transform: none; /* إلغاء التوسيط */
+    right: 8px;
+    transform: none;
     text-align: right;
 }
 .sy-tooltip.pos-right::before {
     left: auto;
-    right: 10px; /* مكان السهم */
+    right: 18px;
     transform: none;
 }
 
 /* إذا كانت الكلمة في أقصى اليسار، اجعل الشرح ينزاح لليمين */
 .sy-tooltip.pos-left::after {
-    left: 0;
+    left: 8px;
     right: auto;
     transform: none;
     text-align: right;
 }
 .sy-tooltip.pos-left::before {
-    left: 10px;
+    left: 18px;
     transform: none;
 }
 
