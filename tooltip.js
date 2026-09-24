@@ -180,7 +180,7 @@ document.addEventListener("DOMContentLoaded", function() {
    ============================================================ */
 (function () {
     var HEADER_SAFE = 90;   // ارتفاع الهيدر الثابت + هامش أمان
-    var BOX_HALF    = 110;  // نصف أقصى عرض للصندوق + هامش
+    var BOX_HALF    = 150;  // نصف أقصى عرض للصندوق + هامش
     var openEl      = null;
 
     function place(el) {
