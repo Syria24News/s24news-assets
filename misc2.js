@@ -59,9 +59,13 @@ document.addEventListener("DOMContentLoaded", function() {
 /* ============ 5) زر العودة للبث المباشر ============ */
 document.addEventListener("DOMContentLoaded", () => {
     const params = new URLSearchParams(window.location.search);
-    if (params.get("source") === "updates") {
+     // يظهر الزر مع الصيغة القديمة (source=updates) أو الجديدة (lc=gr1)
+    const lc = params.get("lc");
+    const validLc = lc && /^gr[0-9]+$/.test(lc);
+    if (params.get("source") === "updates" || validLc) {
         const container = document.getElementById("live-return-container");
-        const returnUrl = "/p/lbs24n.html";
+                // العودة إلى نفس مجموعة التغطية التي جاء منها القارئ
+        const returnUrl = "/p/lbs24n.html" + (validLc ? "?tab=" + lc : "");
 
         if (container) {
             container.innerHTML = `
