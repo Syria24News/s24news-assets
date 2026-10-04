@@ -71,7 +71,7 @@ document.addEventListener("DOMContentLoaded", () => {
             container.innerHTML = `
                 <a class='live-return-pill' href='${returnUrl}' id='stickyLiveBtn'>
                     <div class='live-indicator-dot'></div>
-                    <span>العودة للبث المباشر</span>
+                    <span>العودة للتغطية الحية</span>
                     <svg fill='none' height='18' stroke='currentColor' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' viewBox='0 0 24 24' width='18'>
                         <path d='M19 12H5M12 19l-7-7 7-7'/>
                     </svg>
