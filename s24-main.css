@@ -4994,7 +4994,8 @@ body.live-page-mode #Blog1, body.live-page-mode .blog-posts, body.live-page-mode
 .mini-live__video-box .video-js * { box-shadow: none !important; text-shadow: none !important; }
 @media only screen and (max-width: 768px) {
     .mini-live__wrapper { display: flex; animation: slideUpLive 0.4s ease-out; }
-    .live-return-pill { bottom: 65px !important; }
+    .live-return-pill { bottom: 65px !important; padding: 8px 16px !important; font-size: 12px !important; gap: 8px !important; white-space: nowrap; }
+    .live-return-pill svg { width: 14px; height: 14px; }
 }
 @keyframes slideUpLive { from { transform: translateY(100%); } to { transform: translateY(0); } }
 
