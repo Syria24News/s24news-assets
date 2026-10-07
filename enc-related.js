@@ -12,8 +12,12 @@
   var ending = host.querySelector('.s24-ending');
   if (!refs && !ending) return;
 
-  var SRC   = 'https://s24n-views-default-rtdb.firebaseio.com/glossaryRelations.json';
-  var KEY   = 's24_glossary_relations_cache';
+  var SRC   = 'https://s24n-views-default-rtdb.firebaseio.com/glossaryRelations.json'; // احتياطي عند فشل Firestore
+  // مستند هذه المقالة وحدها في Firestore — المعرّف بالقاعدة نفسها المستخدمة في Apps Script (s24DocIdFromUrl)
+  var DOC_ID = location.pathname.replace(/^\//, '').replace(/\.html.*$/, '').replace(/[^\w-]/g, '_');
+  var FS_SRC = 'https://firestore.googleapis.com/v1/projects/s24n-views/databases/(default)/documents/glossary_relations/' + DOC_ID + '?mask.fieldPaths=json';
+  var KEY   = 's24_rel_' + DOC_ID; // كاش مستقل لكل مقالة
+  try { localStorage.removeItem('s24_glossary_relations_cache'); } catch (e) {} // تنظيف كاش الشجرة القديمة
   var TTL   = 6 * 60 * 60 * 1000;
   var ICONS = { bio: '👤', place: '📍', enc: '📄' };
 
@@ -64,10 +68,20 @@
 
   if (cached) { render(cached); return; }
 
-  fetch(SRC)
-    .then(function (r) { return r.json(); })
+  // Firestore أولاً (قراءة واحدة لهذه المقالة). 404 = لا علاقات كافية لها. أي فشل آخر → Realtime
+  fetch(FS_SRC)
+    .then(function (r) {
+      if (r.status === 404) return [];
+      if (!r.ok) throw new Error('fs');
+      return r.json().then(function (doc) {
+        return [{ u: location.pathname, r: JSON.parse(doc.fields.json.stringValue) }];
+      });
+    })
+    .catch(function () {
+      return fetch(SRC).then(function (r) { return r.json(); });
+    })
     .then(function (data) {
-      if (data && data.length) {
+      if (data) {
         try { localStorage.setItem(KEY, JSON.stringify({ timestamp: Date.now(), data: data })); } catch (e) {}
       }
       render(data);
