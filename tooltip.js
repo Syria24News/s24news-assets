@@ -137,7 +137,13 @@ document.addEventListener("DOMContentLoaded", function() {
         } catch(e) {}
 
         (s24CachedGlossaryIndex ? Promise.resolve(s24CachedGlossaryIndex) :
-            fetch('https://s24n-views-default-rtdb.firebaseio.com/glossaryIndex.json').then(function(res){ return res.json(); })
+            // الفهرس من Firestore (مستند واحد = قراءة واحدة)، مع رجوع تلقائي إلى Realtime عند أي فشل
+fetch('https://firestore.googleapis.com/v1/projects/s24n-views/databases/(default)/documents/glossary/index?mask.fieldPaths=json')
+    .then(function(res){ if (!res.ok) { throw new Error('fs'); } return res.json(); })
+    .then(function(doc){ return JSON.parse(doc.fields.json.stringValue); })
+    .catch(function(){
+        return fetch('https://s24n-views-default-rtdb.firebaseio.com/glossaryIndex.json').then(function(res){ return res.json(); });
+    })
                                 .then(function(data){
                     if (data && data.length) {
                         try { localStorage.setItem(S24_GLOSSARY_INDEX_CACHE_KEY, JSON.stringify({ timestamp: Date.now(), data: data })); } catch(e) {}
