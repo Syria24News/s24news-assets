@@ -1,7 +1,40 @@
 /* ============================================================
    S24News — نظام التلميح الذكي (Tooltip)
    ملف خارجي — لا يُعدَّل داخل قالب بلوجر
+   🆕 مع البحث الذكي والتصحيح الإملائي والـ aliases
    ============================================================ */
+
+/* ============================================================
+   🆕 توحيد الرسم العربي + البحث الذكي مع Aliases
+   ============================================================ */
+function s24Normalize(text) {
+  return String(text || '')
+    .replace(/[\u064B-\u0652\u0640]/g, '') // تشكيل
+    .replace(/[\u0622\u0623\u0625\u0671]/g, '\u0627') // ألف
+    .replace(/\u0649/g, '\u064A') // ألف مقصورة
+    .replace(/\u0629/g, '\u0647') // تاء مربوطة
+    .trim()
+    .toLowerCase();
+}
+
+function s24LevenshteinDistance(a, b) {
+  const m = a.length, n = b.length;
+  const dp = Array(m + 1).fill(0).map(() => Array(n + 1).fill(0));
+  
+  for (let i = 0; i <= m; i++) dp[i][0] = i;
+  for (let j = 0; j <= n; j++) dp[0][j] = j;
+  
+  for (let i = 1; i <= m; i++) {
+    for (let j = 1; j <= n; j++) {
+      if (a[i - 1] === b[j - 1]) {
+        dp[i][j] = dp[i - 1][j - 1];
+      } else {
+        dp[i][j] = 1 + Math.min(dp[i - 1][j], dp[i][j - 1], dp[i - 1][j - 1]);
+      }
+    }
+  }
+  return dp[m][n];
+}
 
 /* ===================== 1) محوّل الاختصار ===================== */
 /* ============================================================
@@ -66,9 +99,7 @@ document.addEventListener("DOMContentLoaded", function() {
         textNode.parentNode.replaceChild(frag, textNode);
     });
 
-
-
-        /* ============================================================
+    /* ============================================================
        🔧 تمريرة ثانية: اختصار انكسر بين عقد نصية متعددة
        تحدث حين يُدخل محرر Blogger وسماً داخل [[...|...]]
        مثل <b> أو <i> أو <span style> أو تلوين أو فاصل تلقائي.
@@ -120,13 +151,16 @@ document.addEventListener("DOMContentLoaded", function() {
     })();
 
 
-    // 🆕 ربط الكلمات بفهرس الموسوعة (يُجلب جاهزاً من Firebase بدل مسح فييد Blogger)
+    // 🆕 ربط الكلمات بفهرس الموسوعة (يُجلب جاهزاً من Firestore مع الـ aliases)
     if (document.querySelectorAll('.sy-tooltip').length > 0) {
 
         // ⚡ كاش 6 ساعات يمنع إعادة جلب الفهرس في كل تحميل صفحة فيها كلمات موسوعة
         var S24_GLOSSARY_INDEX_CACHE_KEY = 's24_glossary_index_cache';
+        var S24_GLOSSARY_ALIASES_CACHE_KEY = 's24_glossary_aliases_cache';
         var S24_GLOSSARY_INDEX_CACHE_TTL = 6 * 60 * 60 * 1000; // 6 ساعات
         var s24CachedGlossaryIndex = null;
+        var s24CachedAliasesMap = null;
+        
         try {
             var s24IndexRecord = JSON.parse(localStorage.getItem(S24_GLOSSARY_INDEX_CACHE_KEY));
             if (s24IndexRecord && (Date.now() - s24IndexRecord.timestamp) < S24_GLOSSARY_INDEX_CACHE_TTL) {
@@ -136,44 +170,120 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         } catch(e) {}
 
-        (s24CachedGlossaryIndex ? Promise.resolve(s24CachedGlossaryIndex) :
-            // الفهرس من Firestore (مستند واحد = قراءة واحدة)، مع رجوع تلقائي إلى Realtime عند أي فشل
-fetch('https://firestore.googleapis.com/v1/projects/s24n-views/databases/(default)/documents/glossary/index?mask.fieldPaths=json')
-    .then(function(res){ if (!res.ok) { throw new Error('fs'); } return res.json(); })
-    .then(function(doc){ return JSON.parse(doc.fields.json.stringValue); })
-    .catch(function(){
-        return fetch('https://s24n-views-default-rtdb.firebaseio.com/glossaryIndex.json').then(function(res){ return res.json(); });
-    })
-                                .then(function(data){
-                    if (data && data.length) {
-                        try { localStorage.setItem(S24_GLOSSARY_INDEX_CACHE_KEY, JSON.stringify({ timestamp: Date.now(), data: data })); } catch(e) {}
-                    }
-                    return data;
+        try {
+            var s24AliasesRecord = JSON.parse(localStorage.getItem(S24_GLOSSARY_ALIASES_CACHE_KEY));
+            if (s24AliasesRecord && (Date.now() - s24AliasesRecord.timestamp) < S24_GLOSSARY_INDEX_CACHE_TTL) {
+                s24CachedAliasesMap = s24AliasesRecord.data;
+            } else if (s24AliasesRecord) {
+                localStorage.removeItem(S24_GLOSSARY_ALIASES_CACHE_KEY);
+            }
+        } catch(e) {}
+
+        (s24CachedGlossaryIndex ? Promise.resolve({ index: s24CachedGlossaryIndex, aliases: s24CachedAliasesMap }) :
+            // الفهرس من Firestore (مستند واحد = قراءة واحدة)
+            fetch('https://firestore.googleapis.com/v1/projects/s24n-views/databases/(default)/documents/glossary/index?mask.fieldPaths=json&mask.fieldPaths=aliases')
+                .then(function(res){ 
+                    if (!res.ok) { throw new Error('fs'); } 
+                    return res.json(); 
+                })
+                .then(function(doc){ 
+                    var index = JSON.parse(doc.fields.json.stringValue);
+                    var aliases = doc.fields.aliases ? JSON.parse(doc.fields.aliases.stringValue) : {};
+                    return { index: index, aliases: aliases };
+                })
+                .catch(function(){
+                    // رجوع تلقائي إلى Realtime عند أي فشل
+                    return fetch('https://s24n-views-default-rtdb.firebaseio.com/glossaryIndex.json')
+                        .then(function(res){ 
+                            return res.json(); 
+                        })
+                        .then(function(data){
+                            return { index: data, aliases: {} };
+                        });
                 })
         )
-.then(function(list){
-        var map = {};
-        (list || []).forEach(function(item){
-            if (item && item.term) { map[item.term] = item.url; }
-        });
-                document.querySelectorAll('.sy-tooltip').forEach(function(el){
-                    var word = el.textContent.trim();
-                    if (map[word] && el.tagName !== 'A') {
-                        var a = document.createElement('a');
-                        a.className = el.className;
-                        a.setAttribute('data-title', 'اضغط لقراءة المقالة كاملة');
-                        a.href = map[word];
-                        // داخل الموسوعة: تصفّح في نفس الصفحة. خارجها: تبويب جديد
-                        if (!document.body.classList.contains('s24-glossary-article')) {
-                            a.target = '_blank';
-                            a.rel = 'noopener';
+        .then(function(result){
+            var list = result.index;
+            var aliasesMap = result.aliases || {};
+            
+            var map = {};
+            (list || []).forEach(function(item){
+                if (item && item.term) { 
+                    map[item.term] = item.url; 
+                }
+            });
+
+            // حفظ في الـ cache
+            try { 
+                localStorage.setItem(S24_GLOSSARY_INDEX_CACHE_KEY, JSON.stringify({ timestamp: Date.now(), data: list })); 
+                localStorage.setItem(S24_GLOSSARY_ALIASES_CACHE_KEY, JSON.stringify({ timestamp: Date.now(), data: aliasesMap }));
+            } catch(e) {}
+
+            // معالجة كل التلميحات
+            document.querySelectorAll('.sy-tooltip').forEach(function(el){
+                var word = el.textContent.trim();
+                var normalized = s24Normalize(word);
+                var foundUrl = null;
+
+                // المرحلة 1️⃣: مطابقة دقيقة
+                if (map[word]) {
+                    foundUrl = map[word];
+                } else {
+                    // المرحلة 2️⃣: بحث مع تطبيع عربي موحّد
+                    for (var key in map) {
+                        if (s24Normalize(key) === normalized) {
+                            foundUrl = map[key];
+                            break;
                         }
-                        a.textContent = el.textContent;
-                        el.parentNode.replaceChild(a, el);
                     }
-                });
-            })
-            .catch(function(err){});
+                }
+
+                // المرحلة 3️⃣: بحث في الـ aliases
+                if (!foundUrl && aliasesMap) {
+                    for (var mainTerm in aliasesMap) {
+                        var aliases = aliasesMap[mainTerm];
+                        if (Array.isArray(aliases)) {
+                            for (var i = 0; i < aliases.length; i++) {
+                                if (s24Normalize(aliases[i]) === normalized) {
+                                    // أوجد المصطلح الأصلي في الخريطة
+                                    foundUrl = map[mainTerm];
+                                    break;
+                                }
+                            }
+                            if (foundUrl) break;
+                        }
+                    }
+                }
+
+                // المرحلة 4️⃣: تصحيح إملائي ذكي (Levenshtein Distance ≤ 1)
+                if (!foundUrl) {
+                    for (var key in map) {
+                        if (s24LevenshteinDistance(normalized, s24Normalize(key)) <= 1) {
+                            foundUrl = map[key];
+                            break;
+                        }
+                    }
+                }
+
+                // إذا وجدنا رابط، حوّل span إلى رابط
+                if (foundUrl && el.tagName !== 'A') {
+                    var a = document.createElement('a');
+                    a.className = el.className;
+                    a.setAttribute('data-title', 'اضغط لقراءة المقالة كاملة');
+                    a.href = foundUrl;
+                    // داخل الموسوعة: تصفّح في نفس الصفحة. خارجها: تبويب جديد
+                    if (!document.body.classList.contains('s24-glossary-article')) {
+                        a.target = '_blank';
+                        a.rel = 'noopener';
+                    }
+                    a.textContent = el.textContent;
+                    el.parentNode.replaceChild(a, el);
+                }
+            });
+        })
+        .catch(function(err){
+            console.warn('⚠️ فشل جلب فهرس الموسوعة:', err);
+        });
     }
 
 });
