@@ -1,0 +1,330 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>لوحة تحكم سوريا 24</title>
+<!--
+  S24News — لوحة التحكم الموحّدة (admin/index.html)
+  الإصدار 1.0 — 9 أكتوبر 2026
+  غلاف عام: الدخول، التبويبات، الوضع الليلي، التنبيهات.
+  كل نظام وحدة مستقلة في admin/js/<الوحدة>.js تُسجَّل في مصفوفة MODULES أسفل الصفحة.
+  الوحدات الحالية: الاستطلاعات. المخطط لاحقاً: الخبر العاجل، الخبر الهام، التغطية الحية.
+-->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@500;600;700&family=Readex+Pro:wght@400;500;600&display=swap" rel="stylesheet">
+<script>
+  // تطبيق الوضع المحفوظ قبل الرسم لتجنّب الوميض
+  try { var t = localStorage.getItem('s24_admin_theme'); if (t) document.documentElement.setAttribute('data-theme', t); } catch (e) {}
+</script>
+<style>
+  /* ============ الألوان (فاتح) ============ */
+  :root {
+    --font-main: 'Readex Pro', system-ui, sans-serif;
+    --font-title: 'IBM Plex Sans Arabic', 'Readex Pro', system-ui, sans-serif;
+    --brand: #77bd1d;
+    --brand-ink: #10210a;          /* نص فوق الأخضر */
+    --brand-text: #3f6f0b;         /* أخضر نصّي بتباين كافٍ على الفاتح */
+    --bg: #f4f6f2;
+    --surface: #ffffff;
+    --surface-2: #f0f2ee;
+    --text: #1b1f1a;
+    --muted: #5e665b;
+    --border: #dfe3dc;
+    --danger: #c62828;
+    --danger-bg: #fdecea;
+    --warn: #8a5a00;
+    --warn-bg: #fff4d6;
+    --info: #1e5aa8;
+    --info-bg: #e7f0fb;
+    --ok-bg: #eaf5da;
+    --gray-bg: #eceeea;
+    --shadow: 0 1px 2px rgba(0,0,0,.06), 0 2px 8px rgba(0,0,0,.04);
+  }
+  /* ============ الألوان (داكن) ============ */
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --brand-text: #9bd94a;
+      --bg: #121512; --surface: #1b1f1b; --surface-2: #232823;
+      --text: #e8ece6; --muted: #a3ab9f; --border: #313830;
+      --danger: #ff8a80; --danger-bg: #3a1d1b;
+      --warn: #ffcf66; --warn-bg: #3a2f14;
+      --info: #8cb8ff; --info-bg: #182a44;
+      --ok-bg: #22321a; --gray-bg: #2a2f2a;
+      --shadow: none;
+    }
+  }
+  :root[data-theme="dark"] {
+    --brand-text: #9bd94a;
+    --bg: #121512; --surface: #1b1f1b; --surface-2: #232823;
+    --text: #e8ece6; --muted: #a3ab9f; --border: #313830;
+    --danger: #ff8a80; --danger-bg: #3a1d1b;
+    --warn: #ffcf66; --warn-bg: #3a2f14;
+    --info: #8cb8ff; --info-bg: #182a44;
+    --ok-bg: #22321a; --gray-bg: #2a2f2a;
+    --shadow: none;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body {
+    background: var(--bg); color: var(--text);
+    font-family: var(--font-main); font-size: 15px; line-height: 1.6;
+  }
+  h1, h2, h3 { font-family: var(--font-title); margin: 0; line-height: 1.35; }
+  button, input, select, textarea { font: inherit; color: inherit; }
+  [hidden] { display: none !important; }
+
+  /* ============ الرأس ============ */
+  .top {
+    background: var(--surface); border-bottom: 1px solid var(--border);
+    padding: 12px 16px; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;
+  }
+  .brand { display: flex; align-items: center; gap: 10px; margin-inline-end: auto; }
+  .brand-mark { width: 34px; height: 34px; border-radius: 8px; background: var(--brand); color: var(--brand-ink);
+    display: grid; place-items: center; font-family: var(--font-title); font-weight: 700; font-size: 14px; }
+  .brand h1 { font-size: 18px; }
+  .brand small { display: block; color: var(--muted); font-size: 12px; font-family: var(--font-main); }
+  .user { color: var(--muted); font-size: 13px; }
+
+  /* ============ تبويبات الوحدات ============ */
+  .nav { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 16px;
+    display: flex; gap: 4px; overflow-x: auto; }
+  .nav a { padding: 10px 14px; color: var(--muted); text-decoration: none; border-bottom: 3px solid transparent;
+    white-space: nowrap; font-weight: 500; }
+  .nav a:hover { color: var(--text); }
+  .nav a[aria-current="page"] { color: var(--text); border-bottom-color: var(--brand); }
+
+  /* ============ الأزرار والحقول ============ */
+  .btn {
+    border: 1px solid var(--border); background: var(--surface); border-radius: 8px;
+    padding: 7px 14px; cursor: pointer; white-space: nowrap;
+  }
+  .btn:hover { background: var(--surface-2); }
+  .btn-primary { background: var(--brand); border-color: var(--brand); color: var(--brand-ink); font-weight: 600; }
+  .btn-primary:hover { background: #6aab16; }
+  .btn-danger { color: var(--danger); }
+  .btn-danger:hover { background: var(--danger-bg); }
+  .btn-sm { padding: 3px 10px; font-size: 13px; }
+  .btn:disabled { opacity: .45; cursor: not-allowed; }
+  .btn:focus-visible, input:focus-visible, select:focus-visible, textarea:focus-visible {
+    outline: 2px solid var(--brand); outline-offset: 1px;
+  }
+  .field { display: flex; flex-direction: column; gap: 4px; }
+  .field > span { font-size: 13px; color: var(--muted); }
+  .input, select.input, textarea.input {
+    border: 1px solid var(--border); background: var(--surface); border-radius: 8px; padding: 7px 10px; width: 100%;
+  }
+  textarea.input { resize: vertical; min-height: 70px; }
+
+  /* ============ الهيكل ============ */
+  main { max-width: 1240px; margin: 0 auto; padding: 16px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); }
+  .center-card { max-width: 440px; margin: 60px auto; padding: 28px; text-align: center; }
+  .center-card p { color: var(--muted); }
+
+  .kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; margin-bottom: 16px; }
+  .kpi { padding: 14px 16px; }
+  .kpi .label { color: var(--muted); font-size: 13px; }
+  .kpi .value { font-family: var(--font-title); font-size: 26px; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+  .toolbar { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding: 12px; margin-bottom: 12px; }
+  .toolbar .input { width: auto; }
+  .toolbar .search { flex: 1 1 220px; min-width: 0; }
+  .toolbar .spacer { flex: 1 1 0; }
+
+  .table-wrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; }
+  th, td { padding: 10px 12px; border-bottom: 1px solid var(--border); text-align: start; vertical-align: middle; }
+  th { font-size: 13px; color: var(--muted); font-weight: 500; background: var(--surface-2); white-space: nowrap; }
+  tr:last-child td { border-bottom: 0; }
+  td.num { font-variant-numeric: tabular-nums; text-align: center; }
+  .q-cell { min-width: 280px; max-width: 460px; }
+  .q-text { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; font-weight: 500; }
+  .q-id { color: var(--muted); font-size: 12px; direction: ltr; text-align: right; font-variant-numeric: tabular-nums; }
+  .actions { display: flex; gap: 6px; flex-wrap: nowrap; }
+  .order-in { width: 64px; text-align: center; }
+  .status-sel { min-width: 110px; }
+  .empty { padding: 40px; text-align: center; color: var(--muted); }
+
+  .badge { display: inline-block; padding: 2px 10px; border-radius: 999px; font-size: 12px; white-space: nowrap; }
+  .b-open { background: var(--ok-bg); color: var(--brand-text); }
+  .b-scheduled { background: var(--info-bg); color: var(--info); }
+  .b-ended { background: var(--warn-bg); color: var(--warn); }
+  .b-draft, .b-archived { background: var(--gray-bg); color: var(--muted); }
+  .b-closed { background: var(--danger-bg); color: var(--danger); }
+
+  /* ============ النوافذ ============ */
+  dialog {
+    border: 1px solid var(--border); border-radius: 14px; padding: 0; background: var(--surface); color: var(--text);
+    width: min(980px, calc(100vw - 32px)); max-height: calc(100vh - 32px);
+  }
+  dialog::backdrop { background: rgba(0,0,0,.45); }
+  .dlg-head { display: flex; align-items: center; gap: 10px; padding: 14px 18px; border-bottom: 1px solid var(--border); }
+  .dlg-head h2 { font-size: 17px; margin-inline-end: auto; }
+  .dlg-body { padding: 18px; overflow: auto; max-height: calc(100vh - 170px); }
+  .dlg-foot { display: flex; gap: 8px; justify-content: flex-start; padding: 12px 18px; border-top: 1px solid var(--border); flex-wrap: wrap; }
+  .dlg-foot .msg { margin-inline-start: auto; color: var(--danger); font-size: 13px; align-self: center; }
+
+  .edit-grid { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 18px; }
+  .stack { display: flex; flex-direction: column; gap: 12px; }
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .opt-row { display: flex; gap: 6px; align-items: center; }
+  .opt-row .n { width: 22px; color: var(--muted); font-size: 13px; text-align: center; flex: none; }
+  .opt-row .votes { font-size: 12px; color: var(--muted); white-space: nowrap; flex: none; }
+  .hint { font-size: 12px; color: var(--muted); }
+  .hint.warn { color: var(--warn); }
+
+  .preview { background: var(--surface-2); border-radius: 12px; padding: 16px; }
+  .preview h3 { font-size: 16px; margin-bottom: 12px; }
+  .pv-opt { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border: 1px solid var(--border); border-radius: 8px;
+    margin-bottom: 8px; background: var(--surface); }
+  .pv-dot { width: 16px; height: 16px; border: 2px solid var(--muted); border-radius: 50%; flex: none; }
+
+  .res-item { margin-bottom: 14px; }
+  .res-label { display: flex; justify-content: space-between; gap: 12px; margin-bottom: 4px; }
+  .res-label b { font-variant-numeric: tabular-nums; white-space: nowrap; }
+  .bar { height: 10px; background: var(--surface-2); border-radius: 999px; overflow: hidden; }
+  .bar > i { display: block; height: 100%; background: var(--brand); border-radius: 999px; }
+  .meta { display: grid; grid-template-columns: auto 1fr; gap: 4px 14px; font-size: 13px; margin-top: 8px; }
+  .meta dt { color: var(--muted); }
+  .meta dd { margin: 0; word-break: break-all; }
+  .chart-wrap { margin-top: 18px; }
+  .chart-wrap h3 { font-size: 15px; margin-bottom: 8px; }
+  .chart { width: 100%; height: 160px; display: block; }
+  .chart .bar-r { fill: var(--brand); }
+  .chart .axis { stroke: var(--border); }
+  .chart text { fill: var(--muted); font-size: 10px; font-family: var(--font-main); }
+
+  .log-table td, .log-table th { font-size: 13px; }
+
+  #toast {
+    position: fixed; bottom: 16px; left: 16px; right: 16px; margin: 0 auto; max-width: 460px; z-index: 50;
+    background: var(--text); color: var(--bg); padding: 10px 14px; border-radius: 10px; text-align: center;
+  }
+  #toast.err { background: var(--danger); color: #fff; }
+
+  /* ============ الجوال ============ */
+  @media (max-width: 860px) {
+    .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .edit-grid { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 520px) {
+    .row2 { grid-template-columns: 1fr; }
+    .kpi .value { font-size: 22px; }
+    .user { width: 100%; order: 3; }
+  }
+</style>
+</head>
+<body>
+
+<header class="top">
+  <div class="brand">
+    <div class="brand-mark">24</div>
+    <div><h1>لوحة التحكم</h1><small>سوريا 24 — إدارة أنظمة الموقع</small></div>
+  </div>
+  <span class="user" id="userEmail"></span>
+  <button class="btn btn-sm" id="btnTheme" type="button" title="تبديل الوضع الليلي">الوضع الليلي</button>
+  <button class="btn btn-sm" id="btnSignOut" type="button" hidden>خروج</button>
+</header>
+<nav class="nav" id="nav" aria-label="أقسام اللوحة" hidden></nav>
+
+<main>
+  <!-- شاشة الدخول -->
+  <section id="viewLogin" class="card center-card" hidden>
+    <h2>تسجيل الدخول</h2>
+    <p>هذه اللوحة خاصة بإدارة الموقع. ادخل بحساب Google المعتمد.</p>
+    <button class="btn btn-primary" id="btnSignIn" type="button">الدخول بحساب Google</button>
+  </section>
+
+  <!-- حساب غير مصرّح -->
+  <section id="viewDenied" class="card center-card" hidden>
+    <h2>غير مصرّح</h2>
+    <p>هذا الحساب لا يملك صلاحية إدارة الموقع.</p>
+    <button class="btn" id="btnDeniedOut" type="button">الدخول بحساب آخر</button>
+  </section>
+
+  <!-- حاويات الوحدات: تُنشأ تلقائياً واحدة لكل وحدة -->
+  <div id="modules" hidden></div>
+</main>
+
+<div id="toast" hidden></div>
+
+<script type="module">
+import { auth, $, isAdmin, toast, errText,
+  GoogleAuthProvider, signInWithPopup, signOut, onAuthStateChanged } from './js/core.js';
+import polls from './js/polls.js';
+
+/* ============================================================
+   سجلّ الوحدات — لإضافة نظام جديد: أنشئ admin/js/<اسم>.js
+   يصدّر { id, title, mount(root) } ثم أضفه هنا. الترتيب = ترتيب التبويبات.
+   ============================================================ */
+const MODULES = [polls];
+
+/* ============ التبويبات والتنقل (#polls ...) ============ */
+const nav = $('nav'), host = $('modules');
+MODULES.forEach((m) => {
+  const a = document.createElement('a');
+  a.href = '#' + m.id; a.textContent = m.title; a.dataset.id = m.id;
+  nav.appendChild(a);
+  const box = document.createElement('div');
+  box.id = 'mod-' + m.id; box.hidden = true;
+  host.appendChild(box);
+});
+
+function currentId() {
+  const h = location.hash.replace('#', '');
+  return MODULES.some((m) => m.id === h) ? h : MODULES[0].id;
+}
+function openModule() {
+  const id = currentId();
+  MODULES.forEach((m) => {
+    const active = m.id === id;
+    $('mod-' + m.id).hidden = !active;
+    nav.querySelector('[data-id="' + m.id + '"]').setAttribute('aria-current', active ? 'page' : 'false');
+    if (active) {
+      try { m.mount($('mod-' + m.id)); }
+      catch (e) { toast('تعذّر فتح قسم ' + m.title + ': ' + errText(e), true); }
+    }
+  });
+}
+window.addEventListener('hashchange', () => { if (!$('modules').hidden) openModule(); });
+
+/* ============ الدخول ============ */
+function showView(name) {
+  $('viewLogin').hidden = name !== 'login';
+  $('viewDenied').hidden = name !== 'denied';
+  $('modules').hidden = name !== 'app';
+  nav.hidden = name !== 'app';
+}
+
+onAuthStateChanged(auth, (user) => {
+  $('btnSignOut').hidden = !user;
+  $('userEmail').textContent = user ? user.email : '';
+  if (!user) return showView('login');
+  if (!isAdmin(user)) return showView('denied');
+  showView('app');
+  openModule();
+});
+
+$('btnSignIn').addEventListener('click', async () => {
+  try { await signInWithPopup(auth, new GoogleAuthProvider()); }
+  catch (e) { toast('تعذّر الدخول: ' + errText(e), true); }
+});
+$('btnSignOut').addEventListener('click', () => signOut(auth));
+$('btnDeniedOut').addEventListener('click', () => signOut(auth));
+
+/* ============ الوضع الليلي ============ */
+$('btnTheme').addEventListener('click', () => {
+  const root = document.documentElement;
+  const cur = root.getAttribute('data-theme') ||
+    (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  const next = cur === 'dark' ? 'light' : 'dark';
+  root.setAttribute('data-theme', next);
+  try { localStorage.setItem('s24_admin_theme', next); } catch (e) {}
+});
+</script>
+</body>
+</html>
