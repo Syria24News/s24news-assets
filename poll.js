@@ -1,11 +1,22 @@
 /* ============================================================
    S24News — نظام الاستطلاع والتصويت (Poll)
    ملف خارجي — لا يُعدَّل داخل قالب بلوجر
+   v2.0 (9 أكتوبر 2026): القراءة من Firestore + التصويت عبر S24 Polls Gateway
    ============================================================ */
 
 (function() {
     // ⚙️ الإعدادات العامة
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw0gcfY_hhjNpEWFTuY_MBXNNO59k_XZoU7kevKj6_PaBPDO0x2B3K6v6TK0CewvGExNQ/exec"; 
+    // البوابة القديمة: تُستخدم للقراءة فقط عند تعذّر الوصول إلى Firestore (مدة المراقبة)
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw0gcfY_hhjNpEWFTuY_MBXNNO59k_XZoU7kevKj6_PaBPDO0x2B3K6v6TK0CewvGExNQ/exec";
+    // 🆕 البوابة الجديدة: كل الأصوات تذهب إليها
+    const GATEWAY_URL = "https://script.google.com/macros/s/AKfycbx6S27AM5zuftOmha8Zf-QixGfCiUGUbaapLY7qklwXcxDXLInbXDTn4UqdzYs5tT4/exec";
+    // 🆕 مستند العرض العام في Firestore (قراءة واحدة لكل زيارة)
+    const PUBLIC_DOC_URL = "https://firestore.googleapis.com/v1/projects/s24n-views/databases/(default)/documents/polls_public/active";
+    // 🆕 مفتاح موقع reCAPTCHA v3 (عام وليس سرياً). فارغ = التحقق معطّل ويبقى مربع الكابتشا القديم
+    const RECAPTCHA_SITE_KEY = "";
+    // 🆕 كاش القراءة في الجلسة (دقيقتان) لتقليل القراءات عند التنقل بين الصفحات
+    const CACHE_KEY = 's24_polls_public_v1';
+    const CACHE_TTL = 2 * 60 * 1000;
     const FETCH_TIMEOUT = 15000;  
     const SUBMIT_TIMEOUT = 15000; 
     const DEBUG = false;
@@ -57,6 +68,90 @@
         });
     }
 
+    // 🆕 تحويل قيمة Firestore REST إلى قيمة JavaScript عادية
+    function fsv(v) {
+        if (!v) return null;
+        if ('stringValue' in v) return v.stringValue;
+        if ('integerValue' in v) return Number(v.integerValue);
+        if ('doubleValue' in v) return v.doubleValue;
+        if ('booleanValue' in v) return v.booleanValue;
+        if ('mapValue' in v) {
+            const o = {}, f = v.mapValue.fields || {};
+            Object.keys(f).forEach(k => { o[k] = fsv(f[k]); });
+            return o;
+        }
+        return null;
+    }
+
+    // 🆕 قراءة البولات النشطة من Firestore (مستند واحد) مع كاش الجلسة
+    async function getFromFirestore() {
+        try {
+            const c = JSON.parse(sessionStorage.getItem(CACHE_KEY) || 'null');
+            if (c && (Date.now() - c.t) < CACHE_TTL && Array.isArray(c.d)) return c.d;
+        } catch (e) {}
+
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
+        try {
+            const res = await fetch(PUBLIC_DOC_URL, { signal: controller.signal });
+            if (res.status === 404) return [];           // لا يوجد مستند بعد = لا استطلاعات
+            if (!res.ok) throw new Error(`Firestore HTTP ${res.status}`);
+            const doc = await res.json();
+            const polls = fsv((doc.fields || {}).polls) || {};
+            const list = Object.keys(polls).map(k => polls[k])
+                .filter(x => x && x.pollId && x.q && x.opt1)
+                .sort((a, b) => ((Number(b.order) || 0) - (Number(a.order) || 0)) ||
+                                ((Number(b.createdAt) || 0) - (Number(a.createdAt) || 0)));
+            try { sessionStorage.setItem(CACHE_KEY, JSON.stringify({ t: Date.now(), d: list })); } catch (e) {}
+            return list;
+        } finally {
+            clearTimeout(timeoutId);
+        }
+    }
+
+    // 🆕 المصدر الأول Firestore؛ والبوابة القديمة فقط عند فشل الاتصال (لا عند غياب الاستطلاعات)
+    async function getPolls() {
+        try {
+            const list = await getFromFirestore();
+            log("Firestore: " + list.length + " استطلاع");
+            return list;
+        } catch (err) {
+            console.error("Poll Firestore Error, fallback to legacy:", err);
+            return getPollData();
+        }
+    }
+
+    // 🆕 تحميل reCAPTCHA عند أول تفاعل مع الاستطلاع فقط (لا يُحمَّل في كل صفحة)
+    let recaptchaPromise = null;
+    function loadRecaptcha() {
+        if (!RECAPTCHA_SITE_KEY) return Promise.resolve(false);
+        if (recaptchaPromise) return recaptchaPromise;
+        recaptchaPromise = new Promise(resolve => {
+            const s = document.createElement('script');
+            s.src = 'https://www.google.com/recaptcha/api.js?render=' + encodeURIComponent(RECAPTCHA_SITE_KEY);
+            s.async = true;
+            s.onload = () => window.grecaptcha.ready(() => resolve(true));
+            s.onerror = () => resolve(false);
+            document.head.appendChild(s);
+        });
+        return recaptchaPromise;
+    }
+
+    // 🆕 رمز reCAPTCHA لعملية التصويت (نص فارغ إن كان معطّلاً أو فشل التحميل)
+    function getRecaptchaToken() {
+        return loadRecaptcha().then(ok => {
+            if (!ok || !window.grecaptcha) return '';
+            return window.grecaptcha.execute(RECAPTCHA_SITE_KEY, { action: 'vote' }).catch(() => '');
+        });
+    }
+
+    // 🆕 حماية النص قبل إدراجه في HTML
+    function escapeHTML(t) {
+        return String(t == null ? '' : t)
+            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+    }
+
     // 🔄 جلب البيانات مع GET (بدل POST لتجنب CORS)
     const getPollData = async (attempt = 0) => {
         try {
@@ -103,7 +198,7 @@
 
     // 🚀 تشغيل النظام عند اكتمال تحميل الصفحة
     document.addEventListener("DOMContentLoaded", function() {
-        getPollData().then(data => {
+        getPolls().then(data => {
             const loadingEl = document.getElementById('poll-loading');      
             const contentArea = document.getElementById('poll-content-area'); 
             
@@ -135,7 +230,16 @@
         const captchaBox = document.querySelector('.captcha-box');
         const submitBtn = document.getElementById('submit-vote-btn');
         
-        if (captchaBox) {
+        // 🆕 مع reCAPTCHA الحقيقي يُخفى المربع الشكلي ويُحمَّل التحقق عند أول اختيار
+        if (RECAPTCHA_SITE_KEY) {
+            const fake = document.querySelector('.fake-recaptcha');
+            if (fake) fake.style.display = 'none';
+            document.addEventListener('change', function(e) {
+                if (e.target.name === 'vote') loadRecaptcha();
+            });
+        }
+
+        if (captchaBox && !RECAPTCHA_SITE_KEY) {
             captchaBox.addEventListener('click', function() {
                 isCaptchaDone = true;
                 this.setAttribute('data-checked', 'true');
@@ -213,7 +317,7 @@
         generatePollOptions(qData, optionsCount);
         showFormUI();
         
-        isCaptchaDone = false;
+        isCaptchaDone = !!RECAPTCHA_SITE_KEY;
         const captchaBox = document.querySelector('.captcha-box');
         if(captchaBox) {
             captchaBox.removeAttribute('data-checked');
@@ -274,10 +378,11 @@
         log("إرسال التصويت", { pollId: qData.pollId, option: optionNumber, voterId });
         
         // ✅ استخدم GET بدل POST (تجنب CORS)
-        const voteUrl = SCRIPT_URL + `?action=vote&pollId=${encodeURIComponent(qData.pollId)}&type=${optionNumber}&voterId=${encodeURIComponent(voterId)}`;
-
-        fetch(voteUrl, { 
-            signal: controller.signal 
+        // 🆕 التصويت عبر البوابة الجديدة مع رمز reCAPTCHA (فارغ إن لم يُفعَّل)
+        getRecaptchaToken()
+        .then(token => {
+            const voteUrl = GATEWAY_URL + `?action=vote&pollId=${encodeURIComponent(qData.pollId)}&type=${optionNumber}&voterId=${encodeURIComponent(voterId)}&token=${encodeURIComponent(token || '')}`;
+            return fetch(voteUrl, { signal: controller.signal });
         })
         .then(res => {
             if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
@@ -313,6 +418,7 @@
             try {
                 localStorage.setItem('voted_' + qData.pollId, 'true');
             } catch(e) {}
+            try { sessionStorage.removeItem(CACHE_KEY); } catch(e) {}  // 🆕 لتظهر الأرقام المحدّثة في الصفحة التالية
             
             btn.innerText = originalText; 
             const optionsCount = getOptionsCount(qData);
@@ -368,7 +474,7 @@
             const resultItem = document.createElement('div');
             resultItem.className = 'result-item';
             resultItem.innerHTML = `
-                <div class="result-label">${vote.text}</div>
+                <div class="result-label">${escapeHTML(vote.text)}</div>
                 <div class="result-bar-row">
                     <div class="result-stats">
                         <span class="stat-count">${vote.count}</span>
