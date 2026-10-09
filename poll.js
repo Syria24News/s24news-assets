@@ -13,7 +13,7 @@
     // 🆕 مستند العرض العام في Firestore (قراءة واحدة لكل زيارة)
     const PUBLIC_DOC_URL = "https://firestore.googleapis.com/v1/projects/s24n-views/databases/(default)/documents/polls_public/active";
     // 🆕 مفتاح موقع reCAPTCHA v3 (عام وليس سرياً). فارغ = التحقق معطّل ويبقى مربع الكابتشا القديم
-    const RECAPTCHA_SITE_KEY = "";
+    const RECAPTCHA_SITE_KEY = "6LdBaIAtAAAAAJSkw_tfRgJWp2Rm9kfVcaDBj8Q-";
     // 🆕 كاش القراءة في الجلسة (دقيقتان) لتقليل القراءات عند التنقل بين الصفحات
     const CACHE_KEY = 's24_polls_public_v1';
     const CACHE_TTL = 2 * 60 * 1000;
