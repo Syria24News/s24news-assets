@@ -431,6 +431,16 @@
                 localStorage.setItem('voted_' + qData.pollId, 'true');
             } catch(e) {}
             try { sessionStorage.removeItem(CACHE_KEY); } catch(e) {}  // 🆕 لتظهر الأرقام المحدّثة في الصفحة التالية
+            // 🆕 v2.3: حفظ النتائج التي أعادها التصويت في كاش الجلسة
+            try {
+                const cq = allQuestions[currentQIndex], cd = { total: cq.total };
+                for (let i = 1; i <= 6; i++) {
+                    if (typeof cq[`opt${i}Count`] === 'number') cd[`opt${i}Count`] = cq[`opt${i}Count`];
+                }
+                if (typeof cd.total === 'number') {
+                    sessionStorage.setItem('s24_poll_res_' + cq.pollId, JSON.stringify({ t: Date.now(), d: cd }));
+                }
+            } catch(e) {}
             
             btn.innerText = originalText; 
             const optionsCount = getOptionsCount(qData);
@@ -462,7 +472,59 @@
         if(resultsSection) resultsSection.style.display = 'none';
     }
 
+        // 🆕 v2.3: النتائج لا تأتي مع المستند العام؛ تُطلب من البوابة لمن صوّت فقط
+    const RESULTS_CACHE_PREFIX = 's24_poll_res_';
+    function loadResults(qData, optionsCount) {
+        // 1) من كاش الجلسة (دقيقتان) لتقليل الطلبات عند التنقل بين الصفحات
+        try {
+            const c = JSON.parse(sessionStorage.getItem(RESULTS_CACHE_PREFIX + qData.pollId) || 'null');
+            if (c && (Date.now() - c.t) < CACHE_TTL && c.d && typeof c.d.total === 'number') {
+                Object.assign(qData, c.d);
+                showResultsUI(qData, optionsCount);
+                return;
+            }
+        } catch (e) {}
+
+        // 2) إظهار قسم النتائج برسالة انتظار ثم الطلب من البوابة
+        const formSection = document.getElementById('p-form-section');
+        const resultsSection = document.getElementById('p-results-section');
+        const rc = document.getElementById('results-container');
+        const totalEl = document.getElementById('total-votes-count');
+        if (formSection) formSection.style.display = 'none';
+        if (resultsSection) resultsSection.style.display = 'flex';
+        if (rc) rc.innerHTML = "<div style='text-align:center;padding:16px;color:#888;'>جاري تحميل النتائج...</div>";
+        if (totalEl) totalEl.innerText = '—';
+
+        const failMsg = () => {
+            if (rc && allQuestions[currentQIndex] === qData) {
+                rc.innerHTML = "<div style='text-align:center;padding:16px;color:#888;'>تعذّر تحميل النتائج حالياً</div>";
+            }
+        };
+        const url = GATEWAY_URL + `?action=results&pollId=${encodeURIComponent(qData.pollId)}&voterId=${encodeURIComponent(voterId)}`;
+        fetch(url)
+            .then(r => r.json())
+            .then(data => {
+                if (allQuestions[currentQIndex] !== qData) return; // انتقل الزائر إلى استطلاع آخر
+                if (data && data.not_voted) {
+                    // لا يوجد صوت مسجّل لهذا الجهاز: يعود نموذج التصويت
+                    try { localStorage.removeItem('voted_' + qData.pollId); } catch (e) {}
+                    showFormUI();
+                    return;
+                }
+                if (!data || data.error || typeof data.total !== 'number') return failMsg();
+                const counts = { total: data.total };
+                for (let i = 1; i <= 6; i++) {
+                    if (typeof data[`opt${i}Count`] === 'number') counts[`opt${i}Count`] = data[`opt${i}Count`];
+                }
+                Object.assign(qData, counts);
+                try { sessionStorage.setItem(RESULTS_CACHE_PREFIX + qData.pollId, JSON.stringify({ t: Date.now(), d: counts })); } catch (e) {}
+                showResultsUI(qData, optionsCount);
+            })
+            .catch(failMsg);
+    }
+
     function showResultsUI(qData, optionsCount) {
+        if (typeof qData.total !== 'number') { loadResults(qData, optionsCount); return; } // 🆕 v2.3
         const formSection = document.getElementById('p-form-section');
         const resultsSection = document.getElementById('p-results-section');
         if(formSection) formSection.style.display = 'none';
