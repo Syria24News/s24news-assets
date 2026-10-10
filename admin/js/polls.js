@@ -1,11 +1,15 @@
 /* ============================================================
    S24News — وحدة الاستطلاعات في لوحة التحكم (admin/js/polls.js)
-   الإصدار 1.0 — 9 أكتوبر 2026
+   الإصدار 2.0 — 10 أكتوبر 2026 (للهاتف أولاً + العمل دون اتصال)
    - تكتب مباشرة إلى polls/{pollId} (الحقول المعدَّلة فقط، لا تلمس العدادات)
    - تستدعي بوابة S24 Polls Gateway (?action=rebuild) لتحديث ما يظهر على الموقع
+   - القراءة عبر smartLoad: النسخة المحفوظة فوراً، والخادم فقط عند التقادم أو "تحديث"
+   - الكتابة عبر commit: دون اتصال تُحفظ على الجهاز وتُرسل لاحقاً، وطلب rebuild يتأجل تلقائياً
+   - التصفير والحذف (يحتاجان سجلات الأصوات من الخادم) لا يعملان إلا مع الاتصال
    ============================================================ */
 import { CFG, auth, db, $, esc, clean, toDate, fmtDate, fmtDay, dayKey, partsTZ, toast, errText,
-  collection, getDocs, getDoc, doc, setDoc, updateDoc, deleteDoc, writeBatch, query, orderBy, limit,
+  smartLoad, commit, callDeferred, requireOnline, isOnline,
+  collection, getDocs, getDocsFromCache, getDoc, doc, setDoc, updateDoc, deleteDoc, writeBatch, query, orderBy, limit,
   serverTimestamp, Timestamp } from './core.js';
 
 const GATEWAY = 'https://script.google.com/macros/s/AKfycbx6S27AM5zuftOmha8Zf-QixGfCiUGUbaapLY7qklwXcxDXLInbXDTn4UqdzYs5tT4/exec';
@@ -41,7 +45,7 @@ const MARKUP = `
     </div>
 
     <div class="card table-wrap">
-      <table>
+      <table class="cards-sm">
         <thead>
           <tr>
             <th>السؤال</th>
@@ -177,9 +181,18 @@ const REASON_LABEL = {
 let mounted = false;
 let reload = () => {};
 
+// نص رسالة الحفظ بحسب نتيجة إعادة بناء الموقع (رقم / مؤجّل / فشل سبق التنبيه عنه)
+function savedMsg(base, n) {
+  if (n === null) return;                       // rebuildSite نبّهت بالخطأ بنفسها
+  if (n === 'later') return toast(base + ' على الجهاز — يُحدَّث الموقع تلقائياً عند عودة الاتصال');
+  toast(base + (typeof n === 'number' ? ' — يظهر الآن على الموقع: ' + n : ''));
+}
+
 export default {
   id: 'polls',
   title: 'الاستطلاعات',
+  // أيقونة الشريط السفلي (أعمدة نتائج)
+  icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" aria-hidden="true"><path d="M5 20V11M12 20V4M19 20v-6"/></svg>',
   // يُبنى المحتوى أول مرة يُفتح فيها التبويب، وبعدها يُعاد التحميل فقط
   mount(root) {
     if (mounted) return reload();
@@ -190,12 +203,12 @@ export default {
     let editing = null;        // { id, orig, opts: [{ text, slot }] } أو { id: null, ... }
 
     // إعادة بناء ما يظهر على الموقع (المكان الوحيد للبناء هو البوابة)
+    // تُرجع عدد الظاهر على الموقع، أو 'later' إن تأجّل الطلب لعدم الاتصال، أو null عند الفشل
     async function rebuildSite() {
       try {
-        const r = await fetch(GATEWAY + '?action=rebuild');
-        const j = await r.json();
-        if (j.error) throw new Error(j.error);
-        return j.count;
+        const r = await callDeferred(GATEWAY + '?action=rebuild');
+        if (r.deferred) return 'later';
+        return r.data.count;
       } catch (e) {
         toast('حُفظ التغيير، لكن تعذّر تحديث الموقع الآن (سيتحدّث تلقائياً خلال ساعة): ' + errText(e), true);
         return null;
@@ -205,11 +218,14 @@ export default {
     /* ============================================================
        التحميل والعرض
        ============================================================ */
-    async function loadPolls() {
+    // force=true (زر "تحديث") يطلب الخادم دائماً؛ غير ذلك تُعرض النسخة المحفوظة
+    // ولا يُقرأ من الخادم إلا إذا مرّ أكثر من 5 دقائق على آخر مزامنة.
+    async function loadPolls(force) {
       try {
-        const snap = await getDocs(collection(db, 'polls'));
-        polls = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
-        render();
+        await smartLoad(collection(db, 'polls'), 'polls', (snap) => {
+          polls = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+          render();
+        }, { force: force === true });
       } catch (e) {
         toast('تعذّر تحميل الاستطلاعات: ' + errText(e), true);
       }
@@ -267,12 +283,12 @@ export default {
         .map((s) => '<option value="' + s + '"' + (p.status === s ? ' selected' : '') + '>' + STATUS_LABEL[s] + '</option>').join('');
       tr.innerHTML =
         '<td class="q-cell"><div class="q-text"></div><div class="q-id"></div></td>' +
-        '<td><div style="display:flex;flex-direction:column;gap:4px;align-items:flex-start">' +
+        '<td data-label="الحالة"><div style="display:flex;flex-direction:column;gap:4px;align-items:flex-start">' +
           '<span class="badge b-' + vs + '">' + STATUS_LABEL[vs] + '</span>' +
           '<select class="input status-sel btn-sm" aria-label="تغيير الحالة">' + statusOpts + '</select></div></td>' +
-        '<td class="num">' + totalOf(p).toLocaleString('en-US') + '</td>' +
-        '<td class="num"><input class="input order-in" type="number" step="1" aria-label="التثبيت" value="' + (Number(p.order) || 0) + '"></td>' +
-        '<td style="white-space:nowrap">' + esc(fmtDate(p.createdAt)) + '</td>' +
+        '<td class="num" data-label="الأصوات">' + totalOf(p).toLocaleString('en-US') + '</td>' +
+        '<td class="num" data-label="التثبيت"><input class="input order-in" type="number" step="1" aria-label="التثبيت" value="' + (Number(p.order) || 0) + '"></td>' +
+        '<td style="white-space:nowrap" data-label="الإنشاء">' + esc(fmtDate(p.createdAt)) + '</td>' +
         '<td><div class="actions">' +
           '<button class="btn btn-sm" data-act="results" type="button">النتائج</button>' +
           '<button class="btn btn-sm" data-act="edit" type="button">تعديل</button>' +
@@ -302,18 +318,24 @@ export default {
     }
 
     ['fSearch', 'fStatus', 'fSort'].forEach((id) => $(id).addEventListener('input', render));
-    $('btnReload').addEventListener('click', loadPolls);
+    $('btnReload').addEventListener('click', async () => {
+      if (!requireOnline('التحديث من الخادم')) return;
+      const b = $('btnReload'); b.disabled = true;
+      await loadPolls(true);
+      b.disabled = false;
+      toast('حُدّثت البيانات من الخادم');
+    });
 
     /* ============================================================
        تعديل سريع من الجدول (حقل واحد) — لا يلمس العدادات
        ============================================================ */
     async function quickUpdate(p, fields) {
       try {
-        await updateDoc(doc(db, 'polls', p.id), { ...fields, updatedAt: serverTimestamp() });
+        const w = commit(updateDoc(doc(db, 'polls', p.id), { ...fields, updatedAt: serverTimestamp() }));
         Object.assign(p, fields);
         render();
-        const n = await rebuildSite();
-        toast('حُفظ' + (n != null ? ' — يظهر الآن على الموقع: ' + n : ''));
+        await w;
+        savedMsg('حُفظ', await rebuildSite());
       } catch (e) {
         toast('تعذّر الحفظ: ' + errText(e), true);
         loadPolls();
@@ -453,7 +475,7 @@ export default {
         if (!editing.id) {
           // إنشاء: معرّف ثابت يُولَّد مرة واحدة
           const id = newPollId();
-          await setDoc(doc(db, 'polls', id), {
+          await commit(setDoc(doc(db, 'polls', id), {
             ...base,
             pollId: id,
             counts: { o1: 0, o2: 0, o3: 0, o4: 0, o5: 0, o6: 0 },
@@ -463,11 +485,12 @@ export default {
             createdAt: serverTimestamp(),
             createdBy: (auth.currentUser && auth.currentUser.email) || '',
             source: 'dashboard'
-          });
+          }));
         } else {
           const ref = doc(db, 'polls', editing.id);
           // فُتحت النافذة والاستطلاع بلا أصوات (فسُمح بالترتيب والحذف): نتأكد أنه ما زال بلا أصوات الآن
-          if (!editing.hasVotes) {
+          // (يتخطى دون اتصال: الفحص يحتاج الخادم)
+          if (!editing.hasVotes && isOnline()) {
             const fresh = await getDoc(ref);
             if (fresh.exists() && totalOf(fresh.data()) > 0) {
               msg.textContent = 'وصلت أصوات لهذا الاستطلاع أثناء التعديل — أغلق النافذة وأعد فتحها';
@@ -485,13 +508,12 @@ export default {
           });
           if (!Object.keys(upd).length) { $('pDlgEdit').close(); toast('لا تغييرات'); btn.disabled = false; return; }
           upd.updatedAt = serverTimestamp();
-          await updateDoc(ref, upd);
+          await commit(updateDoc(ref, upd));
         }
 
         $('pDlgEdit').close();
         await loadPolls();
-        const n = await rebuildSite();
-        toast('حُفظ الاستطلاع' + (n != null ? ' — يظهر الآن على الموقع: ' + n : ''));
+        savedMsg('حُفظ الاستطلاع', await rebuildSite());
       } catch (e) {
         msg.textContent = 'تعذّر الحفظ: ' + errText(e);
       } finally {
@@ -511,13 +533,13 @@ export default {
         const optFields = {};
         optionsOf(p).forEach((o, i) => { optFields['opt' + (i + 1)] = o.text; });
         for (let i = 1; i <= MAX_OPTIONS; i++) if (!optFields['opt' + i]) optFields['opt' + i] = '';
-        await setDoc(doc(db, 'polls', id), {
+        await commit(setDoc(doc(db, 'polls', id), {
           pollId: id, q: p.q || '', ...optFields,
           counts: { o1: 0, o2: 0, o3: 0, o4: 0, o5: 0, o6: 0 }, total: 0, daily: {},
           status: 'draft', order: 0, startAt: null, endAt: null, postUrl: p.postUrl || '',
           resultsVisibility: 'after_vote', createdAt: serverTimestamp(), updatedAt: serverTimestamp(),
           createdBy: (auth.currentUser && auth.currentUser.email) || '', source: 'dashboard_copy'
-        });
+        }));
         await loadPolls();
         toast('أُنشئت نسخة مسودة');
       } catch (e) { toast('تعذّر النسخ: ' + errText(e), true); }
@@ -536,6 +558,7 @@ export default {
     }
 
     async function resetVotes(p) {
+      if (!requireOnline('تصفير الأصوات')) return;
       const total = totalOf(p);
       const ans = prompt('تصفير ' + total + ' صوتاً من:\n«' + (p.q || '') + '»\n\nلا يمكن التراجع. للتأكيد اكتب: تصفير');
       if (ans == null || ans.trim() !== 'تصفير') return;
@@ -551,6 +574,7 @@ export default {
     }
 
     async function deletePoll(p) {
+      if (!requireOnline('حذف الاستطلاع')) return;
       const ans = prompt('حذف الاستطلاع نهائياً مع ' + totalOf(p) + ' صوتاً:\n«' + (p.q || '') + '»\n\nلا يمكن التراجع. للتأكيد اكتب: حذف');
       if (ans == null || ans.trim() !== 'حذف') return;
       try {
@@ -639,7 +663,8 @@ export default {
       body.innerHTML = '<p class="hint">جارٍ التحميل…</p>';
       $('pDlgLog').showModal();
       try {
-        const snap = await getDocs(query(collection(db, 'polls_log'), orderBy('createdAt', 'desc'), limit(100)));
+        const lq = query(collection(db, 'polls_log'), orderBy('createdAt', 'desc'), limit(100));
+        const snap = await (isOnline() ? getDocs(lq) : getDocsFromCache(lq));   // دون اتصال: آخر نسخة محفوظة
         if (snap.empty) { body.innerHTML = '<p class="hint">لا توجد محاولات مرفوضة.</p>'; return; }
         const byId = {};
         polls.forEach((p) => { byId[p.id] = p.q; byId[p.pollId] = p.q; });

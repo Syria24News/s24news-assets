@@ -1,0 +1,24 @@
+{
+  "id": "./",
+  "name": "لوحة تحكم سوريا 24",
+  "short_name": "لوحة 24",
+  "description": "إدارة أنظمة موقع سوريا 24 من الهاتف — الاستطلاعات والأخبار والتغطية الحية",
+  "lang": "ar",
+  "dir": "rtl",
+  "start_url": "./?source=pwa",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#77bd1d",
+  "background_color": "#f4f6f2",
+  "categories": ["news", "productivity"],
+  "icons": [
+    { "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
+    { "src": "icons/icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "shortcuts": [
+    { "name": "الاستطلاعات", "short_name": "الاستطلاعات", "url": "./?source=shortcut#polls",
+      "icons": [{ "src": "icons/icon-192.png", "sizes": "192x192", "type": "image/png" }] }
+  ]
+}
