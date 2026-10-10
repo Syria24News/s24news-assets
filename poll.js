@@ -239,7 +239,7 @@
             if (noteAnchor) {
                 const note = document.createElement('p');
                 note.className = 's24-recaptcha-note';
-                note.style.cssText = 'font-size:11px;color:#888;margin:8px 0 0;line-height:1.6;text-align:center';
+                note.style.cssText = 'font-size:11px;color:#888;margin:10px 0 14px;line-height:1.6;text-align:center';
                 note.innerHTML = 'هذا الاستطلاع محمي بـ reCAPTCHA، وتنطبق عليه <a href="https://policies.google.com/privacy" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">سياسة الخصوصية</a> و<a href="https://policies.google.com/terms" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">شروط الخدمة</a> من Google.';
                 noteAnchor.insertAdjacentElement('afterend', note);
                 const badgeCss = document.createElement('style');
