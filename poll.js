@@ -232,8 +232,20 @@
         
         // 🆕 مع reCAPTCHA الحقيقي يُخفى المربع الشكلي ويُحمَّل التحقق عند أول اختيار
         if (RECAPTCHA_SITE_KEY) {
-            const fake = document.querySelector('.fake-recaptcha');
+          const fake = document.querySelector('.fake-recaptcha');
             if (fake) fake.style.display = 'none';
+            // إخفاء شارة reCAPTCHA العائمة واستبدالها بنص الإسناد الذي تشترطه Google داخل صندوق الاستطلاع
+            const noteAnchor = fake || submitBtn;
+            if (noteAnchor) {
+                const note = document.createElement('p');
+                note.className = 's24-recaptcha-note';
+                note.style.cssText = 'font-size:11px;color:#888;margin:8px 0 0;line-height:1.6;text-align:center';
+                note.innerHTML = 'هذا الاستطلاع محمي بـ reCAPTCHA، وتنطبق عليه <a href="https://policies.google.com/privacy" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">سياسة الخصوصية</a> و<a href="https://policies.google.com/terms" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">شروط الخدمة</a> من Google.';
+                noteAnchor.insertAdjacentElement('afterend', note);
+                const badgeCss = document.createElement('style');
+                badgeCss.textContent = '.grecaptcha-badge{visibility:hidden!important}'; // visibility لا display حتى يبقى التحقق عاملاً
+                document.head.appendChild(badgeCss);
+            }
             document.addEventListener('change', function(e) {
                 if (e.target.name === 'vote') loadRecaptcha();
             });
