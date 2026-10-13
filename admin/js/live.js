@@ -18,7 +18,7 @@ import { db, $, esc, clean, fmtDate, fmtAgo, toast, errText, smartLoad, commit, 
   requireOnline, isOnline, collection, doc, updateDoc, query, where, orderBy, limit, serverTimestamp } from './core.js';
 
 // ⚠️ رابط تطبيق الويب (/exec) لمشروع Syria24_Coverage_Migration — يُلصق هنا بعد النشر
-const SYNC_URL = '';
+const SYNC_URL = 'https://script.google.com/macros/s/AKfycbzzQPbraQZh-gIaPYgKKYTOFJ7xHyzut1nP-U9W8jJ2tsc4S7Hah-nIh4lNT8Rf7V3UTA/exec';
 
 const SITE = 'https://www.syria24.news';
 const WINDOW_MS = 24 * 60 * 60 * 1000;   // نفس نافذة صندوق الرئيسية
