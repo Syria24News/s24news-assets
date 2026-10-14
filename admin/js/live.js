@@ -1,11 +1,13 @@
 /* ============================================================
    S24News — وحدة التغطية الحية في لوحة التحكم (admin/js/live.js)
-   الإصدار 1.0 — 13 أكتوبر 2026
+   الإصدار 1.1 — 14 أكتوبر 2026 (أرشيف التغطيات السابقة لصفحة /p/coverages.html)
 
    ما تديره هذه الوحدة (مستند واحد: coverage_groups/current):
    - groups.grN    اسم التغطية الظاهر في الصفحة وصندوق الرئيسية
    - statuses.grN  active | pinned | inactive | closed
    - since.grN     بداية التغطية الحالية (زر "تغطية جديدة") — الأقدم لا يُعرض
+   - archive.<grN_ms>  التغطيات السابقة: { gid, name, from, to, last, hidden }
+                       يُضاف تلقائياً عند "تغطية جديدة" إن كان للتغطية السابقة أخبار
    ولا تلمس lastAt (يكتبه Apps Script وحده بعد كل خبر).
 
    الأخبار (live_coverage): عرض آخر 50 لكل مجموعة + إخفاء/إظهار (حقل hidden فقط).
@@ -38,6 +40,7 @@ const MARKUP = `
       #liveView .lv-id{font-size:12px;opacity:.7;direction:ltr;text-align:right}
       #liveView .lv-name{width:100%;min-width:150px;margin-top:4px}
       #liveView .lv-why{font-size:12px;opacity:.75;margin-top:4px}
+      #liveView .lv-arc-h{font-size:17px;margin:22px 0 4px}
       #liveView .lv-guide summary{cursor:pointer;font-weight:700;list-style-position:inside}
       #liveView .lv-guide ol{margin:12px 0 0;padding-inline-start:22px;line-height:2}
       #liveView code,#lvDlgNews code{direction:ltr;unicode-bidi:isolate;font-family:ui-monospace,Consolas,monospace;
@@ -86,7 +89,24 @@ const MARKUP = `
         </thead>
         <tbody id="lvBody"></tbody>
       </table>
-      <div class="empty" id="lvEmpty" hidden>لا توجد مجموعات بعد — شغّل migrateGroupsToFirestore مرة واحدة من Apps Script.</div>
+      <div class="empty" id="lvEmpty" hidden>لا توجد مجموعات بعد.</div>
+    </div>
+
+    <h3 class="lv-arc-h">الأرشيف: التغطيات السابقة</h3>
+    <p class="hint">تظهر في صفحة <a href="https://www.syria24.news/p/coverages.html" target="_blank" rel="noopener">التغطيات</a>. تُضاف تلقائياً عند الضغط على «تغطية جديدة»، والمجموعات المنتهية تظهر هناك أيضاً ما دام فيها أخبار.</p>
+    <div class="card table-wrap">
+      <table class="cards-sm">
+        <thead>
+          <tr>
+            <th>التغطية</th>
+            <th>الفترة</th>
+            <th>في صفحة التغطيات</th>
+            <th>إجراءات</th>
+          </tr>
+        </thead>
+        <tbody id="lvArcBody"></tbody>
+      </table>
+      <div class="empty" id="lvArcEmpty" hidden>لا توجد تغطيات مؤرشفة بعد.</div>
     </div>
   </section>
 
@@ -218,6 +238,48 @@ export default {
       tb.innerHTML = '';
       $('lvEmpty').hidden = ids.length > 0;
       ids.forEach((id) => tb.appendChild(rowFor(id, now)));
+      renderArchive();
+    }
+
+    /* ============================================================
+       الأرشيف: التغطيات السابقة
+       ============================================================ */
+    function renderArchive() {
+      const arc = data.archive || {};
+      const keys = Object.keys(arc).filter((k) => arc[k] && arc[k].gid)
+        .sort((a, b) => num(arc[b].to) - num(arc[a].to));
+      const tb = $('lvArcBody');
+      tb.innerHTML = '';
+      $('lvArcEmpty').hidden = keys.length > 0;
+      keys.forEach((k) => {
+        const a = arc[k];
+        const hidden = a.hidden === true;
+        const tr = document.createElement('tr');
+        tr.innerHTML =
+          '<td class="q-cell"><div class="lv-id"></div><input class="input lv-name" maxlength="80" aria-label="اسم التغطية السابقة"></td>' +
+          '<td data-label="الفترة" style="white-space:nowrap"></td>' +
+          '<td data-label="في الصفحة">' + (hidden ? '<span class="badge b-draft">مخفية</span>' : '<span class="badge b-open">ظاهرة</span>') + '</td>' +
+          '<td><div class="actions">' +
+            '<button class="btn btn-sm" data-act="view" type="button">عرض</button>' +
+            '<button class="btn btn-sm' + (hidden ? '' : ' btn-danger') + '" data-act="hide" type="button">' + (hidden ? 'إظهار' : 'إخفاء') + '</button>' +
+          '</div></td>';
+        tr.querySelector('.lv-id').textContent = a.gid;
+        tr.children[1].textContent = (num(a.from) ? fmtDate(num(a.from)) + ' ← ' : '') + fmtDate(num(a.last) || num(a.to));
+        const inp = tr.querySelector('.lv-name');
+        inp.value = a.name || '';
+        inp.addEventListener('change', () => {
+          const v = clean(inp.value, 80);
+          if (!v) { inp.value = a.name || ''; return toast('الاسم لا يُترك فارغاً', true); }
+          if (v === a.name) return;
+          save({ ['archive.' + k + '.name']: v }, 'حُفظ اسم التغطية السابقة');
+        });
+        tr.querySelector('.actions').addEventListener('click', (e) => {
+          const act = e.target && e.target.getAttribute('data-act');
+          if (act === 'view') window.open(SITE + '/p/lbs24n.html?arc=' + encodeURIComponent(k), '_blank', 'noopener');
+          if (act === 'hide') save({ ['archive.' + k + '.hidden']: !hidden }, hidden ? 'ظهرت في صفحة التغطيات' : 'أُخفيت من صفحة التغطيات');
+        });
+        tb.appendChild(tr);
+      });
     }
 
     function rowFor(id, now) {
@@ -279,9 +341,13 @@ export default {
        ============================================================ */
     function applyLocal(fields) {
       Object.keys(fields).forEach((k) => {
-        const [top, key] = k.split('.');
-        data[top] = Object.assign({}, data[top] || {});
-        data[top][key] = fields[k];
+        const parts = k.split('.');
+        let o = data;
+        parts.slice(0, -1).forEach((p) => {
+          o[p] = Object.assign({}, o[p] || {});
+          o = o[p];
+        });
+        o[parts[parts.length - 1]] = fields[k];
       });
     }
 
@@ -302,12 +368,19 @@ export default {
     function newCoverage(id) {
       const cur = (data.groups || {})[id] || '';
       const ans = prompt('تغطية جديدة في الخانة ' + id +
-        '\nالأخبار السابقة لن تظهر بعد الآن في صفحتها ولا في الرئيسية (تبقى محفوظة).\n\nعنوان التغطية الجديدة:', cur);
+        '\nالتغطية الحالية تنتقل إلى الأرشيف (صفحة التغطيات) وتبقى أخبارها محفوظة.\n\nعنوان التغطية الجديدة:', cur);
       if (ans == null) return;
       const n = clean(ans, 80);
       if (!n) return toast('العنوان مطلوب', true);
-      save({ ['groups.' + id]: n, ['statuses.' + id]: 'active', ['since.' + id]: Date.now() },
-        'بدأت تغطية جديدة: ' + n + ' — تظهر في الرئيسية مع أول خبر');
+      const now = Date.now();
+      const fields = { ['groups.' + id]: n, ['statuses.' + id]: 'active', ['since.' + id]: now };
+      // أرشفة التغطية السابقة إن كان فيها أخبار (تظهر في صفحة التغطيات)
+      const prevSince = num((data.since || {})[id]);
+      const prevLast = num((data.lastAt || {})[id]);
+      if (prevLast && prevLast >= prevSince) {
+        fields['archive.' + id + '_' + now] = { gid: id, name: cur, from: prevSince, to: now, last: prevLast, hidden: false };
+      }
+      save(fields, 'بدأت تغطية جديدة: ' + n + (fields['archive.' + id + '_' + now] ? '، وأُرشفت السابقة' : ''));
     }
 
     // إضافة خانة جديدة (gr8، gr9 …)
