@@ -52,7 +52,14 @@ const MARKUP = `
       #liveView .lv-why{font-size:12px;opacity:.75;margin-top:4px}
       #liveView .lv-arc-h{font-size:17px;margin:22px 0 4px}
       #liveView .lv-guide{margin-bottom:14px}   /* فاصل بين دليل الكاتب وشريط الأدوات تحته */
-      #liveView .lv-guide summary{cursor:pointer;font-weight:700;list-style-position:inside}
+      #liveView .lv-guide summary{cursor:pointer;font-weight:700;list-style:none;
+        display:flex;align-items:center;justify-content:space-between;gap:12px}
+      #liveView .lv-guide summary::-webkit-details-marker{display:none}
+      /* سهم الفتح في نهاية السطر: للأسفل مغلقاً، وللأعلى مفتوحاً */
+      #liveView .lv-guide summary::after{content:'';flex:none;width:8px;height:8px;margin:0 4px 4px;
+        border-left:2px solid currentColor;border-bottom:2px solid currentColor;
+        transform:rotate(-45deg);transition:transform .2s}
+      #liveView .lv-guide[open] summary::after{transform:rotate(135deg);margin:4px 4px 0}
       #liveView .lv-guide ol{margin:12px 0 0;padding-inline-start:22px;line-height:2}
       #liveView code,#lvDlgNews code{direction:ltr;unicode-bidi:isolate;font-family:ui-monospace,Consolas,monospace;
         background:rgba(119,189,29,.14);padding:1px 6px;border-radius:4px;font-size:.92em}
