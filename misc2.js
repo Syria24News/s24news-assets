@@ -60,18 +60,21 @@ document.addEventListener("DOMContentLoaded", function() {
 document.addEventListener("DOMContentLoaded", () => {
     const params = new URLSearchParams(window.location.search);
      // يظهر الزر مع الصيغة القديمة (source=updates) أو الجديدة (lc=gr1)
+    // arc=gr1_<وقت> يعني أن القارئ جاء من تغطية سابقة (أرشيف) فيعود إليها نفسها
     const lc = params.get("lc");
+    const arc = params.get("arc");
     const validLc = lc && /^gr[0-9]+$/.test(lc);
-    if (params.get("source") === "updates" || validLc) {
+    const validArc = arc && /^gr[0-9]+_[0-9]+$/.test(arc);
+    if (params.get("source") === "updates" || validLc || validArc) {
         const container = document.getElementById("live-return-container");
-                // العودة إلى نفس مجموعة التغطية التي جاء منها القارئ
-        const returnUrl = "/p/lbs24n.html" + (validLc ? "?tab=" + lc : "");
+        // العودة إلى نفس التغطية التي جاء منها القارئ (الحالية أو السابقة)
+        const returnUrl = "/p/lbs24n.html" + (validArc ? "?arc=" + arc : (validLc ? "?tab=" + lc : ""));
 
         if (container) {
             container.innerHTML = `
                 <a class='live-return-pill' href='${returnUrl}' id='stickyLiveBtn'>
                     <div class='live-indicator-dot'></div>
-                    <span>العودة للتغطية الحية</span>
+                    <span>${validArc ? 'العودة للتغطية' : 'العودة للتغطية الحية'}</span>
                     <svg fill='none' height='18' stroke='currentColor' stroke-linecap='round' stroke-linejoin='round' stroke-width='2' viewBox='0 0 24 24' width='18'>
                         <path d='M19 12H5M12 19l-7-7 7-7'/>
                     </svg>
