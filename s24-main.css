@@ -694,19 +694,6 @@ body .sy-no-results {
     border-bottom-width: 1px;
 }
 
-.breaking-news-container .widget {
-    position: absolute;
-    inset: 0;
-    margin: 0;
-    padding: 0;
-    opacity: 0;
-    transition: opacity 0.8s ease-in-out;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-.breaking-news-container .widget.active-news { opacity: 1; z-index: 2; }
-
 .breaking-news-container .widget-content {
     background-color: transparent;
     color: var(--color-white);
@@ -734,18 +721,6 @@ body .sy-no-results {
 .breaking-news-container .widget-content a:hover { text-decoration: underline !important; }
 .breaking-news-container .widget-content a:before { content: ""; position: absolute; inset: 0; z-index: 5; }
 
-/* وضع "تخطيط الصفحة" (Layout) في لوحة تحكم بلوجر - يبقى كما كان */
-body#layout .breaking-news-container {
-    display: block;
-    max-height: none;
-    height: auto;
-    background-color: var(--color-white);
-    padding: 10px;
-    border: 2px dashed var(--color-FireEngineRed);
-    position: relative;
-    top: 0;
-}
-
 .breaking-news-container .widget-content a,
 .breaking-news-container .widget-content span {
     font-size: .9rem;
@@ -755,10 +730,6 @@ body#layout .breaking-news-container {
     text-decoration: none;
     color: var(--color-white);
 }
-
-
-#LinkList5 > h2.title,
-#LinkList5 .title { display: none !important; }
 
 
 .breaking-title-animated {
