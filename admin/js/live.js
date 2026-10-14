@@ -51,6 +51,7 @@ const MARKUP = `
       #liveView .lv-name{width:100%;min-width:150px;margin-top:4px}
       #liveView .lv-why{font-size:12px;opacity:.75;margin-top:4px}
       #liveView .lv-arc-h{font-size:17px;margin:22px 0 4px}
+      #liveView .lv-guide{margin-bottom:14px}   /* فاصل بين دليل الكاتب وشريط الأدوات تحته */
       #liveView .lv-guide summary{cursor:pointer;font-weight:700;list-style-position:inside}
       #liveView .lv-guide ol{margin:12px 0 0;padding-inline-start:22px;line-height:2}
       #liveView code,#lvDlgNews code{direction:ltr;unicode-bidi:isolate;font-family:ui-monospace,Consolas,monospace;
