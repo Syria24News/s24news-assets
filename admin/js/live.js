@@ -51,16 +51,19 @@ const MARKUP = `
       #liveView .lv-name{width:100%;min-width:150px;margin-top:4px}
       #liveView .lv-why{font-size:12px;opacity:.75;margin-top:4px}
       #liveView .lv-arc-h{font-size:17px;margin:22px 0 4px}
-      #liveView .lv-guide{margin-bottom:14px}   /* فاصل بين دليل الكاتب وشريط الأدوات تحته */
-      #liveView .lv-guide summary{cursor:pointer;font-weight:700;list-style:none;
-        display:flex;align-items:center;justify-content:space-between;gap:12px}
+      /* دليل الكاتب: إطار بمسافات داخلية مريحة، وفاصل عن شريط الأدوات تحته */
+      #liveView .lv-guide{margin-bottom:14px;overflow:hidden}
+      #liveView .lv-guide summary{cursor:pointer;font-weight:700;list-style:none;min-height:54px;
+        padding:14px 20px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+      #liveView .lv-guide summary:hover{background:rgba(119,189,29,.06)}
       #liveView .lv-guide summary::-webkit-details-marker{display:none}
       /* سهم الفتح في نهاية السطر: للأسفل مغلقاً، وللأعلى مفتوحاً */
       #liveView .lv-guide summary::after{content:'';flex:none;width:8px;height:8px;margin:0 4px 4px;
         border-left:2px solid currentColor;border-bottom:2px solid currentColor;
         transform:rotate(-45deg);transition:transform .2s}
       #liveView .lv-guide[open] summary::after{transform:rotate(135deg);margin:4px 4px 0}
-      #liveView .lv-guide ol{margin:12px 0 0;padding-inline-start:22px;line-height:2}
+      #liveView .lv-guide[open] summary{border-bottom:1px solid var(--border,rgba(127,127,127,.25))}
+      #liveView .lv-guide ol{margin:0;padding:14px 44px 18px 20px;line-height:2}
       #liveView code,#lvDlgNews code{direction:ltr;unicode-bidi:isolate;font-family:ui-monospace,Consolas,monospace;
         background:rgba(119,189,29,.14);padding:1px 6px;border-radius:4px;font-size:.92em}
       #lvDlgNews .lv-item{padding:12px 0;border-bottom:1px solid rgba(127,127,127,.22)}
