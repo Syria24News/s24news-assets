@@ -690,7 +690,7 @@ body .sy-no-results {
 
 /* عند إضافة هذا الكلاس عبر الجافاسكربت فقط يتمدد الشريط لحجمه الطبيعي */
 .breaking-news-container.is-active {
-    max-height: 50px;
+    max-height: 120px; /* سقف لحركة الظهور فقط — الارتفاع الفعلي يحدده الخبر (56px لسطر واحد، ويتمدد لسطرين أو ثلاثة على الموبايل) */
     border-bottom-width: 1px;
 }
 
@@ -701,7 +701,8 @@ body .sy-no-results {
     font-weight: bold;
     font-size: 16px;
     inline-size: 100%;
-    block-size: 50px;
+    min-block-size: 56px; /* ارتفاع مرن: 56px على الأقل، ويتمدد مع الخبر الطويل بدل قصّه */
+    box-sizing: border-box;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -714,9 +715,16 @@ body .sy-no-results {
     align-items: center;
     justify-content: center;
     inline-size: 100%;
-    block-size: 100%;
     position: relative;
     padding: 0 20px;
+}
+/* الخبر (رابطاً أو نصاً): يملأ ارتفاع الشريط كله، وفراغ 8px فوقه وتحته، والسطور المكسورة في الوسط */
+.breaking-news-container .widget-content > a,
+.breaking-news-container .widget-content > span {
+    align-self: stretch;
+    padding-block: 8px;
+    box-sizing: border-box;
+    text-align: center;
 }
 .breaking-news-container .widget-content a:hover { text-decoration: underline !important; }
 .breaking-news-container .widget-content a:before { content: ""; position: absolute; inset: 0; z-index: 5; }
@@ -4600,6 +4608,9 @@ body.item-page h3.post-title { font-size: 31px; margin-bottom: 20px; margin-top:
 
 /* 6. إضافات الفيديو والحاويات */
 .video-container { top: 142px !important; }
+/* مشغّل صفحة البث فقط (يلتصق بأعلى الصفحة): ينزل تحت شريط العاجل حين يظهر.
+   مشغّل العمود الجانبي يلتصق داخل العمود نفسه، فلا يتأثر بالشريط ويبقى على 142px */
+#main-video-placeholder.video-container { top: calc(142px + var(--s24-breaking-h, 0px)) !important; }
 
 /* --- شريط التنقل --- */
 .sy-breadcrumb { padding: 12px 10px; }
@@ -4660,13 +4671,13 @@ body.sidebar-toggled .breaking-news-container, body.sidebar-toggled #breakingNew
 
 /* --- شريط الأخبار العاجلة --- */
 .breaking-news-container { inset-block-start: var(--sticky-top-offset); }
-.breaking-news-container .widget-content, .breaking-news-container .widget-content a, .breaking-news-container .widget-content span { font-size: 0.875rem !important; padding-inline: 10px; padding-block: 0; }
+.breaking-news-container .widget-content, .breaking-news-container .widget-content a, .breaking-news-container .widget-content span { font-size: 0.875rem !important; padding-inline: 10px; }
 
 /* --- تنسيق المقال الداخلي وإصلاح الصور للموبايل --- */
 body.item-page h1.post-title, body.item-page h3.post-title, body.item-page .post-body > *:not(.separator):not(img) { padding-right: 20px; padding-left: 20px; }
 
 /* --- فيديو البث المباشر --- */
-.video-container { top: 80px !important; }
+.video-container { top: calc(80px + var(--s24-breaking-h, 0px)) !important; } /* ينزل تحت شريط العاجل حين يظهر */
 
 /* --- أيقونات التواصل الاجتماعي للموبايل --- */
 #Mobile_Social_Section { display: block !important; order: 999 !important; margin-top: 20px; border-top: 1px solid #eee; padding-top: 20px; text-align: center; background-color: transparent; width: 100%; }

@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', function () {
   var LABEL = cfg.labelName || '*A';
   var MAX_AUTO = cfg.maxResults || 5;
 
-  var cleanStyle = 'text-decoration: none !important; border: 0 !important; box-shadow: none !important; background: none !important; color: var(--color-white, #ffffff) !important; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; outline: 0 !important;';
+  var cleanStyle = 'text-decoration: none !important; border: 0 !important; box-shadow: none !important; background: none !important; color: var(--color-white, #ffffff) !important; display: flex; align-items: center; justify-content: center; width: 100%; outline: 0 !important;';
 
   var list = [];        // الأخبار المعروضة حالياً
   var index = 0;
@@ -140,6 +140,8 @@ document.addEventListener('DOMContentLoaded', function () {
     return out;
   }
 
+  var barMin = 0;   // ارتفاع أطول خبر في القائمة الحالية (بالبكسل) — يثبّت الشريط أثناء التبديل
+
   function show(i) {
     var n = list[i];
     if (!n) return;
@@ -147,7 +149,27 @@ document.addEventListener('DOMContentLoaded', function () {
     var inner = n.link
       ? '<a href="' + escapeHTML(n.link) + '" class="breaking-title-animated" style="' + cleanStyle + '"><span>' + t + '</span></a>'
       : '<span class="breaking-title-animated" style="' + cleanStyle + ' cursor:default;">' + t + '</span>';
-    box.innerHTML = '<div class="widget-content" style="height:100%; border:0 !important;">' + inner + '</div>';
+    box.innerHTML = '<div class="widget-content" style="border:0 !important;' +
+      (barMin ? ' min-height:' + barMin + 'px;' : '') + '">' + inner + '</div>';
+  }
+
+  // الارتفاع المرن (s24-main.css: 56px على الأقل ويتمدد مع الخبر الطويل):
+  // نقيس كل أخبار القائمة ونثبّت الشريط على أطولها، فلا يقفز المحتوى تحته كل 5 ثوانٍ
+  // بين خبر من سطر وخبر من سطرين. ونُعلن الارتفاع في المتغير --s24-breaking-h
+  // كي ينزل تحته ما يلتصق بالمكان نفسه (مشغّل البث في صفحة البث المباشر).
+  function measure() {
+    barMin = 0;
+    var maxH = 0;
+    for (var i = 0; i < list.length; i++) {
+      show(i);
+      var el = box.firstChild;
+      if (el && el.offsetHeight > maxH) maxH = el.offsetHeight;
+    }
+    barMin = maxH;
+    setBarVar(maxH ? maxH + 1 : 0);   // + خط الحد السفلي (1px)
+  }
+  function setBarVar(px) {
+    try { document.documentElement.style.setProperty('--s24-breaking-h', px + 'px'); } catch (e) {}
   }
 
   // عرض القائمة: إظهار الشريط أو إخفاؤه، وتشغيل التبديل عند وجود أكثر من خبر
@@ -161,11 +183,14 @@ document.addEventListener('DOMContentLoaded', function () {
     if (!list.length) {
       box.classList.remove('is-active');
       box.innerHTML = '';
+      barMin = 0;
+      setBarVar(0);
       return;
     }
     box.classList.add('is-active');
     box.setAttribute('aria-live', 'polite');      // دعم قارئات الشاشة
     box.setAttribute('role', 'status');
+    measure();
     index = 0;
     show(0);
     if (list.length > 1) {
@@ -186,6 +211,17 @@ document.addEventListener('DOMContentLoaded', function () {
   }
 
   refresh(false);
+
+  // تغيّر عرض الشاشة (تدوير الهاتف مثلاً) يغيّر عدد السطور: نعيد القياس
+  var resizeT = null;
+  window.addEventListener('resize', function () {
+    clearTimeout(resizeT);
+    resizeT = setTimeout(function () {
+      if (!list.length) return;
+      measure();
+      show(index);
+    }, 200);
+  });
 
   // الصفحة المفتوحة طويلاً: تحديث دوري ما دامت ظاهرة، وإعادة فحص الصلاحية كل دقيقة بلا طلبات
   setInterval(function () { if (!document.hidden) refresh(true); }, REFRESH_MS);
