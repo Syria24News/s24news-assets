@@ -360,6 +360,7 @@ import { auth, $, isAdmin, toast, errText, onStatus, fmtAgo, flushDeferred,
   GoogleAuthProvider, signInWithPopup, signInWithRedirect, signOut, onAuthStateChanged } from './js/core.js';
 import polls from './js/polls.js';
 import live from './js/live.js';
+import breaking from './js/breaking.js';
 
 /* ============================================================
    سجلّ الوحدات — لإضافة نظام جديد: أنشئ admin/js/<اسم>.js
@@ -369,7 +370,7 @@ import live from './js/live.js';
    (smartLoad من core.js تعرض المحفوظ ولا تقرأ من الخادم إلا عند التقادم).
    انظر admin/README.md لقالب وحدة جديدة.
    ============================================================ */
-const MODULES = [polls, live];
+const MODULES = [polls, live, breaking];
 
 /* ============ التبويبات والتنقل (#polls ...) ============ */
 const nav = $('nav'), host = $('modules');

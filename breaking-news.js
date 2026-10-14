@@ -1,188 +1,195 @@
 /* ============================================================
-   S24News — شريط الأخبار العاجلة
-   يقرأ الإعدادات (autoConfig / GOOGLE_SHEET_API) من ودجت
-   "إعدادات الخبر العاجل" في تخطيط بلوجر — لا تنقلها إلى هنا
+   S24News — شريط الأخبار العاجلة (breaking-news.js)
+   الإصدار 2.0 — 14 أكتوبر 2026: لوحة التحكم مصدر الإدارة الوحيد
+   (النسخة السابقة محفوظة باسم breaking-news-legacy.js للتراجع)
+
+   المصدران:
+   1) أخبار اللوحة — مستند Firestore واحد: breaking_news/current
+        items.<b_وقت> = { title, url, start, end, hidden, src, ref }
+        autoMinutes     = مدة ظهور مقالات *A بالدقائق (افتراضياً 60)
+        hiddenPosts     = معرّفات مقالات *A المخفاة من الشريط من اللوحة
+      يُقرأ بطلب REST واحد بلا مكتبة Firebase، مع كاش دقيقة على جهاز الزائر
+      (التنقل بين الصفحات لا يكلّف قراءات إضافية).
+   2) مقالات التصنيف *A في المدونة — تظهر autoMinutes دقيقة من وقت نشرها.
+
+   منع التكرار: خبر اللوحة المربوط بمقالة يحجب المقالة نفسها إن كانت *A
+   (المقارنة بالرابط بعد توحيده)، فيظهر الخبر مرة واحدة بنص اللوحة ومدّتها،
+   ولا تعود المقالة إلى الشريط بعد انتهاء خبر اللوحة أو إنهائه يدوياً.
+   الترتيب: الأحدث أولاً. الصفحة المفتوحة طويلاً تتحدّث كل 5 دقائق ما دامت ظاهرة.
+
+   ⚠️ أُلغي مصدرا LinkList5 وورقة Google (AppSheet): لم يعد السكربت يقرأهما.
+   autoConfig في ودجت HTML3 لم يعد لازماً؛ إن وُجد يُؤخذ منه maxResults و labelName فقط.
    ============================================================ */
 
-document.addEventListener("DOMContentLoaded", function() {
-    var containerBox = document.getElementById('breakingNewsContainer');
-    if(!containerBox) return;
+document.addEventListener('DOMContentLoaded', function () {
+  var box = document.getElementById('breakingNewsContainer');
+  if (!box) return;
 
-    if (typeof autoConfig === 'undefined') {
-        window.autoConfig = { displayMinutes: 10, labelName: "*A", maxResults: 5 };
+  var DOC_URL = 'https://firestore.googleapis.com/v1/projects/s24n-views/databases/(default)/documents/breaking_news/current';
+  var CACHE_KEY = 's24_breaking_v2';
+  var CACHE_MS = 60 * 1000;          // كاش مستند اللوحة على جهاز الزائر
+  var REFRESH_MS = 5 * 60 * 1000;    // تحديث الصفحة المفتوحة
+  var ROTATE_MS = 5000;              // تبديل الخبر في الشريط
+  var DEFAULT_AUTO_MIN = 60;         // مدة *A إن لم يُضبط في اللوحة
+
+  var cfg = window.autoConfig || {};
+  var LABEL = cfg.labelName || '*A';
+  var MAX_AUTO = cfg.maxResults || 5;
+
+  var cleanStyle = 'text-decoration: none !important; border: 0 !important; box-shadow: none !important; background: none !important; color: var(--color-white, #ffffff) !important; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; outline: 0 !important;';
+
+  var list = [];        // الأخبار المعروضة حالياً
+  var index = 0;
+  var timer = null;
+  var lastHtml = '';
+
+  // تنقية النص قبل إدراجه (حماية من XSS)
+  function escapeHTML(str) {
+    var div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+  }
+
+  // توحيد الرابط للمقارنة: بلا بروتوكول ولا www ولا ?m=1 ولا #
+  function normUrl(u) {
+    if (!u || u === '#' || /^https?:\/\/#?$/.test(u)) return '';
+    return String(u).trim().toLowerCase()
+      .replace(/^https?:\/\//, '').replace(/^www\./, '')
+      .split('#')[0].split('?')[0].replace(/\/$/, '');
+  }
+
+  // فك قيم Firestore REST ({stringValue}، {integerValue}، {mapValue}...) إلى قيم عادية
+  function fsVal(v) {
+    if (!v) return null;
+    if ('stringValue' in v) return v.stringValue;
+    if ('integerValue' in v) return Number(v.integerValue);
+    if ('doubleValue' in v) return Number(v.doubleValue);
+    if ('booleanValue' in v) return v.booleanValue;
+    if ('timestampValue' in v) return Date.parse(v.timestampValue);
+    if ('nullValue' in v) return null;
+    if ('arrayValue' in v) return (v.arrayValue.values || []).map(fsVal);
+    if ('mapValue' in v) {
+      var o = {}, f = v.mapValue.fields || {};
+      for (var k in f) o[k] = fsVal(f[k]);
+      return o;
     }
-    if (typeof GOOGLE_SHEET_API === 'undefined') {
-        window.GOOGLE_SHEET_API = "";
+    return null;
+  }
+
+  // مستند اللوحة: من الكاش إن كان حديثاً، وإلا طلب واحد
+  function loadPanelDoc(force) {
+    var c = !force && window.S24Cache ? window.S24Cache.get(CACHE_KEY, CACHE_MS) : null;
+    if (c) return Promise.resolve(c);
+    return fetch(DOC_URL).then(function (r) {
+      if (r.status === 404) return {};             // لم يُنشأ المستند بعد
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json().then(function (j) { return fsVal({ mapValue: { fields: j.fields || {} } }) || {}; });
+    }).then(function (d) {
+      if (window.S24Cache) window.S24Cache.set(CACHE_KEY, d);
+      return d;
+    }).catch(function () { return {}; });           // الفشل = لا أخبار من اللوحة (ويبقى *A)
+  }
+
+  // مقالات *A الأخيرة من خلاصة المدونة
+  function loadAutoPosts() {
+    var url = '/feeds/posts/summary/-/' + encodeURIComponent(LABEL) + '?alt=json&max-results=' + MAX_AUTO + '&cb=' + Date.now();
+    return fetch(url).then(function (r) { return r.json(); }).then(function (data) {
+      return ((data.feed && data.feed.entry) || []).map(function (e) {
+        var alt = (e.link || []).find(function (l) { return l.rel === 'alternate'; });
+        var m = /post-(\d+)/.exec((e.id && e.id.$t) || '');
+        return {
+          id: m ? m[1] : '',
+          title: String((e.title && e.title.$t) || '').replace(/^\s*\*A\s*/i, '').trim(),
+          link: alt ? alt.href : '',
+          time: Date.parse(e.published.$t)
+        };
+      });
+    }).catch(function () { return []; });
+  }
+
+  // دمج المصدرين في قائمة واحدة صالحة الآن
+  function build(panel, posts) {
+    var now = Date.now();
+    var out = [], seen = {};
+    var items = panel.items || {};
+    var hiddenPosts = {};
+    (panel.hiddenPosts || []).forEach(function (id) { hiddenPosts[String(id)] = true; });
+    var autoMs = (Number(panel.autoMinutes) || DEFAULT_AUTO_MIN) * 60000;
+
+    Object.keys(items).forEach(function (k) {
+      var it = items[k] || {};
+      // خبر اللوحة المربوط بمقالة يتحكم بظهورها كلياً، حتى بعد انتهائه أو إخفائه
+      var key = normUrl(it.url);
+      if (key) seen[key] = true;
+      if (it.hidden === true || !it.title) return;
+      var start = Number(it.start) || 0, end = Number(it.end) || 0;
+      if (!end || now < start || now >= end) return;
+      out.push({ title: it.title, link: it.url || '', time: start });
+    });
+
+    posts.forEach(function (p) {
+      if (!p.title || hiddenPosts[p.id]) return;
+      if (!(now - p.time < autoMs && p.time <= now + 60000)) return;
+      var key = normUrl(p.link);
+      if (key && seen[key]) return;                 // خبر اللوحة المربوط بها يكفي
+      if (key) seen[key] = true;
+      out.push({ title: p.title, link: p.link, time: p.time });
+    });
+
+    out.sort(function (a, b) { return b.time - a.time; });
+    return out;
+  }
+
+  function show(i) {
+    var n = list[i];
+    if (!n) return;
+    var t = escapeHTML(n.title);
+    var inner = n.link
+      ? '<a href="' + escapeHTML(n.link) + '" class="breaking-title-animated" style="' + cleanStyle + '"><span>' + t + '</span></a>'
+      : '<span class="breaking-title-animated" style="' + cleanStyle + ' cursor:default;">' + t + '</span>';
+    box.innerHTML = '<div class="widget-content" style="height:100%; border:0 !important;">' + inner + '</div>';
+  }
+
+  // عرض القائمة: إظهار الشريط أو إخفاؤه، وتشغيل التبديل عند وجود أكثر من خبر
+  function render(newList) {
+    var html = JSON.stringify(newList);
+    if (html === lastHtml) return;                  // لا تغيير = لا وميض
+    lastHtml = html;
+    list = newList;
+    if (timer) { clearInterval(timer); timer = null; }
+
+    if (!list.length) {
+      box.classList.remove('is-active');
+      box.innerHTML = '';
+      return;
     }
-
-    const cleanStyle = "text-decoration: none !important; border: 0 !important; box-shadow: none !important; background: none !important; color: var(--color-white, #ffffff) !important; display: flex; align-items: center; justify-content: center; width: 100%; height: 100%; outline: 0 !important;";
-
-    // 🟢 إصلاح رقم 1: مصفوفة موحّدة + فهرس Set لمنع التكرار بين المصادر الثلاثة
-    var mergedNews = [];
-    var seenKeys = new Set();
-    var now = new Date();
-    var currentIndex = 0;
-    var tickerTimer = null;
-    var isFirstRender = true;
-
-    // 🟢 إصلاح رقم 2: تنقية النص قبل إدراجه في الصفحة (حماية من XSS)
-    function escapeHTML(str) {
-        var div = document.createElement('div');
-        div.textContent = str;
-        return div.innerHTML;
+    box.classList.add('is-active');
+    box.setAttribute('aria-live', 'polite');      // دعم قارئات الشاشة
+    box.setAttribute('role', 'status');
+    index = 0;
+    show(0);
+    if (list.length > 1) {
+      timer = setInterval(function () {
+        index = (index + 1) % list.length;
+        show(index);
+      }, ROTATE_MS);
     }
+  }
 
-    // مفتاح فريد لكل خبر لمنع تكراره (حسب الرابط إن وجد، وإلا حسب النص)
-    function getNewsKey(news) {
-        if (news.link && news.link !== '#' && !news.link.startsWith('http://#') && !news.link.startsWith('https://#')) {
-            return news.link.split('?')[0].split('#')[0];
-        }
-        return 'text::' + news.title.trim();
-    }
+  var panelCache = null, autoCache = null;
+  function refresh(force) {
+    Promise.all([loadPanelDoc(force), loadAutoPosts()]).then(function (r) {
+      panelCache = r[0] || {};
+      autoCache = r[1] || [];
+      render(build(panelCache, autoCache));
+    });
+  }
 
-    // إضافة أخبار جديدة للمصفوفة الموحّدة دون حذف ما هو موجود ودون تكرار
-    function addNewsItems(items) {
-        var addedAny = false;
-        items.forEach(function(item) {
-            var key = getNewsKey(item);
-            if (!seenKeys.has(key)) {
-                seenKeys.add(key);
-                mergedNews.push(item);
-                addedAny = true;
-            }
-        });
-        return addedAny;
-    }
+  refresh(false);
 
-    // 🟢 إصلاح رقم 3: لا يعيد تصفير العداد أو المؤقت عند وصول مصدر جديد
-    // فقط يبدأ التشغيل أول مرة، وبعدها يكتفي بإضافة العناصر الجديدة بهدوء
-    function startOrUpdateTicker() {
-        if (mergedNews.length === 0) return;
-
-        // إظهار الشريط (يعتمد على كلاس is-active مع CSS المعدّل الذي يمنع القفزة البصرية)
-        containerBox.classList.add('is-active');
-        containerBox.setAttribute('aria-live', 'polite'); // 🟢 إصلاح رقم 4: دعم قارئات الشاشة
-        containerBox.setAttribute('role', 'status');
-
-        if (isFirstRender) {
-            isFirstRender = false;
-            updateDisplay(0);
-            if (mergedNews.length > 1) {
-                tickerTimer = setInterval(function() {
-                    currentIndex = (currentIndex + 1) % mergedNews.length;
-                    updateDisplay(currentIndex);
-                }, 5000);
-            }
-        } else if (mergedNews.length > 1 && !tickerTimer) {
-            // كان هناك خبر واحد فقط وأصبح هناك أكثر من خبر بعد وصول مصدر جديد
-            tickerTimer = setInterval(function() {
-                currentIndex = (currentIndex + 1) % mergedNews.length;
-                updateDisplay(currentIndex);
-            }, 5000);
-        }
-    }
-
-    function updateDisplay(index) {
-        var news = mergedNews[index];
-        var safeTitle = escapeHTML(news.title);
-        var contentHTML = '';
-        if (news.link && news.link !== '#' && news.link !== 'http://#' && news.link !== 'https://#') {
-            contentHTML = `<a href="${news.link}" class="breaking-title-animated" style="${cleanStyle}"><span>${safeTitle}</span></a>`;
-        } else {
-            contentHTML = `<span class="breaking-title-animated" style="${cleanStyle} cursor:default;">${safeTitle}</span>`;
-        }
-        containerBox.innerHTML = `<div class="widget-content" style="height:100%; border:0 !important;">${contentHTML}</div>`;
-    }
-
-    // فحص صيغة التوقيت {تاريخ ساعة:دقيقة} أو {ساعة:دقيقة} وإزالتها من النص المعروض
-    function parseExpiry(rawText) {
-        var isValid = true;
-        var timeMatch = rawText.match(/\{((?:\d{1,2}[\/\-]\d{1,2}(?:[\/\-]\d{2,4})?)\s+)?(\d{1,2}):(\d{2})\}/);
-        if (timeMatch) {
-            var expiryDate = new Date();
-            var hours = parseInt(timeMatch[2]);
-            var minutes = parseInt(timeMatch[3]);
-            if (timeMatch[1]) {
-                var dateParts = timeMatch[1].trim().split(/[\/\-]/);
-                var day = parseInt(dateParts[0]);
-                var month = parseInt(dateParts[1]) - 1;
-                if (dateParts[2]) {
-                    var year = parseInt(dateParts[2]);
-                    if (year < 100) year += 2000;
-                    expiryDate.setFullYear(year, month, day);
-                } else {
-                    expiryDate.setMonth(month, day);
-                }
-            }
-            expiryDate.setHours(hours, minutes, 0, 0);
-            if (now > expiryDate) isValid = false;
-            rawText = rawText.replace(timeMatch[0], '').trim();
-        }
-        return { text: rawText, valid: isValid };
-    }
-
-    // ============================================================
-    // 🟢 1. الأخبار اليدوية (LinkList5) - نفس المنطق الأصلي بالضبط
-    // ============================================================
-    var linkWidget = document.getElementById('LinkList5');
-    if (linkWidget) {
-        var links = linkWidget.querySelectorAll('li a');
-        var manualNews = [];
-        links.forEach(function(link) {
-            var rawText = (link.textContent || link.innerText).trim();
-            var href = link.getAttribute('href');
-            var parsed = parseExpiry(rawText);
-            if (parsed.valid && parsed.text !== "" && parsed.text !== "Manual_Breaking_News") {
-                manualNews.push({ title: parsed.text, link: href });
-            }
-        });
-        if (addNewsItems(manualNews)) startOrUpdateTicker();
-    }
-
-    // ============================================================
-    // 🟢 2. الأخبار الآلية (تسمية *A في المدونة)
-    // ============================================================
-    var feedUrl = '/feeds/posts/summary/-/' + encodeURIComponent(autoConfig.labelName) + '?alt=json&max-results=' + autoConfig.maxResults + '&cb=' + Math.random();
-    fetch(feedUrl).then(function(response) { return response.json(); }).then(function(data) {
-        var autoNews = [];
-        if (data.feed && data.feed.entry) {
-            data.feed.entry.forEach(function(entry) {
-                var pubDate = new Date(entry.published.$t);
-                if (Math.abs(now - pubDate) / 60000 <= autoConfig.displayMinutes) {
-                    autoNews.push({ title: entry.title.$t, link: entry.link.find(function(l) { return l.rel === 'alternate'; }).href });
-                }
-            });
-        }
-        if (addNewsItems(autoNews)) startOrUpdateTicker();
-    }).catch(function() {});
-
-    // ============================================================
-    // 🟢 3. أخبار جدول جوجل شيت (مع كاش 3 دقائق كما في الأصل)
-    // ============================================================
-    if (GOOGLE_SHEET_API !== "ضع_رابط_تطبيق_الويب_هنا" && GOOGLE_SHEET_API !== "") {
-
-        function processSheetData(sheetData) {
-            var sheetNews = [];
-            sheetData.forEach(function(item) {
-                var parsed = parseExpiry(item.title);
-                if (parsed.valid && parsed.text) {
-                    sheetNews.push({ title: parsed.text, link: item.link });
-                }
-            });
-            if (addNewsItems(sheetNews)) startOrUpdateTicker();
-        }
-
-        var CACHE_KEY = 's24_sheet_breaking_news';
-        var CACHE_TIME = 3 * 60 * 1000;
-        var cachedData = window.S24Cache.get(CACHE_KEY, CACHE_TIME);
-
-        if (cachedData) {
-            processSheetData(cachedData);
-        } else {
-            fetch(GOOGLE_SHEET_API).then(function(response) { return response.json(); }).then(function(sheetData) {
-                window.S24Cache.set(CACHE_KEY, sheetData);
-                processSheetData(sheetData);
-            }).catch(function() {});
-        }
-    }
+  // الصفحة المفتوحة طويلاً: تحديث دوري ما دامت ظاهرة، وإعادة فحص الصلاحية كل دقيقة بلا طلبات
+  setInterval(function () { if (!document.hidden) refresh(true); }, REFRESH_MS);
+  setInterval(function () {
+    if (!document.hidden && panelCache) render(build(panelCache, autoCache || []));
+  }, 60 * 1000);
 });

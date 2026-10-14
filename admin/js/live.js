@@ -1,5 +1,9 @@
 /* ============================================================
    S24News — وحدة التغطية الحية في لوحة التحكم (admin/js/live.js)
+   الإصدار 1.3 — 14 أكتوبر 2026 (الربط بشريط العاجل breaking_news — القاعدة: كل خبر أحمر في التغطية يظهر في الشريط
+     • الخبر السريع العاجل يُضاف إلى الشريط ساعة (اختيارياً)، وتعديله أو حذفه ينتقل إليه
+     • إخفاؤه أو إزالة «عاجل» عنه يُنهيه في الشريط
+     • إخفاء مقالة عاجلة (*A) أو إظهارها في التغطية يخفيها أو يعيدها في الشريط)
    الإصدار 1.2 — 14 أكتوبر 2026 (الخبر السريع: خبر من اللوحة مباشرة دون مقالة، مع ربط اختياري بمقالة لاحقاً)
    الإصدار 1.1 — 14 أكتوبر 2026 (أرشيف التغطيات السابقة لصفحة /p/coverages.html)
 
@@ -26,6 +30,8 @@
 import { db, $, esc, clean, fmtDate, fmtAgo, toast, errText, smartLoad, commit, callDeferred,
   requireOnline, isOnline, collection, doc, updateDoc, deleteDoc, writeBatch, query, where, orderBy, limit,
   serverTimestamp } from './core.js';
+import { addBreakingToBatch, quickBreakingId, syncQuickToBreaking, removeQuickFromBreaking,
+  endQuickInBreaking, setPostHiddenInBreaking } from './breaking.js';
 
 // ⚠️ رابط تطبيق الويب (/exec) لمشروع Syria24_Coverage_Migration — يُلصق هنا بعد النشر
 const SYNC_URL = 'https://script.google.com/macros/s/AKfycbzzQPbraQZh-gIaPYgKKYTOFJ7xHyzut1nP-U9W8jJ2tsc4S7Hah-nIh4lNT8Rf7V3UTA/exec';
@@ -81,10 +87,11 @@ const MARKUP = `
       <ol>
         <li>اكتب الخبر في بلوغر. <b>العنوان وحده</b> يظهر في الخط الزمني، فاجعله خبراً كاملاً قصيراً.</li>
         <li>انتقل إلى وضع HTML والصق وسم المجموعة، مثل <code>&lt;!-- COVERAGE: gr1 --&gt;</code> (زر «نسخ الوسم» في كل مجموعة أدناه).</li>
-        <li>للعاجل: أضف التصنيف (Label) <code>*A</code>. كتابة <code>*A</code> في بداية العنوان ما زالت تعمل أيضاً.</li>
+        <li>للعاجل: أضف التصنيف (Label) <code>*A</code> فقط (لا تكتبه في العنوان). يظهر الخبر أحمر في التغطية وفي شريط العاجل تحت الهيدر معاً.</li>
         <li>انشر. يظهر الخبر خلال 5 دقائق، أو فوراً بزر «زامن الآن».</li>
         <li>لتصحيح خبر: عدّله في بلوغر. لإخفائه من الصفحة دون حذف المقالة: زر «الأخبار» في مجموعته.</li>
         <li>لبدء تغطية جديدة في الخانة نفسها: زر «تغطية جديدة» (الأخبار السابقة تختفي من صفحتها وتبقى محفوظة).</li>
+        <li><b>خبر سريع عاجل:</b> يصل إلى شريط العاجل تحت الهيدر لمدة ساعة (يُلغى من نافذته)، ويُدار هناك من قسم «الخبر العاجل».</li>
         <li><b>خبر سريع بلا مقالة:</b> زر «+ خبر سريع» في المجموعة. يظهر فوراً دون مزامنة، ونصه غير قابل للضغط.
           حين تنشر مقالته لاحقاً: «الأخبار» ← «تعديل» على الخبر السريع ← اختر المقالة، فيصبح قابلاً للضغط ولا يتكرر.</li>
       </ol>
@@ -162,6 +169,9 @@ const MARKUP = `
           <div class="hint"><span id="lvQCount">0</span> / ${QUICK_MAX} — يظهر النص كما هو في الخط الزمني.</div>
           <label style="display:flex;gap:8px;align-items:center;cursor:pointer">
             <input type="checkbox" id="lvQUrgent"> <b>عاجل</b> <span class="hint">(إطار ولون أحمر)</span>
+          </label>
+          <label id="lvQBarWrap" style="display:flex;gap:8px;align-items:center;cursor:pointer" hidden>
+            <input type="checkbox" id="lvQBar" checked> يظهر أيضاً في شريط العاجل تحت الهيدر لمدة ساعة
           </label>
           <label class="field"><span>ربط بمقالة من التغطية (اختياري)</span>
             <select class="input" id="lvQPick"></select>
@@ -598,6 +608,9 @@ export default {
       $('lvQText').value = item ? (item.title || '') : '';
       $('lvQCount').textContent = $('lvQText').value.length;
       $('lvQUrgent').checked = !!(item && item.isUrgent);
+      // خيار شريط العاجل للخبر الجديد فقط (تعديل الخبر لاحقاً يحدّث نصه ورابطه في الشريط تلقائياً)
+      $('lvQBar').checked = true;
+      $('lvQBarWrap').hidden = !!item || !$('lvQUrgent').checked;
       $('lvQSave').textContent = item ? 'حفظ' : 'نشر';
       $('lvQMsg').textContent = '';
 
@@ -625,6 +638,7 @@ export default {
     }
 
     $('lvQText').addEventListener('input', () => { $('lvQCount').textContent = $('lvQText').value.length; });
+    $('lvQUrgent').addEventListener('change', () => { $('lvQBarWrap').hidden = !!qItem || !$('lvQUrgent').checked; });
     // اختيار مقالة من القائمة يُفرغ حقل الرابط، والعكس
     $('lvQPick').addEventListener('change', () => { if ($('lvQPick').value) $('lvQUrl').value = ''; });
     $('lvQUrl').addEventListener('input', () => { if ($('lvQUrl').value.trim()) $('lvQPick').value = ''; });
@@ -651,6 +665,10 @@ export default {
           groupName: (data.groups || {})[gid] || gid, isUrgent, hidden: false, quick: true,
           linkedPostId, createdAt: now };
         b.set(doc(db, 'live_coverage', qid), fields);
+        // العاجل ← شريط العاجل أيضاً (في الدفعة نفسها)
+        if (isUrgent && $('lvQBar').checked) {
+          addBreakingToBatch(b, { id: quickBreakingId(qid), title, url: url || '', minutes: 60, src: 'live', ref: qid });
+        }
         // آخر خبر = الآن ← تظهر التغطية في صندوق الرئيسية وصفحة التغطيات فوراً
         b.update(groupsRef(), { ['lastAt.' + gid]: now, updatedAt: serverTimestamp() });
       } else {
@@ -685,6 +703,11 @@ export default {
         const r = await w;
         toast(r.queued ? 'حُفظ على الجهاز — يُنشر عند عودة الاتصال'
           : (old ? 'حُفظ الخبر السريع' : 'نُشر الخبر السريع') + (url ? ' (مرتبط بمقالة)' : ''));
+        // تعديل النص أو الربط ← تحديثه في شريط العاجل إن كان فيه (قراءة واحدة)
+        if (old && isOnline()) {
+          syncQuickToBreaking(qid, { title, url: url || '', isUrgent }).catch((e) =>
+            toast('حُفظ الخبر، وتعذّر تحديثه في شريط العاجل: ' + errText(e), true));
+        }
       } catch (e) {
         toast('تعذّر الحفظ: ' + errText(e), true);
         loadNews(gid, true);
@@ -700,6 +723,8 @@ export default {
       try {
         await deleteDoc(doc(db, 'live_coverage', n.id));
         news = news.filter((x) => x.id !== n.id);
+        // حذفه من شريط العاجل أيضاً إن كان فيه
+        removeQuickFromBreaking(n.id).catch((e) => toast('تعذّر حذفه من شريط العاجل: ' + errText(e), true));
         const art = n.linkedPostId && news.find((x) => x.id === n.linkedPostId);
         if (art && art.hidden === true) {
           try { await updateDoc(doc(db, 'live_coverage', art.id), { hidden: false }); art.hidden = false; }
@@ -721,6 +746,13 @@ export default {
         const r = await w;
         toast(r.queued ? 'حُفظ على الجهاز — يُرسل عند عودة الاتصال'
           : (v ? 'أُخفي الخبر من صفحة التغطية' : 'أُعيد إظهار الخبر'));
+        // الخبر العاجل: ما يُخفى من التغطية يُخفى من شريط العاجل أيضاً
+        if (n.isUrgent && isOnline()) {
+          const job = n.quick === true
+            ? (v ? endQuickInBreaking(n.id) : null)        // الخبر السريع: الإخفاء يُنهيه (الإظهار لا يعيده)
+            : setPostHiddenInBreaking(n.id, v);            // مقالة *A: إخفاء أو إعادة في الشريط
+          if (job) job.catch((e) => toast('تعذّر تحديث شريط العاجل: ' + errText(e), true));
+        }
       } catch (e) {
         n.hidden = !v;
         renderNews();
