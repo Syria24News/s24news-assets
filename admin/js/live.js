@@ -1,5 +1,6 @@
 /* ============================================================
    S24News — وحدة التغطية الحية في لوحة التحكم (admin/js/live.js)
+   الإصدار 1.2 — 14 أكتوبر 2026 (الخبر السريع: خبر من اللوحة مباشرة دون مقالة، مع ربط اختياري بمقالة لاحقاً)
    الإصدار 1.1 — 14 أكتوبر 2026 (أرشيف التغطيات السابقة لصفحة /p/coverages.html)
 
    ما تديره هذه الوحدة (مستند واحد: coverage_groups/current):
@@ -11,13 +12,20 @@
    ولا تلمس lastAt (يكتبه Apps Script وحده بعد كل خبر).
 
    الأخبار (live_coverage): عرض آخر 50 لكل مجموعة + إخفاء/إظهار (حقل hidden فقط).
+   الخبر السريع: مستند live_coverage/q_<وقت> بالحقل quick: true، تكتبه اللوحة وحدها
+     { postId, title, content:'', timestamp, url, groupId, groupName, isUrgent, hidden, quick, linkedPostId, createdAt }
+     - ينشر فوراً ويحدّث lastAt.grN (ليظهر في صندوق الرئيسية) في دفعة كتابة واحدة.
+     - الربط بمقالة: url = رابطها؛ وإن كانت المقالة نفسها خبراً في التغطية تُخفى (hidden) حتى لا يتكرر الخبر،
+       ويصبح الخبر السريع قابلاً للضغط في وقته الأصلي. فك الربط أو حذف الخبر السريع يعيد إظهارها.
+     - Apps Script لا يحذفه في التنظيف (معرّف يبدأ بـ q_).
    زر "زامن الآن": يستدعي تطبيق الويب لمشروع Syria24_Coverage_Migration (?action=sync).
 
    التوفير: قراءة المجموعات = مستند واحد، والأخبار تُقرأ عند فتح نافذتها فقط،
    وكلاهما عبر smartLoad (النسخة المحفوظة أولاً، والخادم بعد 5 دقائق أو عند "تحديث").
    ============================================================ */
 import { db, $, esc, clean, fmtDate, fmtAgo, toast, errText, smartLoad, commit, callDeferred,
-  requireOnline, isOnline, collection, doc, updateDoc, query, where, orderBy, limit, serverTimestamp } from './core.js';
+  requireOnline, isOnline, collection, doc, updateDoc, deleteDoc, writeBatch, query, where, orderBy, limit,
+  serverTimestamp } from './core.js';
 
 // ⚠️ رابط تطبيق الويب (/exec) لمشروع Syria24_Coverage_Migration — يُلصق هنا بعد النشر
 const SYNC_URL = 'https://script.google.com/macros/s/AKfycbzzQPbraQZh-gIaPYgKKYTOFJ7xHyzut1nP-U9W8jJ2tsc4S7Hah-nIh4lNT8Rf7V3UTA/exec';
@@ -25,6 +33,8 @@ const SYNC_URL = 'https://script.google.com/macros/s/AKfycbzzQPbraQZh-gIaPYgKKYT
 const SITE = 'https://www.syria24.news';
 const WINDOW_MS = 24 * 60 * 60 * 1000;   // نفس نافذة صندوق الرئيسية
 const MAX_ITEMS = 50;                      // نفس حد صفحة التغطية
+const QUICK_MAX = 300;                     // أقصى طول لنص الخبر السريع (نفس حد القواعد)
+const SITE_RE = /^https?:\/\/(www\.)?syria24\.news(\/[^\s]*)?$/i;   // روابط الموقع فقط
 
 const STATUS_LABEL = { active: 'نشطة', pinned: 'مثبّتة', inactive: 'مخفية', closed: 'منتهية' };
 const STATUS_TITLE = {
@@ -64,6 +74,8 @@ const MARKUP = `
         <li>انشر. يظهر الخبر خلال 5 دقائق، أو فوراً بزر «زامن الآن».</li>
         <li>لتصحيح خبر: عدّله في بلوغر. لإخفائه من الصفحة دون حذف المقالة: زر «الأخبار» في مجموعته.</li>
         <li>لبدء تغطية جديدة في الخانة نفسها: زر «تغطية جديدة» (الأخبار السابقة تختفي من صفحتها وتبقى محفوظة).</li>
+        <li><b>خبر سريع بلا مقالة:</b> زر «+ خبر سريع» في المجموعة. يظهر فوراً دون مزامنة، ونصه غير قابل للضغط.
+          حين تنشر مقالته لاحقاً: «الأخبار» ← «تعديل» على الخبر السريع ← اختر المقالة، فيصبح قابلاً للضغط ولا يتكرر.</li>
       </ol>
     </details>
 
@@ -122,6 +134,40 @@ const MARKUP = `
       <p class="hint">آخر ${MAX_ITEMS} خبراً. «إخفاء» يزيل الخبر من صفحة التغطية فوراً ولا يمسّ المقالة في بلوغر.</p>
       <div id="lvNewsBody"></div>
     </div>
+  </dialog>
+
+  <dialog id="lvDlgQuick">
+    <form method="dialog" novalidate>
+      <div class="dlg-head">
+        <h2 id="lvQTitle">خبر سريع</h2>
+        <button class="btn btn-sm" value="cancel" type="submit" formnovalidate>إغلاق</button>
+      </div>
+      <div class="dlg-body">
+        <div class="stack" style="display:flex;flex-direction:column;gap:14px">
+          <label class="field"><span id="lvQGroup">نص الخبر</span>
+            <textarea class="input" id="lvQText" maxlength="${QUICK_MAX}" rows="3"
+              placeholder="مثال: انفجار في حي الميدان بدمشق، والتفاصيل تتبع"></textarea>
+          </label>
+          <div class="hint"><span id="lvQCount">0</span> / ${QUICK_MAX} — يظهر النص كما هو في الخط الزمني.</div>
+          <label style="display:flex;gap:8px;align-items:center;cursor:pointer">
+            <input type="checkbox" id="lvQUrgent"> <b>عاجل</b> <span class="hint">(إطار ولون أحمر)</span>
+          </label>
+          <label class="field"><span>ربط بمقالة من التغطية (اختياري)</span>
+            <select class="input" id="lvQPick"></select>
+          </label>
+          <label class="field"><span>أو الصق رابط مقالة من الموقع (اختياري)</span>
+            <input class="input" id="lvQUrl" type="url" dir="ltr" placeholder="https://www.syria24.news/...">
+          </label>
+          <div class="hint">بلا ربط: يظهر الخبر نصاً غير قابل للضغط. مع الربط: يصبح قابلاً للضغط ويبقى في وقته الأصلي،
+            وإن كانت المقالة المختارة خبراً في التغطية تُخفى تلقائياً حتى لا يتكرر الخبر.</div>
+        </div>
+      </div>
+      <div class="dlg-foot">
+        <button class="btn btn-primary" id="lvQSave" type="button">نشر</button>
+        <button class="btn" value="cancel" type="submit" formnovalidate>إلغاء</button>
+        <span class="msg" id="lvQMsg"></span>
+      </div>
+    </form>
   </dialog>`;
 
 /* ============ أدوات مساعدة ============ */
@@ -306,6 +352,7 @@ export default {
         '<td data-label="آخر خبر" style="white-space:nowrap">' + (last ? esc(fmtAgo(last)) : '—') + '</td>' +
         '<td data-label="البداية" style="white-space:nowrap">' + (start ? esc(fmtDate(start)) : 'منذ البداية') + '</td>' +
         '<td><div class="actions">' +
+          '<button class="btn btn-sm btn-primary" data-act="quick" type="button">+ خبر سريع</button>' +
           '<button class="btn btn-sm" data-act="tag" type="button">نسخ الوسم</button>' +
           '<button class="btn btn-sm" data-act="news" type="button">الأخبار</button>' +
           '<button class="btn btn-sm" data-act="new" type="button">تغطية جديدة</button>' +
@@ -328,6 +375,7 @@ export default {
 
       tr.querySelector('.actions').addEventListener('click', (e) => {
         const act = e.target && e.target.getAttribute('data-act');
+        if (act === 'quick') openQuick(id, null);
         if (act === 'tag') copyText(tagOf(id));
         if (act === 'news') openNews(id);
         if (act === 'new') newCoverage(id);
@@ -469,22 +517,28 @@ export default {
       body.innerHTML = '';
       if (!news.length) { body.innerHTML = '<p class="hint">لا توجد أخبار في هذه المجموعة.</p>'; return; }
       const start = num((data.since || {})[newsFor]);
+      const merged = linkedIds();   // مقالات مدمجة في أخبار سريعة
 
       news.forEach((n) => {
         const hidden = n.hidden === true;
         const old = start && num(n.timestamp) < start;
+        const quick = n.quick === true;
         const item = document.createElement('div');
         item.className = 'lv-item' + (hidden ? ' is-hidden' : '') + (old ? ' is-old' : '');
         item.innerHTML =
           '<div class="lv-meta"><span class="lv-time"></span>' +
+            (quick ? '<span class="badge b-open">خبر سريع' + (n.url ? ' · مرتبط' : '') + '</span>' : '') +
             (n.isUrgent ? '<span class="badge b-closed">عاجل</span>' : '') +
             (hidden ? '<span class="badge b-draft">مخفي</span>' : '') +
+            (merged[n.id] ? '<span class="badge b-archived">مدمجة في خبر سريع</span>' : '') +
             (old ? '<span class="badge b-archived">تغطية سابقة</span>' : '') +
           '</div>' +
           '<div class="lv-title"></div>' +
           '<div class="actions">' +
+            (quick ? '<button class="btn btn-sm" type="button" data-act="edit">تعديل / ربط</button>' : '') +
             '<button class="btn btn-sm' + (hidden ? '' : ' btn-danger') + '" type="button" data-act="hide">' +
               (hidden ? 'إظهار' : 'إخفاء') + '</button>' +
+            (quick ? '<button class="btn btn-sm btn-danger" type="button" data-act="del">حذف</button>' : '') +
             (n.url ? '<a class="btn btn-sm" target="_blank" rel="noopener">المقالة</a>' : '') +
           '</div>';
         item.querySelector('.lv-time').textContent = fmtDate(num(n.timestamp));
@@ -492,8 +546,159 @@ export default {
         const a = item.querySelector('a');
         if (a) a.href = n.url;
         item.querySelector('[data-act="hide"]').addEventListener('click', () => toggleHidden(n));
+        if (quick) {
+          item.querySelector('[data-act="edit"]').addEventListener('click', () => openQuick(n.groupId || newsFor, n));
+          item.querySelector('[data-act="del"]').addEventListener('click', () => deleteQuick(n));
+        }
         body.appendChild(item);
       });
+    }
+
+    /* ============================================================
+       الخبر السريع: إضافة، تعديل، ربط بمقالة، حذف
+       ============================================================ */
+    // { postId: true } للمقالات المدمجة في أخبار سريعة (من الأخبار المحمّلة)
+    function linkedIds() {
+      const m = {};
+      news.forEach((x) => { if (x.quick === true && x.linkedPostId) m[x.linkedPostId] = true; });
+      return m;
+    }
+
+    // توحيد رابط الموقع: https://www.syria24.news/... (القواعد لا تقبل غيره)
+    function normUrl(v) {
+      const s = String(v || '').trim();
+      if (!s) return '';
+      if (!SITE_RE.test(s)) return null;
+      return s.replace(/^https?:\/\/(www\.)?syria24\.news/i, 'https://www.syria24.news');
+    }
+
+    let qGroup = null;   // المجموعة في نافذة الخبر السريع
+    let qItem = null;    // الخبر قيد التعديل (null = جديد)
+
+    async function openQuick(id, item) {
+      qGroup = id; qItem = item;
+      // المقالات المرشحة للربط = أخبار هذه المجموعة (من النسخة المحفوظة غالباً، بلا قراءة إضافية)
+      if (newsFor !== id || !news.length) {
+        newsFor = id;
+        try { await loadNews(id, false); } catch (e) { /* القائمة تبقى فارغة */ }
+      }
+      $('lvQTitle').textContent = item ? 'تعديل خبر سريع' : 'خبر سريع جديد';
+      $('lvQGroup').textContent = 'نص الخبر في: ' + ((data.groups || {})[id] || id);
+      $('lvQText').value = item ? (item.title || '') : '';
+      $('lvQCount').textContent = $('lvQText').value.length;
+      $('lvQUrgent').checked = !!(item && item.isUrgent);
+      $('lvQSave').textContent = item ? 'حفظ' : 'نشر';
+      $('lvQMsg').textContent = '';
+
+      // قائمة المقالات: أخبار بلوغر في التغطية الحالية (الأحدث أولاً)
+      const start = num((data.since || {})[id]);
+      const merged = linkedIds();
+      const sel = $('lvQPick');
+      sel.innerHTML = '<option value="">— بلا ربط —</option>';
+      news.filter((x) => x.quick !== true && x.url &&
+          (num(x.timestamp) >= start || (item && item.linkedPostId === x.id)) &&
+          (!merged[x.id] || (item && item.linkedPostId === x.id)))
+        .forEach((x) => {
+          const o = document.createElement('option');
+          o.value = x.id;
+          const t = String(x.title || x.content || '');
+          o.textContent = fmtDate(num(x.timestamp)) + ' — ' + (t.length > 70 ? t.slice(0, 70) + '…' : t);
+          sel.appendChild(o);
+        });
+      const linkedInList = item && item.linkedPostId && [...sel.options].some((o) => o.value === item.linkedPostId);
+      sel.value = linkedInList ? item.linkedPostId : '';
+      $('lvQUrl').value = item && item.url && !linkedInList ? item.url : '';
+
+      $('lvDlgQuick').showModal();
+      setTimeout(() => $('lvQText').focus(), 50);
+    }
+
+    $('lvQText').addEventListener('input', () => { $('lvQCount').textContent = $('lvQText').value.length; });
+    // اختيار مقالة من القائمة يُفرغ حقل الرابط، والعكس
+    $('lvQPick').addEventListener('change', () => { if ($('lvQPick').value) $('lvQUrl').value = ''; });
+    $('lvQUrl').addEventListener('input', () => { if ($('lvQUrl').value.trim()) $('lvQPick').value = ''; });
+
+    $('lvQSave').addEventListener('click', async () => {
+      const msg = $('lvQMsg');
+      const title = clean($('lvQText').value, QUICK_MAX);
+      if (!title) { msg.textContent = 'اكتب نص الخبر'; return; }
+      const pickId = $('lvQPick').value;
+      const picked = pickId ? news.find((x) => x.id === pickId) : null;
+      let url = picked ? normUrl(picked.url) : normUrl($('lvQUrl').value);
+      if (url === null) { msg.textContent = 'الرابط يجب أن يكون من موقع syria24.news'; return; }
+      const linkedPostId = picked ? picked.id : '';
+      const isUrgent = $('lvQUrgent').checked;
+      const gid = qGroup;
+      const now = Date.now();
+      const old = qItem;
+
+      const b = writeBatch(db);
+      let qid, fields;
+      if (!old) {
+        qid = 'q_' + now;
+        fields = { postId: qid, title, content: '', timestamp: now, url: url || '', groupId: gid,
+          groupName: (data.groups || {})[gid] || gid, isUrgent, hidden: false, quick: true,
+          linkedPostId, createdAt: now };
+        b.set(doc(db, 'live_coverage', qid), fields);
+        // آخر خبر = الآن ← تظهر التغطية في صندوق الرئيسية وصفحة التغطيات فوراً
+        b.update(groupsRef(), { ['lastAt.' + gid]: now, updatedAt: serverTimestamp() });
+      } else {
+        qid = old.id;
+        fields = { title, isUrgent, url: url || '', linkedPostId, updatedAt: now };
+        b.update(doc(db, 'live_coverage', qid), fields);
+        // المقالة المرتبطة سابقاً تعود للظهور إن تغيّر الربط (وكانت محمّلة = موجودة)
+        if (old.linkedPostId && old.linkedPostId !== linkedPostId && news.some((x) => x.id === old.linkedPostId)) {
+          b.update(doc(db, 'live_coverage', old.linkedPostId), { hidden: false });
+        }
+      }
+      // المقالة المختارة تُخفى حتى لا يتكرر الخبر في الخط الزمني
+      if (picked && picked.hidden !== true) b.update(doc(db, 'live_coverage', picked.id), { hidden: true });
+
+      $('lvQSave').disabled = true;
+      try {
+        const w = commit(b.commit());
+        // تحديث العرض فوراً
+        if (!old) {
+          news.unshift({ id: qid, ...fields });
+          applyLocal({ ['lastAt.' + gid]: now });
+          render();
+        } else {
+          const prev = old.linkedPostId;
+          Object.assign(old, fields);
+          const back = prev && prev !== linkedPostId && news.find((x) => x.id === prev);
+          if (back) back.hidden = false;
+        }
+        if (picked) picked.hidden = true;
+        $('lvDlgQuick').close();
+        if ($('lvDlgNews').open) renderNews();
+        const r = await w;
+        toast(r.queued ? 'حُفظ على الجهاز — يُنشر عند عودة الاتصال'
+          : (old ? 'حُفظ الخبر السريع' : 'نُشر الخبر السريع') + (url ? ' (مرتبط بمقالة)' : ''));
+      } catch (e) {
+        toast('تعذّر الحفظ: ' + errText(e), true);
+        loadNews(gid, true);
+      } finally {
+        $('lvQSave').disabled = false;
+      }
+    });
+
+    async function deleteQuick(n) {
+      if (!confirm('حذف هذا الخبر السريع نهائياً من التغطية؟' +
+        (n.linkedPostId ? '\nالمقالة المرتبطة به تعود للظهور في التغطية.' : ''))) return;
+      if (!requireOnline('الحذف')) return;
+      try {
+        await deleteDoc(doc(db, 'live_coverage', n.id));
+        news = news.filter((x) => x.id !== n.id);
+        const art = n.linkedPostId && news.find((x) => x.id === n.linkedPostId);
+        if (art && art.hidden === true) {
+          try { await updateDoc(doc(db, 'live_coverage', art.id), { hidden: false }); art.hidden = false; }
+          catch (e) { toast('حُذف الخبر، وتعذّر إظهار المقالة: ' + errText(e), true); }
+        }
+        renderNews();
+        toast('حُذف الخبر السريع');
+      } catch (e) {
+        toast('تعذّر الحذف: ' + errText(e), true);
+      }
     }
 
     async function toggleHidden(n) {
