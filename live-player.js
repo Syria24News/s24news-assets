@@ -5,7 +5,8 @@
 
 document.addEventListener("DOMContentLoaded", function() {
     // 1. تفعيل وضع صفحة البث عند الدخول لرابط البث
-    if (window.location.href.indexOf("live") > -1) {
+    // يقتصر وضع البث على صفحة /p/live.html وحدها (كان أي رابط فيه الحروف live يفعّله)
+    if (window.location.pathname === "/p/live.html") {
         document.body.classList.add('live-page-mode'); 
         loadVideoLibs();
     }
