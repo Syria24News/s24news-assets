@@ -1,13 +1,15 @@
 /* ============================================================
    S24News — وحدة «هام» في لوحة التحكم (admin/js/important.js)
+   الإصدار 1.1 — 15 أكتوبر 2026 (وقت الخبر يختاره المحرر + النشر المجدول)
    الإصدار 1.0 — 15 أكتوبر 2026
    مبنية على نمط وحدة الخبر العاجل (breaking.js) نفسه، ومستقلة عنها تماماً.
 
    مستند واحد يقرؤه الموقع: important_news/current
-     items.<i_وقت> = { title, url, start, end, hidden, src }
+     items.<i_وقت> = { title, url, time, start, end, hidden, src }
+        time   «وقت الخبر» الذي يراه القارئ ويُرتَّب به (يختاره المحرر؛ الافتراضي لحظة النشر)
         title  نص الخبر (حتى 300 حرف) كما يظهر في صندوق «هام»
         url    '' = نص غير قابل للضغط، أو رابط مقالة من syria24.news (الربط ممكن لاحقاً)
-        start / end  بداية الظهور ونهايته (ms)
+        start / end  بداية الظهور ونهايته (ms) — وقت خبر في المستقبل = نشر مجدول يبدأ عنده
         hidden احتياطي (الإنهاء يكون بتقديم end إلى الآن)
         src    'panel' (محجوز لمصادر أخرى لاحقاً، مثل «نقل من العاجل»)
      autoMinutes  مدة ظهور مقالات التصنيف *I في الصندوق (افتراضياً 1440 = يوم)
@@ -152,6 +154,7 @@ const MARKUP = `
         <li><b>مقالة من بلوغر:</b> أضف لها التصنيف (Label) <code>*I</code>، فتظهر في الصندوق مدة «مقالات *I» أدناه من وقت نشرها.</li>
         <li>خبر اللوحة المربوط بمقالة <code>*I</code> يظهر مرة واحدة بنص اللوحة ومدّتها.</li>
         <li>الصندوق يعرض أحدث ${SHOW_MAX} أخبار فقط، ويختفي كلياً حين لا يوجد خبر هام.</li>
+        <li><b>وقت الخبر:</b> اختر أي وقت عند النشر أو في «تعديل / ربط». وقت سابق يظهر فوراً به، ووقت لاحق يُجدوَل.</li>
         <li>«إنهاء» يزيل الخبر من الصندوق فوراً (يبقى في القائمة 7 أيام)، و«تمديد» يضيف مدة جديدة.</li>
       </ol>
     </details>
@@ -170,6 +173,13 @@ const MARKUP = `
           <input class="input" id="imUrl" type="url" dir="ltr" placeholder="https://www.syria24.news/...">
         </label>
       </div>
+      <div class="im-row">
+        <label class="field"><span>وقت الخبر (اختياري — فارغ = الآن)</span>
+          <input class="input" id="imTime" type="datetime-local">
+        </label>
+        <button class="btn" id="imTimeNow" type="button">الآن</button>
+      </div>
+      <div class="hint">وقت سابق: يظهر الخبر فوراً بهذا الوقت ومرتَّباً به. وقت لاحق: يُجدوَل ولا يظهر إلا عند حلوله. المدة تُحسب من لحظة ظهوره.</div>
       <div class="field"><span>مدة الظهور</span>${durChips('imDur', DEFAULT_MIN)}</div>
       <label class="field" id="imCustomWrap" hidden><span>ينتهي في (بتوقيت جهازك)</span>
         <input class="input" id="imCustom" type="datetime-local">
@@ -244,6 +254,10 @@ const MARKUP = `
             <input class="input" id="imEUrl" type="url" dir="ltr" placeholder="https://www.syria24.news/...">
           </label>
           <div class="hint">امسح الحقلين لفك الربط. المدة لا تتغير هنا: استخدم «تمديد» أو «إنهاء».</div>
+          <label class="field"><span>وقت الخبر (بتوقيت جهازك)</span>
+            <input class="input" id="imETime" type="datetime-local">
+          </label>
+          <div class="hint" id="imETimeHint"></div>
         </div>
       </div>
       <div class="dlg-foot">
@@ -298,6 +312,7 @@ export default {
     let editId = null, extId = null;
 
     const items = () => data.items || {};
+    const timeOf = (it) => Number(it.time) || Number(it.start) || 0;   // وقت الخبر الظاهر
     const autoMin = () => Number(data.autoMinutes) || DEFAULT_MIN;
     const hiddenPosts = () => data.hiddenPosts || [];
 
@@ -347,7 +362,7 @@ export default {
     function visibleKeys(now) {
       const all = [];
       Object.entries(items()).forEach(([id, it]) => {
-        if (itemState(it, now).on) all.push({ k: 'i:' + id, t: Number(it.start) });
+        if (itemState(it, now).on) all.push({ k: 'i:' + id, t: timeOf(it) });
       });
       feed.forEach((p) => { if (postState(p, now).on) all.push({ k: 'p:' + p.id, t: p.time }); });
       all.sort((a, b) => b.t - a.t);
@@ -368,7 +383,7 @@ export default {
       const now = Date.now();
       const list = Object.entries(items())
         .map(([id, it]) => ({ id, ...it }))
-        .sort((a, b) => Number(b.start) - Number(a.start));
+        .sort((a, b) => timeOf(b) - timeOf(a));
       const activePanel = list.filter((it) => itemState(it, now).on).length;
       const activePosts = feed.filter((p) => postState(p, now).on).length;
       const vis = visibleKeys(now);
@@ -394,11 +409,15 @@ export default {
         const tr = document.createElement('tr');
         if (!st.on) tr.className = 'is-off';
         else if (over) tr.className = 'is-over';
-        const timeTxt = st.on
+        const sched = !st.on && it.hidden !== true && now < Number(it.start);
+        const timeTxt = sched
+          ? 'يبدأ ' + esc(fmtDate(Number(it.start))) + '<div class="im-sub">إلى ' + esc(fmtDate(Number(it.end))) + '</div>'
+          : st.on
           ? 'متبقٍ ' + remaining(Number(it.end) - now) + '<div class="im-sub">حتى ' + esc(fmtDate(Number(it.end))) + '</div>'
           : esc(fmtDate(Number(it.start))) + '<div class="im-sub">إلى ' + esc(fmtDate(Number(it.end))) + '</div>';
         tr.innerHTML =
           '<td data-label="الخبر"><div class="im-title">' + esc(it.title) + '</div>' +
+            '<div class="im-sub">وقت الخبر: ' + esc(fmtDate(timeOf(it))) + '</div>' +
             (over ? '<div class="im-sub">لا يظهر الآن: الصندوق يعرض أحدث ' + SHOW_MAX + ' فقط</div>' : '') + '</td>' +
           '<td data-label="الحالة"><span class="badge ' + st.cls + '">' + st.label + '</span></td>' +
           '<td data-label="المدة">' + timeTxt + '</td>' +
@@ -407,8 +426,8 @@ export default {
             : '<span class="hint">بلا رابط</span>') + '</td>' +
           '<td data-label="إجراءات"><div class="im-act">' +
             '<button class="btn btn-sm" data-act="edit" type="button">تعديل / ربط</button>' +
-            '<button class="btn btn-sm" data-act="ext" type="button">' + (st.on ? 'تمديد' : 'إعادة نشر') + '</button>' +
-            (st.on ? '<button class="btn btn-sm btn-danger" data-act="end" type="button">إنهاء</button>' : '') +
+            '<button class="btn btn-sm" data-act="ext" type="button">' + (st.on || sched ? 'تمديد' : 'إعادة نشر') + '</button>' +
+            (st.on || sched ? '<button class="btn btn-sm btn-danger" data-act="end" type="button">إنهاء</button>' : '') +
             '<button class="btn btn-sm btn-danger" data-act="del" type="button">حذف</button>' +
           '</div></td>';
         tr.addEventListener('click', (e) => {
@@ -543,22 +562,31 @@ export default {
       const url = normUrl($('imPick').value || $('imUrl').value);
       if (url === null) { msg.textContent = 'الرابط يجب أن يكون من موقع syria24.news'; return; }
       const now = Date.now();
-      const end = chosenEnd('imDur', 'imCustom', now);
-      if (!end || end <= now + 60000) { msg.textContent = 'اختر وقت انتهاء بعد دقيقة على الأقل من الآن'; return; }
-      if (end > now + MAX_MS) { msg.textContent = 'أقصى مدة 7 أيام'; return; }
+      // وقت الخبر: فارغ = الآن. لاحق = نشر مجدول يبدأ عنده، والمدة تُحسب منه
+      const tIn = $('imTime').value ? Date.parse($('imTime').value) : now;
+      if (isNaN(tIn)) { msg.textContent = 'وقت الخبر غير صحيح'; return; }
+      const sched = tIn > now + 60000;
+      if (sched && tIn > now + MAX_MS) { msg.textContent = 'أقصى جدولة 7 أيام من الآن'; return; }
+      const start = sched ? tIn : now;
+      const end = chosenEnd('imDur', 'imCustom', start);
+      if (!end || end <= start + 60000) { msg.textContent = 'اختر وقت انتهاء بعد بداية الظهور بدقيقة على الأقل'; return; }
+      if (end - start > MAX_MS) { msg.textContent = 'أقصى مدة ظهور 7 أيام'; return; }
 
       const id = 'i_' + now;
-      const it = { title, url: url || '', start: now, end, hidden: false, src: 'panel' };
+      const it = { title, url: url || '', time: tIn, start, end, hidden: false, src: 'panel' };
       data.items = { ...items(), [id]: it };
       $('imPublish').disabled = true;
-      const ok = await save({ ['items.' + id]: it }, 'نُشر في «هام» — يظهر للقراء خلال دقيقة',
+      const ok = await save({ ['items.' + id]: it },
+        sched ? 'جُدول — يظهر ' + fmtDate(start) : 'نُشر في «هام» — يظهر للقراء خلال دقيقة',
         () => { delete data.items[id]; });
       $('imPublish').disabled = false;
       if (ok) {
-        $('imText').value = ''; $('imUrl').value = ''; $('imPick').value = '';
+        $('imText').value = ''; $('imUrl').value = ''; $('imPick').value = ''; $('imTime').value = '';
         $('imCount').textContent = '0';
       }
     });
+
+    $('imTimeNow').addEventListener('click', () => { $('imTime').value = toLocalInput(Date.now()); });
 
     /* ============ تعديل / ربط ============ */
     $('imEText').addEventListener('input', () => { $('imECount').textContent = $('imEText').value.length; });
@@ -573,6 +601,10 @@ export default {
       $('imECount').textContent = $('imEText').value.length;
       const inList = fillPick($('imEPick'), it.url || '');
       $('imEUrl').value = it.url && !inList ? it.url : '';
+      $('imETime').value = toLocalInput(timeOf(it));
+      $('imETimeHint').textContent = Date.now() < Number(it.start)
+        ? 'هذا الخبر مجدول: تغيير وقته إلى وقت لاحق ينقل موعد ظهوره معه (بنفس المدة).'
+        : 'يغيّر الوقت الظاهر وترتيب الخبر فقط، لا مدة ظهوره.';
       $('imEMsg').textContent = '';
       $('imDlgEdit').showModal();
     }
@@ -583,10 +615,27 @@ export default {
       if (!title) { $('imEMsg').textContent = 'اكتب نص الخبر'; return; }
       const url = normUrl($('imEPick').value || $('imEUrl').value);
       if (url === null) { $('imEMsg').textContent = 'الرابط يجب أن يكون من موقع syria24.news'; return; }
-      const prev = { title: it.title, url: it.url };
-      it.title = title; it.url = url || '';
+      const now = Date.now();
+      const t = Date.parse($('imETime').value);
+      if (isNaN(t)) { $('imEMsg').textContent = 'وقت الخبر غير صحيح'; return; }
+      const prev = { title: it.title, url: it.url, time: it.time, start: it.start, end: it.end };
+      const f = { ['items.' + editId + '.title']: title, ['items.' + editId + '.url']: url || '',
+        ['items.' + editId + '.time']: t };
+      // خبر ظاهر الآن أو منتهٍ لا يأخذ وقتاً لاحقاً (سيرى القارئ وقتاً لم يأتِ بعد)
+      if (now >= Number(it.start) && t > now + 60000) {
+        $('imEMsg').textContent = 'هذا الخبر ظهر فعلاً، فوقته لا يكون لاحقاً. لجدولته: «إنهاء» ثم انشره من جديد بوقت لاحق.';
+        return;
+      }
+      // خبر مجدول لم يبدأ بعد + وقت جديد لاحق: ينتقل موعد ظهوره معه بنفس المدة
+      if (now < Number(it.start) && t > now + 60000) {
+        if (t > now + MAX_MS) { $('imEMsg').textContent = 'أقصى جدولة 7 أيام من الآن'; return; }
+        const dur = Number(it.end) - Number(it.start);
+        f['items.' + editId + '.start'] = t; f['items.' + editId + '.end'] = t + dur;
+        it.start = t; it.end = t + dur;
+      }
+      it.title = title; it.url = url || ''; it.time = t;
       $('imDlgEdit').close();
-      await save({ ['items.' + editId + '.title']: title, ['items.' + editId + '.url']: url || '' },
+      await save(f,
         url ? 'حُفظ الخبر (مرتبط بمقالة)' : 'حُفظ الخبر', () => Object.assign(it, prev));
     });
 
@@ -597,9 +646,10 @@ export default {
       extId = id;
       const now = Date.now();
       const on = itemState(it, now).on;
-      $('imXNow').textContent = on
+      const sched = !on && it.hidden !== true && now < Number(it.start);
+      $('imXNow').textContent = on || sched
         ? 'ينتهي حالياً ' + fmtDate(Number(it.end)) + ' — المدة المختارة تُضاف إلى ذلك.'
-        : 'منتهٍ — سيعود إلى الصندوق من الآن للمدة المختارة.';
+        : 'منتهٍ — سيعود إلى الصندوق من الآن للمدة المختارة، بوقت الآن.';
       $('imXMsg').textContent = '';
       $('imDlgExt').showModal();
     }
@@ -608,15 +658,20 @@ export default {
       if (!it) return $('imDlgExt').close();
       const now = Date.now();
       const on = itemState(it, now).on;
-      const base = on ? Number(it.end) : now;
+      const sched = !on && it.hidden !== true && now < Number(it.start);
+      const base = on || sched ? Number(it.end) : now;
       const end = chosenEnd('imXDur', 'imXCustom', base);
       if (!end || end <= now + 60000) { $('imXMsg').textContent = 'اختر وقت انتهاء بعد دقيقة على الأقل من الآن'; return; }
-      if (end > now + MAX_MS) { $('imXMsg').textContent = 'أقصى مدة 7 أيام من الآن'; return; }
-      const prev = { start: it.start, end: it.end, hidden: it.hidden };
+      if (end - Math.max(now, Number(it.start)) > MAX_MS && !(!on && !sched)) { $('imXMsg').textContent = 'أقصى مدة ظهور 7 أيام'; return; }
+      if (!on && !sched && end > now + MAX_MS) { $('imXMsg').textContent = 'أقصى مدة 7 أيام من الآن'; return; }
+      const prev = { start: it.start, end: it.end, hidden: it.hidden, time: it.time };
       const f = { ['items.' + extId + '.end']: end, ['items.' + extId + '.hidden']: false };
       it.end = end; it.hidden = false;
-      // إعادة النشر تجعله «جديداً» فيصعد إلى أعلى الصندوق
-      if (!on) { it.start = now; f['items.' + extId + '.start'] = now; }
+      // إعادة نشر المنتهي تجعله «جديداً»: يبدأ الآن ووقته الآن فيصعد إلى أعلى الصندوق (والوقت قابل للتعديل بعدها)
+      if (!on && !sched) {
+        it.start = now; it.time = now;
+        f['items.' + extId + '.start'] = now; f['items.' + extId + '.time'] = now;
+      }
       $('imDlgExt').close();
       await save(f, 'يظهر حتى ' + fmtDate(end), () => Object.assign(it, prev));
     });

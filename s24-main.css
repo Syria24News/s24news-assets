@@ -5131,7 +5131,7 @@ body.item-page h3.post-title {
 a.s24-imp-item:hover{background:var(--hover-bg,rgba(119,189,29,.06))}
 a.s24-imp-item:hover .s24-imp-title{color:var(--sy-green,#77bd1d)}
 .s24-imp-item.is-static{cursor:default}
-.s24-imp-time{flex:none;color:var(--sy-green,#77bd1d);font-weight:700;font-size:13px;font-variant-numeric:tabular-nums;min-width:42px}
+.s24-imp-time{flex:none;color:var(--sy-green,#77bd1d);font-weight:700;font-size:13px;font-variant-numeric:tabular-nums;min-width:42px;white-space:nowrap}
 .s24-imp-title{font-family:var(--font-title);font-weight:700;font-size:16px;line-height:1.6;overflow-wrap:anywhere;transition:color .2s}
 @media (max-width:600px){
   .s24-imp-head{padding:8px 15px}

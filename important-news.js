@@ -1,5 +1,6 @@
 /* ============================================================
    S24News — صندوق «هام» في الصفحة الرئيسية (important-news.js)
+   الإصدار 1.1 — 15 أكتوبر 2026: وقت الخبر يختاره المحرر (time)
    الإصدار 1.0 — 15 أكتوبر 2026: لوحة التحكم مصدر الإدارة الوحيد
    (يحلّ محل ودجت HTML777 «شريط هام» الذي يُحذف من التنسيق)
 
@@ -8,7 +9,7 @@
 
    المصدران:
    1) أخبار اللوحة — مستند Firestore واحد: important_news/current
-        items.<i_وقت> = { title, url, start, end, hidden, src }
+        items.<i_وقت> = { title, url, time, start, end, hidden, src }  (time = وقت الخبر الظاهر)
         autoMinutes     = مدة ظهور مقالات *I بالدقائق (افتراضياً 1440 = يوم)
         hiddenPosts     = معرّفات مقالات *I المخفاة من الصندوق من اللوحة
         subtitle        = عبارة اختيارية بجانب «هام» ('' = «هام» وحدها)
@@ -39,6 +40,23 @@ document.addEventListener('DOMContentLoaded', function () {
   try {
     fmtTime = new Intl.DateTimeFormat('ar-u-nu-latn', { timeZone: 'Asia/Damascus', hour: 'numeric', minute: '2-digit' });
   } catch (e) { fmtTime = null; }
+
+  // يوم الخبر بتوقيت دمشق (للمقارنة باليوم الحالي)
+  var fmtDay;
+  try { fmtDay = new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Damascus' }); } catch (e) { fmtDay = null; }
+  var fmtDM;
+  try { fmtDM = new Intl.DateTimeFormat('ar-u-nu-latn', { timeZone: 'Asia/Damascus', day: 'numeric', month: 'numeric' }); } catch (e) { fmtDM = null; }
+  // نص الوقت: «14:30» لخبر اليوم، «أمس 14:30» لخبر الأمس، «13/10 14:30» لما قبله
+  // (مدة الخبر قد تصل إلى أيام، فالساعة وحدها تضلّل القارئ)
+  function timeLabel(ms) {
+    if (!fmtTime || !ms) return '';
+    var d = new Date(ms), hm = fmtTime.format(d);
+    if (!fmtDay) return hm;
+    var day = fmtDay.format(d), today = fmtDay.format(new Date());
+    if (day === today) return hm;
+    if (day === fmtDay.format(new Date(Date.now() - 86400000))) return 'أمس ' + hm;
+    return (fmtDM ? fmtDM.format(d) + ' ' : '') + hm;
+  }
 
   function escapeHTML(s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
@@ -122,7 +140,8 @@ document.addEventListener('DOMContentLoaded', function () {
       if (it.hidden === true || !it.title) return;
       var start = Number(it.start) || 0, end = Number(it.end) || 0;
       if (!end || now < start || now >= end) return;
-      out.push({ title: it.title, link: safeLink(it.url), time: start });
+      // وقت الخبر الذي اختاره المحرر في اللوحة (والأخبار القديمة بلا time تأخذ وقت بدايتها)
+      out.push({ title: it.title, link: safeLink(it.url), time: Number(it.time) || start });
     });
 
     posts.forEach(function (p) {
@@ -149,7 +168,8 @@ document.addEventListener('DOMContentLoaded', function () {
         '</div>' +
         '<ul class="s24-imp-list">' + list.map(function (n) {
           var t = escapeHTML(n.title);
-          var time = fmtTime && n.time ? '<time class="s24-imp-time">' + escapeHTML(fmtTime.format(new Date(n.time))) + '</time>' : '';
+          var tl = timeLabel(n.time);
+          var time = tl ? '<time class="s24-imp-time" datetime="' + new Date(n.time).toISOString() + '">' + escapeHTML(tl) + '</time>' : '';
           return n.link
             ? '<li><a class="s24-imp-item" href="' + escapeHTML(n.link) + '">' + time + '<span class="s24-imp-title">' + t + '</span></a></li>'
             : '<li><span class="s24-imp-item is-static">' + time + '<span class="s24-imp-title">' + t + '</span></span></li>';
