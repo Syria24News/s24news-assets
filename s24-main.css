@@ -690,7 +690,7 @@ body .sy-no-results {
 
 /* عند إضافة هذا الكلاس عبر الجافاسكربت فقط يتمدد الشريط لحجمه الطبيعي */
 .breaking-news-container.is-active {
-    max-height: 120px; /* سقف لحركة الظهور فقط — الارتفاع الفعلي يحدده الخبر (56px لسطر واحد، ويتمدد لسطرين أو ثلاثة على الموبايل) */
+    max-height: 120px; /* سقف لحركة الظهور فقط — الارتفاع الفعلي يحدده الخبر (44px لسطر واحد، ويتمدد لسطرين أو ثلاثة على الموبايل) */
     border-bottom-width: 1px;
 }
 
@@ -701,7 +701,7 @@ body .sy-no-results {
     font-weight: bold;
     font-size: 16px;
     inline-size: 100%;
-    min-block-size: 56px; /* ارتفاع مرن: 56px على الأقل، ويتمدد مع الخبر الطويل بدل قصّه */
+    min-block-size: 44px; /* ارتفاع مرن: 44px على الأقل، ويتمدد مع الخبر الطويل بدل قصّه */
     box-sizing: border-box;
     display: flex;
     align-items: center;
@@ -718,11 +718,11 @@ body .sy-no-results {
     position: relative;
     padding: 0 20px;
 }
-/* الخبر (رابطاً أو نصاً): يملأ ارتفاع الشريط كله، وفراغ 8px فوقه وتحته، والسطور المكسورة في الوسط */
+/* الخبر (رابطاً أو نصاً): يملأ ارتفاع الشريط كله، وفراغ 6px فوقه وتحته، والسطور المكسورة في الوسط */
 .breaking-news-container .widget-content > a,
 .breaking-news-container .widget-content > span {
     align-self: stretch;
-    padding-block: 8px;
+    padding-block: 6px;
     box-sizing: border-box;
     text-align: center;
 }
@@ -733,7 +733,7 @@ body .sy-no-results {
 .breaking-news-container .widget-content span {
     font-size: .9rem;
     font-weight: 700;
-    line-height: 1.5rem;
+    line-height: 1.4;
     outline: none;
     text-decoration: none;
     color: var(--color-white);
