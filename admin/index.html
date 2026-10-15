@@ -361,6 +361,7 @@ import { auth, $, isAdmin, toast, errText, onStatus, fmtAgo, flushDeferred,
 import polls from './js/polls.js';
 import live from './js/live.js';
 import breaking from './js/breaking.js';
+import important from './js/important.js';
 
 /* ============================================================
    سجلّ الوحدات — لإضافة نظام جديد: أنشئ admin/js/<اسم>.js
@@ -370,7 +371,8 @@ import breaking from './js/breaking.js';
    (smartLoad من core.js تعرض المحفوظ ولا تقرأ من الخادم إلا عند التقادم).
    انظر admin/README.md لقالب وحدة جديدة.
    ============================================================ */
-const MODULES = [polls, live, breaking];
+// الترتيب حسب الاستخدام اليومي في غرفة الأخبار: التغطية أولاً (التبويب الافتراضي)
+const MODULES = [live, breaking, important, polls];
 
 /* ============ التبويبات والتنقل (#polls ...) ============ */
 const nav = $('nav'), host = $('modules');

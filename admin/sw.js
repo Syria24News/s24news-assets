@@ -14,7 +14,7 @@
    متى أغيّر VERSION؟ عند تعديل هذا الملف، أو لإجبار حذف الكاش القديم كاملاً.
    (إضافة وحدة جديدة لا تتطلب ذلك، لكن يُستحسن إضافة ملفها إلى PRECACHE ليعمل دون اتصال من أول مرة.)
    ============================================================ */
-const VERSION = '2.2.0';
+const VERSION = '2.3.0';
 const SHELL = 's24-admin-shell-' + VERSION;
 const LIBS = 's24-admin-libs-v1';
 
@@ -27,6 +27,7 @@ const PRECACHE = [
   './js/polls.js',
   './js/live.js',
   './js/breaking.js',
+  './js/important.js',
   './icons/icon-192.png',
   './icons/icon-512.png'
 ];
