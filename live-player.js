@@ -118,7 +118,7 @@ function launchPlayer() {
         // --- 🟢 محاولة فرض التشغيل عند إطفاء الشاشة 🟢 ---
         // هذا الكود يراقب حالة الصفحة، إذا تم إخفاؤها يحاول إعادة التشغيل
         document.addEventListener("visibilitychange", function() {
-            if (document.hidden) {
+            if (document.hidden && !player.paused()) { // لا يُستأنف البث إن كان المستخدم قد أوقفه بنفسه
                 // إذا أطفأ المستخدم الشاشة، نحاول الاستمرار في التشغيل
                 setTimeout(function(){
                     if(player.paused()) {
