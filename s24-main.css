@@ -4578,6 +4578,10 @@ header { position: fixed; top: 40px; width: 100%; z-index: 1000; background-colo
 /* الشريط العلوي (التاريخ والتواصل الإجتماعي) */
 .top-date-bar { position: fixed; top: 0; left: 0; width: 100%; z-index: 1002; }
 
+/* شريط العاجل: يلتصق تحت الهيدر الثابت مباشرة (top 40px + ارتفاع 100px = 140px)،
+   بدل --sticky-top-offset الذي يتركه أدنى من الهيدر فيظهر المحتوى في الفراغ بينهما */
+.breaking-news-container { inset-block-start: 140px; }
+
 
 /* 3. القوائم الجانبية (Sticky Sidebars) */
 .main-layout__column:first-child, .main-layout__column:last-child { position: -webkit-sticky !important; position: sticky !important; top: 200px !important; height: calc(100vh - 220px) !important; max-height: calc(100vh - 220px) !important; overflow-y: auto !important; overscroll-behavior: contain !important; align-self: flex-start !important; width: auto; min-width: 312px; flex-grow: 0; flex-shrink: 0; display: flex; flex-direction: column; gap: 0; scrollbar-width: none !important; -ms-overflow-style: none !important;}
@@ -4670,7 +4674,9 @@ body.sidebar-toggled .breaking-news-container, body.sidebar-toggled #breakingNew
 .main-layout { flex-direction: column; width: 100%; padding: 0; margin-top: 10px; }
 
 /* --- شريط الأخبار العاجلة --- */
-.breaking-news-container { inset-block-start: var(--sticky-top-offset); }
+/* يلتصق تحت هيدر الموبايل مباشرة (الهيدر ثابت بارتفاع 80px أعلاه).
+   كان يستخدم --sticky-top-offset المضبوط لهيدر الكمبيوتر، فيترك فراغاً تحت هيدر الموبايل أثناء التمرير */
+.breaking-news-container { inset-block-start: 80px; }
 .breaking-news-container .widget-content, .breaking-news-container .widget-content a, .breaking-news-container .widget-content span { font-size: 0.875rem !important; padding-inline: 10px; }
 
 /* --- تنسيق المقال الداخلي وإصلاح الصور للموبايل --- */
