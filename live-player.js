@@ -9,7 +9,8 @@
      onAir     false = البث متوقف: رسالة في صفحة البث وإخفاء المشغّل المصغّر
      title     عنوان اختياري (يظهر في شاشة القفل)   poster  صورة غلاف اختيارية
    المشغّلات الثلاثة هنا: صفحة البث (playFast)، والجانبي في الرئيسية (playSidebarFast —
-   نُقل من القالب في 18 أكتوبر)، والمصغّر في الرئيسية (iframe في القالب).
+   نُقل من القالب في 18 أكتوبر)، والمصغّر في الرئيسية (initMiniLive / closeMiniLive —
+   نُقل من القالب في 18 أكتوبر أيضاً).
    يُقرأ فقط حيث يوجد مشغّل (صفحة البث والرئيسية)، مع كاش 15 دقيقة في الرئيسية
    ودقيقة في صفحة البث. إن فشل الجلب يبقى LIVE_CONFIG (ودجت القالب أو الاحتياطي أدناه).
    ============================================================ */
@@ -110,7 +111,7 @@ window.S24Live = (function () {
     }
 
     document.addEventListener("DOMContentLoaded", load);
-    return { state: state, whenReady: whenReady, embedUrl: embedUrl };
+    return { state: state, whenReady: whenReady, embedUrl: embedUrl, MINI_PARAMS: MINI_PARAMS };
 })();
 
 document.addEventListener("DOMContentLoaded", function() {
@@ -120,6 +121,8 @@ document.addEventListener("DOMContentLoaded", function() {
         document.body.classList.add('live-page-mode'); 
         loadVideoLibs();
     }
+    // المشغّل المصغّر في الرئيسية (الموبايل)
+    initMiniLive();
     // المشغّل الجانبي في الرئيسية: الغلاف المبدئي وتحميل المكتبات مسبقاً
     if (document.querySelector('.live-tv-widget')) {
         var sp = document.getElementById('fake-poster-img');
@@ -352,4 +355,38 @@ function launchSidebarPlayer() {
         if (isLive) player.addClass('is-at-live-edge');
         else player.removeClass('is-at-live-edge');
     });
+}
+
+/* ============================================================
+   المشغّل المصغّر في الرئيسية (#miniLiveWidget) — للشاشات حتى 768px
+   نُقل من القالب (18 أكتوبر 2026). closeMiniLive تُستدعى من onclick في القالب.
+   يُحمَّل الإطار بعد وصول إعدادات اللوحة، فيبدأ بالبث الصحيح من أول مرة.
+   ============================================================ */
+function initMiniLive() {
+    var widget = document.getElementById('miniLiveWidget');
+    var iframe = document.getElementById('mini-live-iframe');
+    if (!widget || !iframe) return;
+
+    function start() {
+        if (!S24Live.state.onAir || widget.style.display === 'none') return;
+        if (iframe.src && iframe.src !== 'about:blank') return;
+        iframe.src = S24Live.embedUrl(S24Live.MINI_PARAMS);
+    }
+    S24Live.whenReady(function () {
+        if (window.innerWidth <= 768) start();
+        else window.addEventListener('resize', function () {
+            if (window.innerWidth <= 768) start();
+        });
+    });
+}
+
+function closeMiniLive() {
+    var widget = document.getElementById('miniLiveWidget');
+    if (!widget) return;
+    widget.style.display = 'none';
+    var iframe = document.getElementById('mini-live-iframe');
+    if (iframe) iframe.src = 'about:blank';
+    // إعادة زر العودة للأعلى إلى مكانه بعد إغلاق المصغّر
+    var arrow = document.querySelector('.progress-wrap');
+    if (arrow) arrow.style.setProperty('bottom', '20px', 'important');
 }
