@@ -8,6 +8,8 @@
      videoId   رقم فيديو يوتيوب (11 حرفاً)     channelId  معرّف القناة UC...
      onAir     false = البث متوقف: رسالة في صفحة البث وإخفاء المشغّل المصغّر
      title     عنوان اختياري (يظهر في شاشة القفل)   poster  صورة غلاف اختيارية
+   المشغّلات الثلاثة هنا: صفحة البث (playFast)، والجانبي في الرئيسية (playSidebarFast —
+   نُقل من القالب في 18 أكتوبر)، والمصغّر في الرئيسية (iframe في القالب).
    يُقرأ فقط حيث يوجد مشغّل (صفحة البث والرئيسية)، مع كاش 15 دقيقة في الرئيسية
    ودقيقة في صفحة البث. إن فشل الجلب يبقى LIVE_CONFIG (ودجت القالب أو الاحتياطي أدناه).
    ============================================================ */
@@ -53,6 +55,14 @@ window.S24Live = (function () {
         var poster = document.getElementById('main-fake-poster');
         if (poster && !isPlayerActive && window.LIVE_CONFIG.posterImage) poster.src = window.LIVE_CONFIG.posterImage;
 
+        // المشغّل الجانبي في الرئيسية: الغلاف، أو الإخفاء حين يكون البث متوقفاً
+        var side = document.querySelector('.live-tv-widget');
+        if (side) {
+            if (!state.onAir) side.style.display = 'none';
+            var sp = document.getElementById('fake-poster-img');
+            if (sp && !sidebarPlayerActive && window.LIVE_CONFIG.posterImage) sp.src = window.LIVE_CONFIG.posterImage;
+        }
+
         // المشغّل المصغّر في الرئيسية
         var mini = document.getElementById('miniLiveWidget');
         if (mini) {
@@ -83,7 +93,7 @@ window.S24Live = (function () {
     }
 
     function load() {
-        var needed = isLivePage || document.getElementById('miniLiveWidget');
+        var needed = isLivePage || document.getElementById('miniLiveWidget') || document.querySelector('.live-tv-widget');
         if (!needed || !window.S24Feed) { ready = Promise.resolve(); return; }
         ready = window.S24Feed.get('live_stream/current', {
             key: 's24_live_v1',
@@ -108,6 +118,12 @@ document.addEventListener("DOMContentLoaded", function() {
     // يقتصر وضع البث على صفحة /p/live.html وحدها (كان أي رابط فيه الحروف live يفعّله)
     if (window.location.pathname === "/p/live.html") {
         document.body.classList.add('live-page-mode'); 
+        loadVideoLibs();
+    }
+    // المشغّل الجانبي في الرئيسية: الغلاف المبدئي وتحميل المكتبات مسبقاً
+    if (document.querySelector('.live-tv-widget')) {
+        var sp = document.getElementById('fake-poster-img');
+        if (sp && window.LIVE_CONFIG.posterImage) sp.src = window.LIVE_CONFIG.posterImage;
         loadVideoLibs();
     }
 });
@@ -257,5 +273,83 @@ function launchPlayer() {
         if ('mediaSession' in navigator) {
             navigator.mediaSession.playbackState = player.paused() ? 'paused' : 'playing';
         }
+    });
+}
+
+/* ============================================================
+   المشغّل الجانبي في الرئيسية (.live-tv-widget)
+   نُقل من القالب (18 أكتوبر 2026). playSidebarFast تُستدعى من onclick في القالب.
+   ============================================================ */
+var sidebarPlayerActive = false;
+
+function playSidebarFast() {
+    if (sidebarPlayerActive) return;
+    if (!S24Live.state.onAir) return;   // البث متوقف من اللوحة
+    sidebarPlayerActive = true;
+    var oldError = document.getElementById('sidebar-load-error');
+    if (oldError) oldError.remove();
+    document.getElementById('sidebar-play-btn').style.display = 'none';
+    document.getElementById('sidebar-loader').style.display = 'block';
+
+    var sbAttempts = 0;
+    var sbMaxAttempts = 100; // 100 × 100ms = مهلة 10 ثوانٍ كحد أقصى
+    var checkInterval = setInterval(function () {
+        if (typeof videojs !== 'undefined' || S24Live.state.mode === 'channel') {
+            clearInterval(checkInterval);
+            S24Live.whenReady(launchSidebarPlayer);
+        } else if (++sbAttempts >= sbMaxAttempts) {
+            clearInterval(checkInterval);
+            var loader = document.getElementById('sidebar-loader');
+            if (loader) {
+                loader.style.display = 'none';
+                loader.insertAdjacentHTML('afterend', '<div class="video-load-error" id="sidebar-load-error">تعذّر تحميل المشغّل، اضغط للمحاولة مجدداً</div>');
+            }
+            var btn = document.getElementById('sidebar-play-btn');
+            if (btn) btn.style.display = 'flex';
+            sidebarPlayerActive = false; // للسماح بإعادة المحاولة عند الضغط مجدداً
+        }
+    }, 100);
+}
+
+function launchSidebarPlayer() {
+    var container = document.getElementById('real-player-container');
+    function hideCover() {
+        document.getElementById('sidebar-loader').style.display = 'none';
+        document.getElementById('fake-poster-img').style.display = 'none';
+    }
+
+    // وضع القناة: مشغّل يوتيوب المضمّن (البث الجاري للقناة لا رقم له)
+    if (S24Live.state.mode === 'channel') {
+        container.innerHTML = '<iframe id="rt-sidebar-iframe" src="' + S24Live.embedUrl('autoplay=1&rel=0&modestbranding=1&playsinline=1') +
+            '" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen frameborder="0" title="البث المباشر"></iframe>';
+        container.querySelector('iframe').addEventListener('load', hideCover);
+        return;
+    }
+
+    container.innerHTML = '<video id="rt-sidebar-player" class="video-js vjs-default-skin" controls autoplay preload="auto" disablePictureInPicture></video>';
+    var player = videojs('rt-sidebar-player', {
+        techOrder: ["youtube"],
+        sources: [{ "type": "video/youtube", "src": getLiveUrl() }],
+        youtube: { "iv_load_policy": 3, "modestbranding": 1, "rel": 0, "autoplay": 1 },
+        controlBar: { pictureInPictureToggle: false, liveDisplay: true },
+        liveui: true
+    });
+
+    player.ready(function () {
+        player.play();
+        player.on('playing', hideCover);
+    });
+
+    // النقطة الحمراء عند حافة البث
+    player.on('timeupdate', function () {
+        var isLive = false;
+        if (player.liveTracker && player.liveTracker.atLiveEdge()) { isLive = true; }
+        else {
+            var duration = player.duration();
+            var currentTime = player.currentTime();
+            if (duration > 0 && (duration - currentTime) < 20) { isLive = true; }
+        }
+        if (isLive) player.addClass('is-at-live-edge');
+        else player.removeClass('is-at-live-edge');
     });
 }
