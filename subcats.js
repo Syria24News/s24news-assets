@@ -74,7 +74,7 @@
                   html += `
                       <div class="theme-section__button-block">
                           <a href="/search/label/${encodeURIComponent(sub.tag)}" class="main-button">
-                              المزيد من ${sub.title}
+                              المزيد من الأخبار
                           </a>
                       </div>
                   `;                  
