@@ -17,7 +17,7 @@ document.addEventListener("DOMContentLoaded", function() {
             titleElId: 'grid-label-title',
             getLabel: function() {
                 const labelWidget = document.getElementById('Special_Grid_Label');
-                let labelName = "مختارات";
+                let labelName = "*Fa"; // الاسم الافتراضي للشبكة — يعمل حتى بعد حذف ودجت Special_Grid_Label
                 if (labelWidget) {
                     const contentDiv = labelWidget.querySelector('.widget-content');
                     if (contentDiv && contentDiv.textContent.trim() !== "") {
