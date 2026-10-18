@@ -22,43 +22,9 @@ document.addEventListener("DOMContentLoaded", function() {
             // أسماء الأقسام الكاملة من القاموس الموحد في config.js
             var labelTranslations = window.S24TagNames ? window.S24TagNames('full') : {};
             
-            // 🔴 جديد: قاموس الألوان
-            var colorMap = {
-                "*A": "--color-red",
-                "*WN": "--sy-INT",
-                "*S": "--sy-sport",
-                "*T": "--sy-tech",
-                "*E": "--sy-Econ",
-                "*AN": "--sy-ArabNews",
-                "*H": "--sy-health",
-                "*C": "--sy-culture",
-                "*D": "--sy-education",
-                "*P": "--sy-dark-green",
-                "*L": "--sy-light-green",
-                "*Sy": "--sy-red",
-                "*M": "--sy-purple", // منوعات = زهري (البرتقالي خاص بـ «متفرقات»)
-                "*Z": "--sy-Reports",
-                "*SW": "--color-red"
-            };
-            
-            // 🔴 جديد: قاموس الأوصاف
-            var descriptionMap = {
-                "*A": "آخر الأخبار العاجلة والمستجدات المهمة",
-                "*WN": "تغطية شاملة لأبرز الأحداث في العالم",
-                "*S": "آخر أخبار الرياضة والدوريات والبطولات",
-                "*T": "أخبار التكنولوجيا والابتكارات الحديثة",
-                "*E": "متابعة الأسواق والاقتصاد والاستثمارات",
-                "*AN": "أخبار العالم العربي والقضايا العربية",
-                "*H": "أخبار الصحة والطب والعافية",
-                "*C": "أخبار الثقافة والفنون والآداب",
-                "*D": "أخبار التعليم والدراسة والمناهج",
-                "*P": "تحليل الأحداث السياسية والقرارات",
-                "*L": "أخبار محلية ومستجدات الساحة السورية",
-                "*Sy": "جميع أخبار سوريا المحلية والدولية",
-                "*M": "موضوعات متنوعة ومتفرقة مهمة",
-                "*Z": "تقارير شاملة وتحقيقات استقصائية",
-                "*SW": "تغطية شاملة لسوريا والعالم"
-            };
+            // ألوان الأقسام وأوصافها من القاموس الموحد في config.js
+            var colorMap = window.S24TagNames ? window.S24TagNames('color') : {};
+            var descriptionMap = window.S24TagNames ? window.S24TagNames('desc') : {};
             
             var urlParts = window.location.href.split("/search/label/");
             if (urlParts[1]) {

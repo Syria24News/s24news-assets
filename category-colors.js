@@ -13,9 +13,9 @@
    (--sy-oil، مربوط بمتغيّر بلوجر cat.oil) بدل الاعتماد على
    لون "طاقة" — يتطلب هذا إضافة الـ Variable المقابلة في قالب
    بلوجر نفسه (خارج نطاق هذا الملف).
-   [تنبيه لم يُحسَم]: "العملات والذهب" في priorityList ما زال
-   بلا مفتاح مطابق تماماً في خريطة الألوان (الموجود هو
-   "صرف العملات والذهب") — بانتظار تأكيد اللون المقصود.
+   [18 أكتوبر 2026] أسماء الأكواز (*X) وألوانها تأتي من القاموس الموحد
+   window.S24_TAGS في config.js. حُسم «العملات والذهب» ← «صرف العملات والذهب»
+   (اللون الذهبي --sy-gold)، وأُضيف *U و*DF إلى المستوى 5.
    ============================================================ */
 
 /* ===================== 1) قائمة الأقسام الثمانية ===================== */
@@ -24,9 +24,14 @@ document.addEventListener("DOMContentLoaded", function() {
     function runCategoryList() {
     
     // 1. 🎨 خريطة ألوان موحّدة ومشتركة (مصدر حقيقة واحد لكل الموقع)
-    window.S24_CATEGORY_COLORS = window.S24_CATEGORY_COLORS || {
+    // ألوان الوسوم (*X) تأتي من القاموس الموحد في config.js؛ هنا التسميات العادية فقط
+    const tagColors = {};
+    if (window.S24TagNames) {
+        const c = window.S24TagNames('color');
+        Object.keys(c).forEach(function (k) { tagColors[k] = 'var(' + c[k] + ')'; });
+    }
+    window.S24_CATEGORY_COLORS = window.S24_CATEGORY_COLORS || Object.assign({
         "عاجل": "var(--color-red)",
-        "*SW": "var(--color-red)",
         "وثائق ومذكرات": "var(--sy-docs)",
         "مذكرات سياسية": "var(--sy-docs)",
         "صرف العملات والذهب": "var(--sy-gold)",
@@ -54,24 +59,7 @@ document.addEventListener("DOMContentLoaded", function() {
         "سياسي": "var(--sy-dark-green)",
         "ميدان": "var(--sy-Arena)",
         "الطقس": "var(--sy-weather)",
-        "*L": "var(--sy-light-green)",
         "تقارير": "var(--sy-Reports)",
-
-        // ============================================================
-        // 🆕 نظام الأكواز الجديد (حرف واحد فقط)
-        // ============================================================
-        "*WN": "var(--sy-INT)",
-        "*S": "var(--sy-sport)",
-        "*T": "var(--sy-tech)",
-        "*E": "var(--sy-Econ)",
-        "*AN": "var(--sy-ArabNews)",
-        "*H": "var(--sy-health)",
-        "*C": "var(--sy-culture)",
-        "*D": "var(--sy-education)",
-        "*P": "var(--sy-dark-green)",
-        "*Sy": "var(--sy-red)",
-        "*M": "var(--sy-purple)", // منوعات = زهري (البرتقالي --sy-Miscellaneous خاص بـ «متفرقات»)
-        "*Z": "var(--sy-Reports)",
 
         "عربي": "var(--sy-ArabNews)",
         "العالم العربي": "var(--sy-ArabNews)",
@@ -85,7 +73,7 @@ document.addEventListener("DOMContentLoaded", function() {
         "مال وأعمال": "var(--sy-Econ)",
         "اقتصاد محلي": "var(--sy-Econ)",
         "عالم": "var(--sy-INT)"
-    };
+    }, tagColors);
     const categoryColorMap = window.S24_CATEGORY_COLORS;
 
     const FALLBACK_IMG = 'data:image/svg+xml;charset=UTF-8,' + encodeURIComponent(
@@ -265,7 +253,7 @@ document.addEventListener("DOMContentLoaded", function() {
         (window.S24TagNames ? window.S24TagNames('short') : {}),
         {
             "الطقس": "الطقس اليوم",
-            "العملات والذهب": "سعر صرف العملات والذهب"
+            "صرف العملات والذهب": "سعر صرف العملات والذهب"
         }
     );
 
@@ -304,7 +292,7 @@ document.addEventListener("DOMContentLoaded", function() {
             "نفط",
             "الكرة السورية",
             "مجتمع",
-            "العملات والذهب",       // ⚠ خريطة الألوان تستخدم "صرف العملات والذهب"
+            "صرف العملات والذهب",
 
             // 🏛️ المستوى 5: الأقسام الرئيسية (Main Pillars)
             "عربي",
@@ -335,6 +323,9 @@ document.addEventListener("DOMContentLoaded", function() {
             "تقارير",
             "*Z",
             "مال وأعمال",
+            "وثائق ومذكرات",
+            "*U",
+            "*DF",
 
             // 🌍 المستوى 6: تصنيفات عامة وشاملة (الأضعف) — عناصر جديدة فقط
             "عالم",
