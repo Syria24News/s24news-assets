@@ -117,9 +117,13 @@ const MARKUP = `
       <div class="st-row">
         <label class="field"><span>العنوان (اختياري)</span>
           <input class="input" id="stTitle" maxlength="${TITLE_MAX}" placeholder="مثال: البث المباشر لقناة الإخبارية السورية">
+          <!-- ملاحظة: أين يظهر العنوان -->
+          <small class="hint">يظهر في شاشة قفل الهاتف أثناء التشغيل، وفي قائمة «آخر الأرقام» هنا. لا يظهر داخل صفحات الموقع.</small>
         </label>
         <label class="field"><span>صورة الغلاف (اختياري)</span>
           <input class="input" id="stPoster" type="url" dir="ltr" placeholder="فارغ = الغلاف الحالي في الموقع">
+          <!-- ملاحظة: مواصفات الغلاف وطريقة الحصول على رابطه -->
+          <small class="hint">رابط مباشر لصورة (لا رفع ملف). المقاس 1280×720 (16:9)، بصيغة JPG أو WebP، وأقل من 200 كيلوبايت. للحصول على الرابط: ارفع الصورة في مسودة Blogger وانسخ رابطها، ثم استبدل /s320/ بـ /s1280/.</small>
         </label>
       </div>
 
