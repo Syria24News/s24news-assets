@@ -19,6 +19,77 @@
     }
   };
 
+/* ============ 1-ب) طبقة القراءة الموحّدة S24Feed (18 أكتوبر 2026) ============
+   كل نظام يقرأ بيانات لوحة 24 (العاجل، الهام، البث...) يمرّ من هنا وحدها:
+     S24Feed.get('live_stream/current', { key, ttl, force }) → Promise<object|null>
+       {}   المستند غير موجود بعد
+       null تعذّر الجلب (الشبكة أو الحصة) — يعود النظام عندها إلى احتياطيه
+   - كاش على جهاز الزائر عبر S24Cache (ttl بالملّي ثانية)، فالتنقل بين الصفحات بلا قراءات.
+   - دمج الطلبات المتزامنة على المستند نفسه في طلب واحد.
+   - مصدر البيانات يتحدد بسطر واحد (source): اليوم Firestore مباشرة. حين يكبر الموقع
+     (قراءات Firestore فوق 60% من الحصة) يُبدَّل إلى 'edge' (Cloudflare Worker يخزّن
+     المستند مؤقتاً) أو 'json' (ملفات ثابتة) دون لمس أي نظام آخر. */
+  window.S24Feed = (function () {
+    var source = 'firestore';
+    var BASES = {
+      firestore: 'https://firestore.googleapis.com/v1/projects/s24n-views/databases/(default)/documents/',
+      edge: '',   // مستقبلاً: رابط الـ Worker (يرجع JSON عادياً)
+      json: ''    // مستقبلاً: مجلد ملفات JSON ثابتة
+    };
+    var inflight = {};
+
+    // فك قيم Firestore REST ({stringValue}، {mapValue}...) إلى قيم عادية
+    function fsVal(v) {
+      if (!v) return null;
+      if ('stringValue' in v) return v.stringValue;
+      if ('integerValue' in v) return Number(v.integerValue);
+      if ('doubleValue' in v) return Number(v.doubleValue);
+      if ('booleanValue' in v) return v.booleanValue;
+      if ('timestampValue' in v) return Date.parse(v.timestampValue);
+      if ('nullValue' in v) return null;
+      if ('arrayValue' in v) return (v.arrayValue.values || []).map(fsVal);
+      if ('mapValue' in v) {
+        var o = {}, f = v.mapValue.fields || {};
+        for (var k in f) o[k] = fsVal(f[k]);
+        return o;
+      }
+      return null;
+    }
+
+    function fetchDoc(path) {
+      var url = BASES[source] + path + (source === 'json' ? '.json' : '');
+      return fetch(url).then(function (r) {
+        if (r.status === 404) return {};
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        return r.json().then(function (j) {
+          if (source !== 'firestore') return j || {};
+          return fsVal({ mapValue: { fields: j.fields || {} } }) || {};
+        });
+      });
+    }
+
+    function get(path, opts) {
+      opts = opts || {};
+      var key = opts.key || ('s24_feed_' + path.replace(/\W+/g, '_'));
+      var ttl = opts.ttl == null ? 60 * 1000 : opts.ttl;
+      if (!opts.force) {
+        var c = window.S24Cache.get(key, ttl);
+        if (c) return Promise.resolve(c);
+      }
+      if (inflight[key]) return inflight[key];
+      inflight[key] = fetchDoc(path).then(function (d) {
+        window.S24Cache.set(key, d);
+        return d;
+      }).catch(function (e) {
+        console.warn('[S24Feed] تعذّر جلب ' + path, e);
+        return null;
+      }).then(function (d) { delete inflight[key]; return d; });
+      return inflight[key];
+    }
+
+    return { get: get, fsVal: fsVal, source: function () { return source; } };
+  })();
+
 /* ===================== 2) الإشعار المؤقت ===================== */
 // دالة عرض الإشعار المؤقت
 function showToast(message) {

@@ -362,6 +362,7 @@ import polls from './js/polls.js';
 import live from './js/live.js';
 import breaking from './js/breaking.js';
 import important from './js/important.js';
+import stream from './js/stream.js';
 
 /* ============================================================
    سجلّ الوحدات — لإضافة نظام جديد: أنشئ admin/js/<اسم>.js
@@ -372,7 +373,7 @@ import important from './js/important.js';
    انظر admin/README.md لقالب وحدة جديدة.
    ============================================================ */
 // الترتيب حسب الاستخدام اليومي في غرفة الأخبار: التغطية أولاً (التبويب الافتراضي)
-const MODULES = [live, breaking, important, polls];
+const MODULES = [live, breaking, important, stream, polls];
 
 /* ============ التبويبات والتنقل (#polls ...) ============ */
 const nav = $('nav'), host = $('modules');

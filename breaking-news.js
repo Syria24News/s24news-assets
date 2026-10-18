@@ -78,6 +78,11 @@ document.addEventListener('DOMContentLoaded', function () {
 
   // مستند اللوحة: من الكاش إن كان حديثاً، وإلا طلب واحد
   function loadPanelDoc(force) {
+    // طبقة القراءة الموحّدة (utils.js) — والكود أدناه احتياط إن لم تُحمَّل بعد
+    if (window.S24Feed) {
+      return window.S24Feed.get('breaking_news/current', { key: CACHE_KEY, ttl: CACHE_MS, force: force })
+        .then(function (d) { return d || {}; });
+    }
     var c = !force && window.S24Cache ? window.S24Cache.get(CACHE_KEY, CACHE_MS) : null;
     if (c) return Promise.resolve(c);
     return fetch(DOC_URL).then(function (r) {

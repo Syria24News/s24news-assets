@@ -10,6 +10,7 @@
 | `index.html` | الغلاف: الدخول، الشريط السفلي للوحدات، شارة الاتصال، شريط النسخة الجديدة، زر التثبيت |
 | `js/core.js` | النواة المشتركة: Firebase، كاش Firestore الدائم، `smartLoad`، `commit`، `callDeferred` |
 | `js/polls.js` | وحدة الاستطلاعات |
+| `js/stream.js` | وحدة البث المباشر (مستند `live_stream/current`، يقرؤه `live-player.js` عبر `S24Feed`) |
 | `sw.js` | عامل الخدمة (العمل دون اتصال) — نطاقه مجلد `admin/` فقط |
 | `manifest.webmanifest` | بيانات التثبيت (الاسم، الأيقونات، الاختصارات) |
 | `icons/` | أيقونات التطبيق |

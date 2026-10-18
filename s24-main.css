@@ -4944,6 +4944,10 @@ body #comments .comment-thread .comment-thread { padding-right: 12px !important;
 .video-container:hover .fake-play-btn svg, .video-container:hover .fake-play-btn-main svg { fill: var(--sy-green); }
 .sidebar-loader, .player-loader { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); border: 3px solid rgba(255,255,255,0.3); border-radius: 50%; border-top: 3px solid var(--sy-green); width: 30px; height: 30px; animation: spinSidebar 1s linear infinite; display: none; z-index: 3; }
 @keyframes spinSidebar { 0% { transform: translate(-50%, -50%) rotate(0deg); } 100% { transform: translate(-50%, -50%) rotate(360deg); } }
+/* صفحة البث: رسالة «البث متوقف حالياً» حين يُوقف البث من لوحة 24 (live-player.js 2.0) */
+.s24-live-offair { position: absolute; inset: 0; z-index: 3; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 16px; text-align: center; background: rgba(0, 0, 0, 0.6); color: #fff; cursor: default; }
+.s24-live-offair strong { font-family: var(--font-title); font-size: 18px; }
+.s24-live-offair span { font-family: var(--font-main); font-size: 14px; opacity: 0.85; }
 
 /* 🟢 إصلاح: رسالة تظهر عند فشل تحميل مشغل الفيديو الخارجي (video.js) بعد مهلة 10 ثوانٍ */
 .video-load-error { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); color: #fff; font-size: 13px; line-height: 1.6; text-align: center; z-index: 3; padding: 10px 16px; background: rgba(0,0,0,0.55); border-radius: 8px; max-width: 80%; }

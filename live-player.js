@@ -1,7 +1,107 @@
 /* ============================================================
    S24News — مشغّل البث المباشر (playFast / loadVideoLibs)
    playFast تُستدعى من onclick داخل HTML القالب — يجب أن تبقى دالة عامة
+
+   الإصدار 2.0 — 18 أكتوبر 2026: إعدادات البث من لوحة 24 (تبويب «البث»)
+   المصدر: مستند Firestore واحد live_stream/current عبر S24Feed (utils.js)
+     mode      'video' فيديو محدد | 'channel' البث الجاري لقناة
+     videoId   رقم فيديو يوتيوب (11 حرفاً)     channelId  معرّف القناة UC...
+     onAir     false = البث متوقف: رسالة في صفحة البث وإخفاء المشغّل المصغّر
+     title     عنوان اختياري (يظهر في شاشة القفل)   poster  صورة غلاف اختيارية
+   يُقرأ فقط حيث يوجد مشغّل (صفحة البث والرئيسية)، مع كاش 15 دقيقة في الرئيسية
+   ودقيقة في صفحة البث. إن فشل الجلب يبقى LIVE_CONFIG (ودجت القالب أو الاحتياطي أدناه).
    ============================================================ */
+
+/* ============ الاحتياطي: يعمل البث حتى لو حُذف ودجت «إعدادات البث المباشر» ============ */
+if (typeof window.LIVE_CONFIG === 'undefined') {
+    window.LIVE_CONFIG = {
+        videoId: "A_f-ilC0rkk",
+        posterImage: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjqqEGaQfYWvucbm2JGaLWomhFRecJYYSxg7TLtEd-oHcqtuXMjy0IdTThDlp6HIXbTj3G4OmU16eok2yevyNX5PiQa5IJiHyIoHDCgIdb-WBndZmmb11VQksQi45o5W-_BAvBLRe98SrqiROPKSktAf6NlprmChmok1gxKpJctQzG9wgFjfjH_RBDLs7rU/s16000/1000264052.png"
+    };
+}
+if (typeof window.getLiveUrl !== 'function') {
+    window.getLiveUrl = function () {
+        return "https://www.youtube.com/watch?v=" + window.LIVE_CONFIG.videoId;
+    };
+}
+
+/* ============ S24Live: جلب إعدادات اللوحة وتطبيقها على المشغّلات ============ */
+window.S24Live = (function () {
+    var state = { mode: 'video', onAir: true, channelId: '', title: '' };
+    var ready = null;
+    var isLivePage = window.location.pathname === "/p/live.html";
+
+    // رابط التضمين المباشر (iframe) للمصغّر ولوضع القناة في صفحة البث
+    function embedUrl(extra) {
+        var base = state.mode === 'channel' && state.channelId
+            ? "https://www.youtube.com/embed/live_stream?channel=" + encodeURIComponent(state.channelId) + "&"
+            : "https://www.youtube.com/embed/" + encodeURIComponent(window.LIVE_CONFIG.videoId) + "?";
+        return base + extra;
+    }
+    var MINI_PARAMS = "autoplay=1&mute=1&controls=0&showinfo=0&rel=0&modestbranding=1&playsinline=1&enablejsapi=1";
+
+    function apply(d) {
+        if (!d || !d.mode) return;                       // لا مستند أو فشل = يبقى LIVE_CONFIG كما هو
+        state.mode = d.mode === 'channel' && d.channelId ? 'channel' : 'video';
+        state.onAir = d.onAir !== false;
+        state.channelId = d.channelId || '';
+        state.title = d.title || '';
+        if (d.videoId) window.LIVE_CONFIG.videoId = d.videoId;
+        if (d.poster) window.LIVE_CONFIG.posterImage = d.poster;
+
+        // صورة الغلاف في صفحة البث (ما دام المشغّل لم يبدأ)
+        var poster = document.getElementById('main-fake-poster');
+        if (poster && !isPlayerActive && window.LIVE_CONFIG.posterImage) poster.src = window.LIVE_CONFIG.posterImage;
+
+        // المشغّل المصغّر في الرئيسية
+        var mini = document.getElementById('miniLiveWidget');
+        if (mini) {
+            if (!state.onAir) {
+                if (typeof window.closeMiniLive === 'function') window.closeMiniLive();
+                else mini.style.display = 'none';
+            } else {
+                var ifr = document.getElementById('mini-live-iframe');
+                if (ifr && ifr.src && ifr.src !== 'about:blank') {
+                    var u = embedUrl(MINI_PARAMS);
+                    if (ifr.src !== u) ifr.src = u;
+                }
+            }
+        }
+
+        // صفحة البث: رسالة بدل زر التشغيل حين يكون البث متوقفاً
+        if (isLivePage && !state.onAir) showOffAir();
+
+        try { document.dispatchEvent(new CustomEvent('s24:live-config', { detail: state })); } catch (e) {}
+    }
+
+    function showOffAir() {
+        var overlay = document.getElementById('btn-overlay');
+        if (!overlay || document.getElementById('s24-live-offair')) return;
+        overlay.style.display = 'flex';
+        overlay.innerHTML = '<div class="s24-live-offair" id="s24-live-offair" role="status">' +
+            '<strong>البث متوقف حالياً</strong><span>تابعونا، سيعود البث المباشر قريباً</span></div>';
+    }
+
+    function load() {
+        var needed = isLivePage || document.getElementById('miniLiveWidget');
+        if (!needed || !window.S24Feed) { ready = Promise.resolve(); return; }
+        ready = window.S24Feed.get('live_stream/current', {
+            key: 's24_live_v1',
+            ttl: isLivePage ? 60 * 1000 : 15 * 60 * 1000
+        }).then(apply, function () {});
+    }
+
+    // ينتظر الإعدادات 3 ثوانٍ على الأكثر ثم ينفّذ (لا يتعطل التشغيل أبداً)
+    function whenReady(fn) {
+        var done = false;
+        function go() { if (!done) { done = true; fn(); } }
+        (ready || Promise.resolve()).then(go, go);
+        setTimeout(go, 3000);
+    }
+
+    document.addEventListener("DOMContentLoaded", load);
+    return { state: state, whenReady: whenReady, embedUrl: embedUrl };
+})();
 
 document.addEventListener("DOMContentLoaded", function() {
     // 1. تفعيل وضع صفحة البث عند الدخول لرابط البث
@@ -44,6 +144,7 @@ function loadVideoLibs() {
 var isPlayerActive = false;
 function playFast() {
     if(isPlayerActive) return;
+    if (!S24Live.state.onAir) return;   // البث متوقف من اللوحة
     isPlayerActive = true;
     var oldError = document.getElementById('main-load-error');
     if (oldError) oldError.remove();
@@ -55,7 +156,7 @@ function playFast() {
     let checkInterval = setInterval(function() {
         if (typeof videojs !== 'undefined') {
             clearInterval(checkInterval);
-            launchPlayer();
+            S24Live.whenReady(launchPlayer);
         } else if (++mainAttempts >= mainMaxAttempts) {
             clearInterval(checkInterval);
             var loader = document.getElementById('fast-loader');
@@ -72,6 +173,17 @@ function playFast() {
 
 function launchPlayer() {
     const target = document.getElementById('main-real-player-target');
+
+    // وضع القناة: البث الجاري للقناة لا رقم له، فيُعرض بمشغّل يوتيوب المضمّن بدل VideoJS
+    if (S24Live.state.mode === 'channel') {
+        target.innerHTML = '<iframe id="rt-live-page-iframe" src="' + S24Live.embedUrl('autoplay=1&rel=0&modestbranding=1&playsinline=1') +
+            '" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen frameborder="0" title="البث المباشر"></iframe>';
+        target.querySelector('iframe').addEventListener('load', function () {
+            document.getElementById('fast-loader').style.display = 'none';
+            document.getElementById('main-fake-poster').style.display = 'none';
+        });
+        return;
+    }
     target.innerHTML = `<video id="rt-live-page-player" class="video-js vjs-default-skin vjs-big-play-centered" controls autoplay preload="auto" disablePictureInPicture playsinline webkit-playsinline></video>`;
 
     var player = videojs('rt-live-page-player', {
@@ -95,7 +207,7 @@ function launchPlayer() {
         // --- 🟢 كود Media Session للتحكم من شاشة القفل 🟢 ---
         if ('mediaSession' in navigator) {
             navigator.mediaSession.metadata = new MediaMetadata({
-                title: 'Syria24News Live',
+                title: S24Live.state.title || 'Syria24News Live',
                 artist: 'بث مباشر',
                 album: 'S24News',
                 artwork: [
