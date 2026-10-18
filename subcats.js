@@ -21,7 +21,7 @@
           sectionDiv.className = 'theme-section';
           sectionDiv.innerHTML = `
               <div class='theme-section-header'>
-                  <div class='theme-title-text'>${sub.title}</div>
+                  <div class='theme-title-text'><a href="/search/label/${encodeURIComponent(sub.tag)}">${sub.title}</a></div>
               </div>
               <div class='theme-content-area' id='sub-area-${sub.tag.replace(/\s+/g, '-')}'>
                   <div style='padding:40px; text-align:center; color:var(--text-sec);'>جاري التحميل...</div>

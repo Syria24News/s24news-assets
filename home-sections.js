@@ -39,7 +39,13 @@ document.addEventListener("DOMContentLoaded", function() {
 
         // تحديث العنوان فوراً
         const titleEl = container.querySelector('.theme-title-text');
-        if(titleEl) titleEl.textContent = conf.displayTitle;
+        if(titleEl) {
+            // العنوان رابط إلى صفحة القسم (نفس وجهة زر «المزيد من الأخبار»)
+            const titleLink = document.createElement('a');
+            titleLink.href = '/search/label/' + encodeURIComponent(conf.label);
+            titleLink.textContent = conf.displayTitle;
+            titleEl.replaceChildren(titleLink);
+        }
 
         // 1. محاولة الجلب من الذاكرة (للسرعة القصوى)
         const cacheKey = 's24_theme_' + conf.id;

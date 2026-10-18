@@ -3010,6 +3010,10 @@ a.sy-news-link:last-child {
     justify-content: right;
 }
 
+/* عنوان القسم القابل للضغط: يحتفظ بلونه ويبهت قليلاً عند مرور الماوس */
+.theme-title-text a { color: inherit; text-decoration: none; transition: opacity .2s; }
+.theme-title-text a:hover { opacity: .65; }
+
 /* المنطقة الوسطى (التي تحتوي الأخبار) */
 .theme-content-area {
     display: flex;
