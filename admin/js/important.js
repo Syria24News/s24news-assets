@@ -1,5 +1,6 @@
 /* ============================================================
    S24News — وحدة «هام» في لوحة التحكم (admin/js/important.js)
+   الإصدار 1.2 — 18 أكتوبر 2026 (قائمة الربط: آخر 20 مقالة من الموقع بأي تصنيف)
    الإصدار 1.1 — 15 أكتوبر 2026 (وقت الخبر يختاره المحرر + النشر المجدول)
    الإصدار 1.0 — 15 أكتوبر 2026
    مبنية على نمط وحدة الخبر العاجل (breaking.js) نفسه، ومستقلة عنها تماماً.
@@ -37,7 +38,8 @@ const MAX_MS = 7 * 24 * 60 * 60 * 1000;       // أقصى مدة ظهور
 const DEFAULT_MIN = 1440;                     // المدة الافتراضية: يوم (24 ساعة)
 const SHOW_MAX = 5;                           // أقصى عدد يظهر في صندوق الموقع
 const LABEL = '*I';
-const FEED_MAX = 10;                          // مقالات *I المعروضة في اللوحة
+const FEED_MAX = 10;
+const PICK_MAX = 20;                          // قائمة الربط: آخر 20 مقالة من الموقع بأي تصنيف                          // مقالات *I المعروضة في اللوحة
 
 // المدد المتاحة بالدقائق (0 = مخصّص)
 const DURATIONS = [
@@ -72,7 +74,7 @@ function urlKey(u) {
 
 // مقالات *I الأخيرة من خلاصة المدونة (JSONP: لا يحتاج إذن CORS)
 let feedSeq = 0;
-function loadFeed() {
+function loadFeed(label, max) {
   return new Promise((resolve, reject) => {
     const cb = '__s24ImFeed' + (++feedSeq);
     const sc = document.createElement('script');
@@ -88,8 +90,8 @@ function loadFeed() {
       }));
     };
     sc.onerror = () => { done(); reject(new Error('تعذّر جلب الخلاصة')); };
-    sc.src = SITE + '/feeds/posts/summary/-/' + encodeURIComponent(LABEL) +
-      '?alt=json-in-script&max-results=' + FEED_MAX + '&callback=' + cb + '&cb=' + Date.now();
+    sc.src = SITE + '/feeds/posts/summary' + (label ? '/-/' + encodeURIComponent(label) : '') +
+      '?alt=json-in-script&max-results=' + max + '&callback=' + cb + '&cb=' + Date.now();
     document.head.appendChild(sc);
   });
 }
@@ -166,7 +168,7 @@ const MARKUP = `
       </label>
       <div class="hint"><span id="imCount">0</span> / ${TEXT_MAX}</div>
       <div class="im-row">
-        <label class="field"><span>ربط بمقالة <code>*I</code> (اختياري)</span>
+        <label class="field"><span>ربط بمقالة من الموقع (اختياري)</span>
           <select class="input" id="imPick"></select>
         </label>
         <label class="field"><span>أو الصق رابطاً من الموقع (اختياري)</span>
@@ -247,7 +249,7 @@ const MARKUP = `
             <textarea class="input" id="imEText" maxlength="${TEXT_MAX}" rows="3"></textarea>
           </label>
           <div class="hint"><span id="imECount">0</span> / ${TEXT_MAX}</div>
-          <label class="field"><span>ربط بمقالة <code>*I</code></span>
+          <label class="field"><span>ربط بمقالة من الموقع</span>
             <select class="input" id="imEPick"></select>
           </label>
           <label class="field"><span>أو الصق رابطاً من الموقع</span>
@@ -308,6 +310,7 @@ export default {
     let data = {};       // محتوى important_news/current
     let feed = [];       // مقالات *I
     let feedErr = '';
+    let recent = [];     // آخر مقالات الموقع (أي تصنيف) لقائمة الربط
     let loadedAt = 0;
     let editId = null, extId = null;
 
@@ -332,8 +335,10 @@ export default {
       }
     }
     async function loadAuto() {
-      try { feed = await loadFeed(); feedErr = ''; }
-      catch (e) { feedErr = e.message || 'تعذّر الجلب'; }
+      const [a, r] = await Promise.allSettled([loadFeed(LABEL, FEED_MAX), loadFeed('', PICK_MAX)]);
+      if (a.status === 'fulfilled') { feed = a.value; feedErr = ''; }
+      else feedErr = (a.reason && a.reason.message) || 'تعذّر الجلب';
+      if (r.status === 'fulfilled') recent = r.value;
       render();
     }
 
@@ -475,10 +480,10 @@ export default {
     function kpi(label, value) {
       return '<div class="card kpi"><div class="label">' + label + '</div><div class="value">' + esc(String(value)) + '</div></div>';
     }
-    // قائمة الربط: مقالات *I الأخيرة
+    // قائمة الربط: آخر 20 مقالة من الموقع بأي تصنيف (احتياطاً: مقالات *I إن تعذّر جلبها)
     function fillPick(sel, currentUrl) {
       const keep = sel.value;
-      sel.innerHTML = '<option value="">— بلا ربط —</option>' + feed.map((p) =>
+      sel.innerHTML = '<option value="">— بلا ربط —</option>' + (recent.length ? recent : feed).map((p) =>
         '<option value="' + esc(p.url) + '">' + esc(fmtDate(p.time) + ' — ' +
           (p.title.length > 70 ? p.title.slice(0, 70) + '…' : p.title)) + '</option>').join('');
       const want = currentUrl !== undefined && currentUrl !== '' ? currentUrl : keep;
