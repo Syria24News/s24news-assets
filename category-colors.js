@@ -70,7 +70,7 @@ document.addEventListener("DOMContentLoaded", function() {
         "*D": "var(--sy-education)",
         "*P": "var(--sy-dark-green)",
         "*Sy": "var(--sy-red)",
-        "*M": "var(--sy-Miscellaneous)",
+        "*M": "var(--sy-purple)", // منوعات = زهري (البرتقالي --sy-Miscellaneous خاص بـ «متفرقات»)
         "*Z": "var(--sy-Reports)",
 
         "عربي": "var(--sy-ArabNews)",

@@ -52,7 +52,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 "*P": "--sy-dark-green",
                 "*L": "--sy-light-green",
                 "*Sy": "--sy-red",
-                "*M": "--sy-Miscellaneous",
+                "*M": "--sy-purple", // منوعات = زهري (البرتقالي خاص بـ «متفرقات»)
                 "*Z": "--sy-Reports",
                 "*SW": "--color-red"
             };
