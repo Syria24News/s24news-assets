@@ -97,6 +97,59 @@ window.S24_TAGS = window.S24_TAGS || {
   '*DF': ['وثائقي',        'أفلام وثائقية',    '--sy-docfilms, #5E35B1',   'أفلام وثائقية مختارة عن سوريا والعالم'],
   '*A':  ['عاجل',          'الأخبار العاجلة',  '--color-red',              'آخر الأخبار العاجلة والمستجدات المهمة']
 };
+/* ============ 2-ب) أقسام لوحة 24 فوق القاموس (site_settings/sections) ============
+   تبويب «الأقسام» في لوحة 24 يضيف أقساماً وفروعاً أو يعدّلها أو يوقفها.
+   - يُطبَّق فوراً من كاش جهاز الزائر (بلا انتظار شبكة، فلا تظهر الشارة برمزها لحظة التحميل).
+   - يُجلب من Firestore مرة كل 6 ساعات على الأكثر (قراءة واحدة)، ويُستعمل من الصفحة التالية.
+   - إن تعذّر الجلب أو لم يوجد مستند: يبقى القاموس أعلاه كما هو.
+   لون مخصص #RRGGBB يُحوَّل إلى '--sy-none, #RRGGBB' ليعمل داخل var() كبقية المتغيرات. */
+window.S24_BRANCHES = window.S24_BRANCHES || {};
+(function () {
+  var KEY = 's24_sections_v1', TTL = 6 * 60 * 60 * 1000;
+  var DOC = 'https://firestore.googleapis.com/v1/projects/s24n-views/databases/(default)/documents/site_settings/sections';
+  function col(c) { c = String(c || ''); return /^#[0-9a-fA-F]{6}$/.test(c) ? '--sy-none, ' + c : c; }
+  // فك قيم Firestore REST إلى قيم عادية (نسخة صغيرة مستقلة: utils.js قد لا يكون حُمِّل بعد)
+  function fv(v) {
+    if (!v) return null;
+    if ('stringValue' in v) return v.stringValue;
+    if ('integerValue' in v) return Number(v.integerValue);
+    if ('doubleValue' in v) return Number(v.doubleValue);
+    if ('booleanValue' in v) return v.booleanValue;
+    if ('mapValue' in v) { var o = {}, f = v.mapValue.fields || {}; for (var k in f) o[k] = fv(f[k]); return o; }
+    return null;
+  }
+  function apply(d) {
+    if (!d || typeof d !== 'object') return;
+    var t = d.tags || {}, b = d.branches || {};
+    Object.keys(t).forEach(function (k) {
+      var x = t[k] || {};
+      if (!/^\*[A-Za-z]{1,4}$/.test(k)) return;
+      if (x.active === false) { delete window.S24_TAGS[k]; return; }
+      var base = window.S24_TAGS[k] || [];
+      window.S24_TAGS[k] = [x.short || base[0] || k, x.full || base[1] || x.short || k,
+        col(x.color) || base[2] || '--sy-green', x.desc != null ? x.desc : (base[3] || '')];
+    });
+    Object.keys(b).forEach(function (k) {
+      var x = b[k] || {};
+      if (x.active === false) return;
+      window.S24_BRANCHES[k] = { color: col(x.color) || '--sy-green', parent: x.parent || '', order: Number(x.order) || 0 };
+    });
+  }
+  var rec = null;
+  try { rec = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
+  apply(rec && rec.data);
+  if (rec && rec.ts && Date.now() - rec.ts < TTL) return;
+  try {
+    fetch(DOC).then(function (r) {
+      if (r.status === 404) return {};
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json().then(function (j) { return fv({ mapValue: { fields: j.fields || {} } }) || {}; });
+    }).then(function (d) {
+      try { localStorage.setItem(KEY, JSON.stringify({ ts: Date.now(), data: { tags: d.tags || {}, branches: d.branches || {} } })); } catch (e) {}
+    }).catch(function (e) { console.warn('[S24 sections] تعذّر الجلب', e); });
+  } catch (e) {}
+})();
+
 // خريطة حقل واحد لكل الوسوم: S24TagNames('short' | 'full' | 'color' | 'desc') ← { '*S': ..., ... }
 // ('color' يُرجع اسم المتغيّر كما هو، مثل '--sy-sport'؛ يُلفّ بـ var() عند الاستخدام)
 window.S24TagNames = function (kind) {

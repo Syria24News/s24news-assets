@@ -111,7 +111,7 @@
     display: flex; overflow-x: auto; padding-bottom: env(safe-area-inset-bottom);
   }
   .nav a {
-    flex: 1 0 72px; min-height: 58px; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    flex: 1 0 60px; min-height: 58px; display: flex; flex-direction: column; align-items: center; justify-content: center;
     gap: 2px; padding: 6px 4px; color: var(--muted); text-decoration: none; font-size: 12px; font-weight: 500;
     white-space: nowrap; border-top: 3px solid transparent; -webkit-tap-highlight-color: transparent;
   }
@@ -363,6 +363,7 @@ import live from './js/live.js';
 import breaking from './js/breaking.js';
 import important from './js/important.js';
 import stream from './js/stream.js';
+import sections from './js/sections.js';
 
 /* ============================================================
    سجلّ الوحدات — لإضافة نظام جديد: أنشئ admin/js/<اسم>.js
@@ -373,7 +374,7 @@ import stream from './js/stream.js';
    انظر admin/README.md لقالب وحدة جديدة.
    ============================================================ */
 // الترتيب حسب الاستخدام اليومي في غرفة الأخبار: التغطية أولاً (التبويب الافتراضي)
-const MODULES = [live, breaking, important, stream, polls];
+const MODULES = [live, breaking, important, stream, polls, sections];
 
 /* ============ التبويبات والتنقل (#polls ...) ============ */
 const nav = $('nav'), host = $('modules');

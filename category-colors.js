@@ -30,6 +30,9 @@ document.addEventListener("DOMContentLoaded", function() {
         const c = window.S24TagNames('color');
         Object.keys(c).forEach(function (k) { tagColors[k] = 'var(' + c[k] + ')'; });
     }
+    // فروع لوحة 24 (تبويب «الأقسام») — تغلب الألوان المكتوبة أدناه للتسمية نفسها
+    const panelBranches = window.S24_BRANCHES || {};
+    Object.keys(panelBranches).forEach(function (k) { tagColors[k] = 'var(' + panelBranches[k].color + ')'; });
     window.S24_CATEGORY_COLORS = window.S24_CATEGORY_COLORS || Object.assign({
         "عاجل": "var(--color-red)",
         "وثائق ومذكرات": "var(--sy-docs)",
@@ -335,6 +338,21 @@ document.addEventListener("DOMContentLoaded", function() {
             "سوريا",
             "*Sy"
         ];
+
+        // أقسام لوحة 24: الفروع في الأعلى (تغلب قسمها الأم) بترتيبها في اللوحة،
+        // والأقسام الرئيسية الجديدة قبل المستوى 6، وحذف الأقسام الموقوفة من اللوحة
+        const tagsNow = window.S24_TAGS || {};
+        const br = window.S24_BRANCHES || {};
+        const brNames = Object.keys(br).sort(function (a, b) { return br[a].order - br[b].order; });
+        for (let i = priorityList.length - 1; i >= 0; i--) {
+            const k = priorityList[i];
+            if (brNames.indexOf(k) > -1 || (k.charAt(0) === '*' && window.S24_TAGS && !tagsNow[k])) priorityList.splice(i, 1);
+        }
+        priorityList.unshift.apply(priorityList, brNames);
+        const lvl6 = priorityList.indexOf("عالم");
+        Object.keys(tagsNow).forEach(function (k) {
+            if (priorityList.indexOf(k) === -1) priorityList.splice(lvl6 > -1 ? priorityList.indexOf("عالم") : priorityList.length, 0, k);
+        });
 
         let selectedLabel = null;
         let finalColor = "var(--sy-INT)"; 

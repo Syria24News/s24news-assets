@@ -24,6 +24,9 @@ document.addEventListener("DOMContentLoaded", function() {
             
             // ألوان الأقسام وأوصافها من القاموس الموحد في config.js
             var colorMap = window.S24TagNames ? window.S24TagNames('color') : {};
+            // فروع لوحة 24 (تبويب «الأقسام»): لون رأس صفحة التسمية
+            var panelBr = window.S24_BRANCHES || {};
+            Object.keys(panelBr).forEach(function (k) { colorMap[k] = panelBr[k].color; });
             var descriptionMap = window.S24TagNames ? window.S24TagNames('desc') : {};
             
             var urlParts = window.location.href.split("/search/label/");
