@@ -42,8 +42,11 @@ function loadDefaults() {
   return defaultsPromise;
 }
 
-// درجات متغيرات القالب كما في «تخصيص» بلوغر (18 أكتوبر 2026) — للعرض في اللوحة فقط،
-// فاللوحة لا ترى ألوان القالب. إن غيّرت درجة من «تخصيص» بلوغر، حدّثها هنا ليطابق العرض.
+// درجات ألوان القالب للعرض في اللوحة (اللوحة لا ترى «تخصيص» بلوغر مباشرة):
+// 1) liveColors: المزامنة التلقائية — اللوحة المركزية تقرأ ألوان الصفحة الرئيسية كل ساعة
+//    وتحفظها في site_settings/theme (themeColorsSync_ في Syria24News-Control-Panel.gs)
+// 2) THEME_COLORS: نسخة احتياطية ثابتة (18 أكتوبر 2026) إن لم تتم المزامنة بعد
+let liveColors = {}, liveAt = 0;
 const THEME_COLORS = {
   '--sy-green': '#77bd1d', '--color-red': '#e71414', '--sy-red': '#e71414',
   '--sy-Econ': '#e01010', '--sy-sport': '#ff8c00', '--sy-ArabNews': '#ebdf09', '--sy-INT': '#0000ff',
@@ -61,6 +64,7 @@ function swatchOf(color) {
   const c = String(color || '');
   if (HEX_RE.test(c)) return c;
   const v = varName(c);
+  if (v && liveColors[v]) return liveColors[v];
   if (v && THEME_COLORS[v]) return THEME_COLORS[v];
   const m = c.match(/#[0-9a-fA-F]{6}/);
   return m ? m[0] : '';
@@ -202,6 +206,8 @@ export default {
       try {
         await smartLoad(collection(db, 'site_settings'), 'sections', (snap) => {
           const d = snap.docs.find((x) => x.id === 'sections');
+          const th = snap.docs.find((x) => x.id === 'theme');
+          if (th) { const tv = th.data(); liveColors = tv.colors || {}; liveAt = tv.at && tv.at.toMillis ? tv.at.toMillis() : 0; }
           const v = d ? d.data() : {};
           data = { tags: v.tags || {}, branches: v.branches || {}, updatedAt: v.updatedAt };
           render();
@@ -270,7 +276,9 @@ export default {
           '</div></div>';
       }).join('') : '<div class="card empty">لا فروع مضافة من اللوحة بعد.</div>';
 
-      $('scInfo').textContent = defsErr ? 'تنبيه: تعذّر قراءة القاموس الافتراضي (' + defsErr + ').' : '';
+      $('scInfo').textContent = (defsErr ? 'تنبيه: تعذّر قراءة القاموس الافتراضي (' + defsErr + '). ' : '') +
+        (liveAt ? 'ألوان القالب مزامَنة من بلوغر تلقائياً — آخر تغيير رُصد: ' + fmtDate(liveAt) + '.'
+          : 'ألوان القالب: لم تتم المزامنة التلقائية بعد، فتُعرض الدرجات المحفوظة في اللوحة.');
     }
 
     /* ============ الحفظ (المستند كاملاً — مستخدم واحد) ============ */
