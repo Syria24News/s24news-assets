@@ -42,14 +42,29 @@ function loadDefaults() {
   return defaultsPromise;
 }
 
-// لون قابل للعرض في اللوحة: hex كما هو، أو اللون الاحتياطي داخل '--x, #hex'، وإلا رمادي
+// درجات متغيرات القالب كما في «تخصيص» بلوغر (18 أكتوبر 2026) — للعرض في اللوحة فقط،
+// فاللوحة لا ترى ألوان القالب. إن غيّرت درجة من «تخصيص» بلوغر، حدّثها هنا ليطابق العرض.
+const THEME_COLORS = {
+  '--sy-green': '#77bd1d', '--color-red': '#e71414', '--sy-red': '#e71414',
+  '--sy-Econ': '#e01010', '--sy-sport': '#ff8c00', '--sy-ArabNews': '#ebdf09', '--sy-INT': '#0000ff',
+  '--sy-purple': '#d53ef7', '--sy-light-green': '#0bfa02', '--sy-dark-green': '#1b6950',
+  '--sy-health-light': '#34eb7d', '--sy-tech': '#c2fff6', '--sy-docs': '#2c3e50', '--sy-gold': '#f1c40f',
+  '--sy-oil': '#4E342E', '--sy-docfilms': '#5E35B1', '--sy-syworld': '#8E1B2E',
+  '--sy-Arena': '#556B2F', '--sy-syria': '#C0392B', '--sy-black': '#000000', '--sy-Reports': '#800080',
+  '--sy-Miscellaneous': '#ff9800', '--sy-weather': '#3498db', '--sy-education': '#7986cb',
+  '--sy-health': '#2ecc71', '--sy-social': '#caa6c6', '--sy-culture': '#8d6e63', '--sy-history': '#8e5431',
+  '--sy-spo-sco': '#a3e08e', '--sy-orange': '#e67e22'
+};
+const varName = (color) => (String(color || '').match(/--[\w-]+/) || [''])[0];
+// لون قابل للعرض في اللوحة: hex كما هو، أو درجة متغيّر القالب، أو اللون الاحتياطي داخل '--x, #hex'
 function swatchOf(color) {
   const c = String(color || '');
   if (HEX_RE.test(c)) return c;
+  const v = varName(c);
+  if (v && THEME_COLORS[v]) return THEME_COLORS[v];
   const m = c.match(/#[0-9a-fA-F]{6}/);
   return m ? m[0] : '';
 }
-const varName = (color) => (String(color || '').match(/--[\w-]+/) || [''])[0];
 
 const MARKUP = `
   <section id="scView">
