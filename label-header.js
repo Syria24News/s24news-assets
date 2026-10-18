@@ -19,24 +19,8 @@ document.addEventListener("DOMContentLoaded", function() {
                 return;
             }
             
-            // 🔴 جديد: قاموس الترجمة
-            var labelTranslations = {
-                "*A": "البث التلقائي",
-                "*WN": "أخبار العالم",
-                "*S": "رياضة",
-                "*T": "تكنولوجيا",
-                "*E": "اقتصاد",
-                "*AN": "عربي",
-                "*H": "صحة",
-                "*C": "ثقافة",
-                "*D": "تعليم",
-                "*P": "سياسي",
-                "*L": "محلي",
-                "*Sy": "سوريا",
-                "*M": "منوعات",
-                "*Z": "تقارير",
-                "*SW": "سوريا والعالم"
-            };
+            // أسماء الأقسام الكاملة من القاموس الموحد في config.js
+            var labelTranslations = window.S24TagNames ? window.S24TagNames('full') : {};
             
             // 🔴 جديد: قاموس الألوان
             var colorMap = {
