@@ -1,5 +1,8 @@
 /* ============================================================
    S24News — وحدة التغطية الحية في لوحة التحكم (admin/js/live.js)
+   الإصدار 1.5 — 19 أكتوبر 2026 (حذف تغطية مؤرشفة نهائياً: زر «حذف» في جدول الأرشيف فقط — يحذف بطاقتها
+     وكل أخبارها في فترتها من live_coverage، ويزيل خبرها السريع العاجل من الشريط إن بقي. مقالات بلوغر لا تُمسّ.
+     يتطلب قاعدة Firestore تسمح للمشرف بحذف أخبار live_coverage؛ إن رفضتها القواعد لا يُحذف شيء)
    الإصدار 1.4.1 — 19 أكتوبر 2026 (تنسيق جدول المجموعات: قائمة الحالة تأخذ الصنف المشترك status-sel فلا تنضغط إلى سهم،
      وأزرار المجموعة تلتف إلى سطرين، والتاريخ ينكسر عند الفاصلة تحت 1200px — فلا يتجاوز الجدول عرض الصفحة)
    الإصدار 1.4 — 19 أكتوبر 2026 (الجلب حسب النشاط — يتطلب Syria24_Coverage_Sync 2.5):
@@ -35,7 +38,8 @@
    ============================================================ */
 import { db, $, esc, clean, fmtDate, fmtAgo, toast, errText, smartLoad, commit, callDeferred,
   requireOnline, isOnline, collection, doc, updateDoc, deleteDoc, writeBatch, query, where, orderBy, limit,
-  serverTimestamp } from './core.js';
+  serverTimestamp, getDocsFromServer } from './core.js';
+import { deleteField } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 import { addBreakingToBatch, quickBreakingId, syncQuickToBreaking, removeQuickFromBreaking,
   endQuickInBreaking, setPostHiddenInBreaking } from './breaking.js';
 
@@ -101,7 +105,8 @@ const MARKUP = `
         <li>للعاجل: أضف التصنيف (Label) <code>*A</code> فقط (لا تكتبه في العنوان). يظهر الخبر أحمر في التغطية وفي شريط العاجل تحت الهيدر معاً.</li>
         <li>انشر. ما دامت التغطية نشطة يظهر الخبر خلال 5 دقائق، أو فوراً بزر «زامن الآن». التغطية التي لم يصلها خبر منذ 24 ساعة تتوقف مزامنتها التلقائية توفيراً للحصة (المثبّتة لا تتوقف): بعد نشر خبر فيها اضغط «زامن الآن» مرة فتعود.</li>
         <li>لتصحيح خبر: عدّله في بلوغر. لإخفائه من الصفحة دون حذف المقالة: زر «الأخبار» في مجموعته.</li>
-        <li>لبدء تغطية جديدة في الخانة نفسها: زر «تغطية جديدة» (الأخبار السابقة تختفي من صفحتها وتبقى محفوظة).</li>
+        <li>لبدء تغطية جديدة في الخانة نفسها: زر «تغطية جديدة» (الأخبار السابقة تختفي من صفحتها وتبقى محفوظة في الأرشيف أسفل الصفحة).</li>
+        <li><b>تغطية تجريبية أو خاطئة:</b> بعد أرشفتها، زر «حذف» في جدول الأرشيف يحذفها مع أخبارها نهائياً (مقالات بلوغر لا تتأثر). للتغطيات الحقيقية استخدم «إخفاء».</li>
         <li><b>خبر سريع عاجل:</b> يصل إلى شريط العاجل تحت الهيدر لمدة ساعة (يُلغى من نافذته)، ويُدار هناك من قسم «الخبر العاجل».</li>
         <li><b>خبر سريع بلا مقالة:</b> زر «+ خبر سريع» في المجموعة. يظهر فوراً دون مزامنة، ونصه غير قابل للضغط.
           حين تنشر مقالته لاحقاً: «الأخبار» ← «تعديل» على الخبر السريع ← اختر المقالة، فيصبح قابلاً للضغط ولا يتكرر.</li>
@@ -134,7 +139,8 @@ const MARKUP = `
     </div>
 
     <h3 class="lv-arc-h">الأرشيف: التغطيات السابقة</h3>
-    <p class="hint">تظهر في صفحة <a href="https://www.syria24.news/p/coverages.html" target="_blank" rel="noopener">التغطيات</a>. تُضاف تلقائياً عند الضغط على «تغطية جديدة»، والمجموعات المنتهية تظهر هناك أيضاً ما دام فيها أخبار.</p>
+    <p class="hint">تظهر في صفحة <a href="https://www.syria24.news/p/coverages.html" target="_blank" rel="noopener">التغطيات</a>. تُضاف تلقائياً عند الضغط على «تغطية جديدة»، والمجموعات المنتهية تظهر هناك أيضاً ما دام فيها أخبار.
+      <b>«إخفاء»</b> للتغطيات الحقيقية (يمكن إظهارها لاحقاً)، و<b>«حذف»</b> للتجارب والأخطاء فقط: يحذف التغطية وأخبارها نهائياً، ومقالاتك في بلوغر لا تتأثر.</p>
     <div class="card table-wrap">
       <table class="cards-sm">
         <thead>
@@ -358,6 +364,7 @@ export default {
           '<td><div class="actions">' +
             '<button class="btn btn-sm" data-act="view" type="button">عرض</button>' +
             '<button class="btn btn-sm' + (hidden ? '' : ' btn-danger') + '" data-act="hide" type="button">' + (hidden ? 'إظهار' : 'إخفاء') + '</button>' +
+            '<button class="btn btn-sm btn-danger" data-act="del" type="button">حذف</button>' +
           '</div></td>';
         tr.querySelector('.lv-id').textContent = a.gid;
         tr.children[1].textContent = (num(a.from) ? fmtDate(num(a.from)) + ' ← ' : '') + fmtDate(num(a.last) || num(a.to));
@@ -373,9 +380,52 @@ export default {
           const act = e.target && e.target.getAttribute('data-act');
           if (act === 'view') window.open(SITE + '/p/lbs24n.html?arc=' + encodeURIComponent(k), '_blank', 'noopener');
           if (act === 'hide') save({ ['archive.' + k + '.hidden']: !hidden }, hidden ? 'ظهرت في صفحة التغطيات' : 'أُخفيت من صفحة التغطيات');
+          if (act === 'del') deleteArchive(k, a, e.target);
         });
         tb.appendChild(tr);
       });
+    }
+
+    /* ============================================================
+       حذف تغطية مؤرشفة نهائياً (1.5) — للتجارب والأخطاء
+       - الأخبار المحذوفة: خانة التغطية (gid) داخل فترتها فقط [from, to)، فلا تُمسّ التغطية الجارية في الخانة نفسها
+       - الكلفة: قراءة لكل خبر (مرة واحدة عند الضغط) + حذف لكل خبر — من 20,000 حذف مجانية يومياً
+       - الدفعة ذرّية: إن رفضتها قواعد Firestore لا يُحذف شيء، وتبقى البطاقة كما هي
+       ============================================================ */
+    async function deleteArchive(k, a, btn) {
+      if (!requireOnline('حذف التغطية')) return;
+      const from = num(a.from), to = num(a.to) || Date.now();
+      btn.disabled = true;
+      try {
+        const snap = await getDocsFromServer(query(collection(db, 'live_coverage'), where('groupId', '==', a.gid),
+          where('timestamp', '>=', from), where('timestamp', '<', to), orderBy('timestamp', 'desc')));
+        const docs = snap.docs;
+        if (!confirm('حذف التغطية «' + (a.name || a.gid) + '» نهائياً؟\n\n' +
+          'سيُحذف معها ' + docs.length + ' خبر من التغطية، ولا يمكن التراجع.\n' +
+          'مقالاتك في بلوغر لا تتأثر.\n\nللتغطيات الحقيقية استخدم «إخفاء» بدل الحذف.')) return;
+
+        // الأخبار أولاً (دفعات من 450)، ثم البطاقة — فلا تبقى بطاقة بلا أخبار ولا أخبار بلا بطاقة عند الرفض
+        for (let i = 0; i < docs.length; i += 450) {
+          const b = writeBatch(db);
+          docs.slice(i, i + 450).forEach((d) => b.delete(d.ref));
+          await b.commit();
+        }
+        await updateDoc(groupsRef(), { ['archive.' + k]: deleteField(), updatedAt: serverTimestamp() });
+        delete (data.archive || {})[k];
+        render();
+        toast('حُذفت التغطية «' + (a.name || a.gid) + '» و' + docs.length + ' خبر');
+
+        // خبر سريع عاجل من هذه التغطية ما زال في الشريط (نادر: خلال ساعة من نشره)
+        docs.filter((d) => d.data().quick === true && d.data().isUrgent === true).forEach((d) =>
+          removeQuickFromBreaking(d.id).catch((e) => toast('تعذّر حذف خبر من شريط العاجل: ' + errText(e), true)));
+      } catch (e) {
+        const denied = /permission|insufficient/i.test(String(e && (e.code || e.message)));
+        toast(denied
+          ? 'لم يُحذف شيء: قواعد Firestore لا تسمح بعد بحذف أخبار التغطية من اللوحة'
+          : 'تعذّر الحذف: ' + errText(e), true);
+      } finally {
+        btn.disabled = false;
+      }
     }
 
     function rowFor(id, now) {
