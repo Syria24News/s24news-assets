@@ -1,5 +1,9 @@
 /* ============================================================
    S24News — وحدة الخبر العاجل في لوحة التحكم (admin/js/breaking.js)
+   الإصدار 1.2 — 19 أكتوبر 2026 (نقل إلى «هام»: زر في أخبار اللوحة ومقالات *A ينسخ الخبر إلى
+     important_news/current بنص يُعاد صياغته، ووقت الخبر الأصلي، ومدة تبدأ من الآن (يوم افتراضياً)،
+     ويُنهيه في الشريط في الدفعة نفسها (خيار مفعّل). الاتجاه واحد: من العاجل إلى الهام فقط —
+     تطوّر جديد لخبر هام يُكتب عاجلاً جديداً. خبر اللوحة المنقول يُعلَّم بالحقل imp = معرّفه في «هام»)
    الإصدار 1.1 — 18 أكتوبر 2026 (قائمة الربط: آخر 20 مقالة من الموقع بأي تصنيف)
    الإصدار 1.0 — 14 أكتوبر 2026
 
@@ -11,6 +15,7 @@
         hidden احتياطي (الإنهاء يكون بتقديم end إلى الآن)
         src    'panel' من هذه الوحدة، أو 'live' من «خبر سريع» عاجل في التغطية الحية
         ref    معرّف الخبر السريع في live_coverage حين src = 'live'
+        imp    معرّف الخبر في important_news حين نُقل إلى «هام» (1.2)
      autoMinutes  مدة ظهور مقالات التصنيف *A في الشريط (افتراضياً 60)
      hiddenPosts  معرّفات مقالات *A المخفاة من الشريط قبل انتهاء مدتها
 
@@ -22,7 +27,7 @@
    الأخبار المنتهية منذ أكثر من 7 أيام تُحذف من المستند عند أي حفظ.
    ============================================================ */
 import { db, $, esc, clean, fmtDate, fmtAgo, toast, errText, smartLoad, commit, requireOnline,
-  collection, doc, getDoc, setDoc, updateDoc, serverTimestamp } from './core.js';
+  collection, doc, getDoc, setDoc, updateDoc, writeBatch, serverTimestamp } from './core.js';
 import { deleteField, arrayUnion, arrayRemove } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
 const SITE = 'https://www.syria24.news';
@@ -40,6 +45,10 @@ const DURATIONS = [
   [5, '5 د'], [10, '10 د'], [15, '15 د'], [30, '30 د'],
   [60, 'ساعة'], [180, '3 س'], [360, '6 س'], [1440, '24 س'], [0, 'مخصّص']
 ];
+// مدد «هام» المتاحة عند النقل (من الآن) — نفس مدد وحدة «هام» بلا «مخصّص»
+const IMP_DURATIONS = [[180, '3 س'], [360, '6 س'], [720, '12 س'], [1440, 'يوم'], [2880, 'يومان'], [4320, '3 أيام'], [10080, 'أسبوع']];
+const IMP_DEFAULT = 1440;
+const importantRef = () => doc(db, 'important_news', 'current');
 function durLabel(min) {
   const m = Number(min) || 0;
   if (m < 60) return m + ' دقيقة';
@@ -199,6 +208,7 @@ const MARKUP = `
         <li>خبر اللوحة المربوط بمقالة <code>*A</code> يظهر مرة واحدة بنص اللوحة ومدّتها.</li>
         <li>«إنهاء» يزيل الخبر من الشريط فوراً (يبقى في القائمة 7 أيام)، و«تمديد» يضيف مدة جديدة.</li>
         <li>«+ خبر سريع» العاجل في التغطية الحية يصل إلى هنا تلقائياً لمدة ساعة (يمكن إلغاء ذلك من نافذته).</li>
+        <li><b>«نقل إلى هام»:</b> حين يهدأ الحدث ويبقى أثره، انقل الخبر (من اللوحة أو مقالة <code>*A</code>) إلى صندوق «هام». أعد صياغته بقالب «هام» (الفاعل + الفعل + الأثر)، ويبقى وقته الأصلي، والمدة يوم افتراضياً من الآن. خيار «إنهاء في الشريط» مفعّل افتراضياً حتى لا يظهر في المكانين. الاتجاه واحد: تطوّر جديد لخبر هام يُكتب عاجلاً جديداً.</li>
       </ol>
     </details>
 
@@ -290,6 +300,39 @@ const MARKUP = `
     </form>
   </dialog>
 
+  <dialog id="brDlgImp">
+    <form method="dialog" novalidate>
+      <div class="dlg-head">
+        <h2>نقل إلى «هام»</h2>
+        <button class="btn btn-sm" value="cancel" type="submit" formnovalidate>إغلاق</button>
+      </div>
+      <div class="dlg-body">
+        <div style="display:flex;flex-direction:column;gap:14px">
+          <label class="field"><span>نص الخبر في «هام»</span>
+            <textarea class="input" id="brIText" maxlength="${TEXT_MAX}" rows="3"></textarea>
+          </label>
+          <div class="hint"><span id="brICount">0</span> / ${TEXT_MAX} — أعد الصياغة بقالب «هام»: الفاعل + الفعل + الأثر أو الرقم، من 8 إلى 18 كلمة، بلا «عاجل».</div>
+          <div class="hint" id="brIInfo"></div>
+          <div class="field"><span>مدة الظهور في «هام» (من الآن)</span>
+            <div class="br-durs" role="radiogroup">${IMP_DURATIONS.map(([m, l]) =>
+              '<label class="br-dur"><input type="radio" name="brIDur" value="' + m + '"' + (m === IMP_DEFAULT ? ' checked' : '') +
+              '><span>' + l + '</span></label>').join('')}</div>
+          </div>
+          <label class="field" id="brIEndWrap" style="flex-direction:row;align-items:center;gap:8px">
+            <input type="checkbox" id="brIEnd" checked>
+            <span>إنهاء في الشريط الآن (حتى لا يظهر في المكانين)</span>
+          </label>
+          <div class="hint" id="brIDup" hidden></div>
+        </div>
+      </div>
+      <div class="dlg-foot">
+        <button class="btn btn-primary" id="brISave" type="button">نقل إلى «هام»</button>
+        <button class="btn" value="cancel" type="submit" formnovalidate>إلغاء</button>
+        <span class="msg" id="brIMsg"></span>
+      </div>
+    </form>
+  </dialog>
+
   <dialog id="brDlgExt">
     <form method="dialog" novalidate>
       <div class="dlg-head">
@@ -333,6 +376,8 @@ export default {
     let recent = [];     // آخر مقالات الموقع (أي تصنيف) لقائمة الربط
     let loadedAt = 0;
     let editId = null, extId = null;
+    let impSrc = null;   // ما يُنقل إلى «هام»: { kind:'item'|'post', id, title, url, time, on }
+    let impDoc = null;   // مستند «هام» كما قُرئ عند فتح النافذة (قراءة واحدة)
 
     const items = () => data.items || {};
     const autoMin = () => Number(data.autoMinutes) || DEFAULT_MIN;
@@ -416,7 +461,8 @@ export default {
           : esc(fmtDate(Number(it.start))) + '<div class="br-sub">إلى ' + esc(fmtDate(Number(it.end))) + '</div>';
         tr.innerHTML =
           '<td data-label="الخبر"><div class="br-title">' + esc(it.title) + '</div>' +
-            (it.src === 'live' ? '<div class="br-sub">من خبر سريع في التغطية الحية</div>' : '') + '</td>' +
+            (it.src === 'live' ? '<div class="br-sub">من خبر سريع في التغطية الحية</div>' : '') +
+            (it.imp ? '<div class="br-sub">نُقل إلى «هام»</div>' : '') + '</td>' +
           '<td data-label="الحالة"><span class="badge ' + st.cls + '">' + st.label + '</span></td>' +
           '<td data-label="المدة">' + timeTxt + '</td>' +
           '<td data-label="الرابط">' + (it.url
@@ -426,11 +472,14 @@ export default {
             '<button class="btn btn-sm" data-act="edit" type="button">تعديل / ربط</button>' +
             '<button class="btn btn-sm" data-act="ext" type="button">' + (st.on ? 'تمديد' : 'إعادة نشر') + '</button>' +
             (st.on ? '<button class="btn btn-sm btn-danger" data-act="end" type="button">إنهاء</button>' : '') +
+            '<button class="btn btn-sm" data-act="imp" type="button">نقل إلى هام</button>' +
             '<button class="btn btn-sm btn-danger" data-act="del" type="button">حذف</button>' +
           '</div></td>';
         tr.addEventListener('click', (e) => {
           const act = e.target && e.target.getAttribute('data-act');
-          if (act === 'edit') openEdit(it.id);
+          if (act === 'imp') openImp({ kind: 'item', id: it.id, title: it.title, url: it.url || '',
+            time: Number(it.start), on: st.on });
+          else if (act === 'edit') openEdit(it.id);
           else if (act === 'ext') openExt(it.id);
           else if (act === 'end') endNow(it.id);
           else if (act === 'del') delItem(it.id);
@@ -462,9 +511,13 @@ export default {
           '<td data-label="إجراءات"><div class="br-act">' +
             (p.id ? '<button class="btn btn-sm' + (hidden ? '' : ' btn-danger') + '" data-act="hide" type="button">' +
               (hidden ? 'إظهار في الشريط' : 'إخفاء من الشريط') + '</button>' : '') +
+            (p.id ? '<button class="btn btn-sm" data-act="imp" type="button">نقل إلى هام</button>' : '') +
           '</div></td>';
         const hb = tr.querySelector('[data-act="hide"]');
         if (hb) hb.addEventListener('click', () => togglePost(p.id));
+        const ib = tr.querySelector('[data-act="imp"]');
+        if (ib) ib.addEventListener('click', () => openImp({ kind: 'post', id: p.id, title: p.title, url: p.url || '',
+          time: p.time, on: st.on }));
         fb.appendChild(tr);
       });
 
@@ -662,6 +715,95 @@ export default {
       delete data.items[id];
       await save({ ['items.' + id]: deleteField() }, 'حُذف الخبر', () => { data.items[id] = copy; });
     }
+
+    /* ============ نقل إلى «هام» (1.2) — من العاجل إلى الهام فقط ============ */
+    $('brIText').addEventListener('input', () => { $('brICount').textContent = $('brIText').value.length; });
+
+    async function openImp(src) {
+      if (!requireOnline('النقل إلى «هام»')) return;
+      impSrc = src;
+      impDoc = null;
+      $('brIText').value = src.title || '';
+      $('brICount').textContent = $('brIText').value.length;
+      $('brIInfo').textContent = 'وقت الخبر في «هام»: ' + fmtDate(src.time) + ' (وقته الأصلي)' +
+        (src.url ? ' — مربوط بمقالته' : ' — بلا رابط (يمكن ربطه لاحقاً من تبويب «هام»)');
+      $('brIEndWrap').hidden = !src.on;
+      $('brIEnd').checked = true;
+      $('brIDup').hidden = true;
+      $('brIMsg').textContent = '';
+      $('brISave').disabled = true;
+      $('brDlgImp').showModal();
+      // قراءة واحدة لمستند «هام»: منع التكرار + معرفة هل في الصندوق خبر ظاهر (لرسالة الوصول)
+      try {
+        const s = await getDoc(importantRef());
+        impDoc = s.exists() ? s.data() : {};
+        const now = Date.now();
+        const key = urlKey(src.url);
+        const ref = src.kind === 'post' ? 'post:' + src.id : src.id;
+        const dup = Object.values(impDoc.items || {}).find((x) => x && Number(x.end) > now && x.hidden !== true &&
+          (x.ref === ref || (key && urlKey(x.url) === key)));
+        if (dup) {
+          $('brIDup').hidden = false;
+          $('brIDup').textContent = 'هذا الخبر في «هام» الآن حتى ' + fmtDate(Number(dup.end)) +
+            '. لتغيير نصه أو مدته استخدم تبويب «هام».';
+        } else $('brISave').disabled = false;
+      } catch (e) {
+        $('brIMsg').textContent = 'تعذّرت قراءة «هام»: ' + errText(e);
+      }
+    }
+
+    $('brISave').addEventListener('click', async () => {
+      const src = impSrc;
+      if (!src || !impDoc) return;
+      const title = clean($('brIText').value, TEXT_MAX);
+      if (!title) { $('brIMsg').textContent = 'اكتب نص الخبر'; return; }
+      const url = normUrl(src.url);
+      const now = Date.now();
+      const min = Number((root.querySelector('input[name="brIDur"]:checked') || {}).value) || IMP_DEFAULT;
+      const iid = 'i_' + now;
+      const imp = { title, url: url || '', time: Number(src.time) || now, start: now, end: now + min * 60000,
+        hidden: false, src: 'breaking', ref: src.kind === 'post' ? 'post:' + src.id : src.id };
+      const endBar = src.on && $('brIEnd').checked;
+      const busyImp = Object.values(impDoc.items || {}).some((x) => x && !x.hidden && x.title &&
+        Number(x.start) <= now && Number(x.end) > now);
+
+      // دفعة واحدة: خبر «هام» + (إنهاؤه في الشريط) + تعليم خبر اللوحة بأنه نُقل
+      const bf = {};
+      const prev = { items: { ...items() }, hiddenPosts: hiddenPosts().slice() };
+      if (src.kind === 'item') {
+        bf['items.' + src.id + '.imp'] = iid;
+        if (endBar) bf['items.' + src.id + '.end'] = now;
+      } else if (endBar) {
+        const inFeed = new Set(feed.map((p) => p.id));
+        bf.hiddenPosts = hiddenPosts().filter((x) => x !== src.id && inFeed.has(x)).concat(src.id);
+      }
+      const b = writeBatch(db);
+      b.set(importantRef(), { items: { [iid]: imp }, updatedAt: serverTimestamp() }, { merge: true });
+      if (Object.keys(bf).length) b.set(breakingRef(), { ...expand(bf), updatedAt: serverTimestamp() }, { merge: true });
+
+      // تحديث العرض فوراً
+      if (src.kind === 'item' && items()[src.id]) {
+        const it = items()[src.id];
+        data.items = { ...items(), [src.id]: { ...it, imp: iid, ...(endBar ? { end: now } : {}) } };
+      }
+      if (bf.hiddenPosts) data.hiddenPosts = bf.hiddenPosts;
+      $('brISave').disabled = true;
+      try {
+        const r = await commit(b.commit());
+        $('brDlgImp').close();
+        render();
+        toast(r.queued ? 'حُفظ على الجهاز — يُنقل عند عودة الاتصال'
+          : 'نُقل إلى «هام» — يظهر ' + (busyImp ? 'للقراء خلال دقيقتين إلى 5 دقائق'
+            : 'فوراً لمن يفتح الرئيسية الآن، وخلال 5 إلى 10 دقائق لمن يتصفح') +
+            (endBar ? '. وأُزيل من الشريط (خلال دقيقة إلى 3 دقائق عند القراء)' : ''));
+      } catch (e) {
+        data.items = prev.items; data.hiddenPosts = prev.hiddenPosts;
+        render();
+        $('brIMsg').textContent = 'تعذّر النقل: ' + errText(e);
+      } finally {
+        $('brISave').disabled = false;
+      }
+    });
 
     /* ============ مقالات *A: المدة والإخفاء ============ */
     $('brAutoMin').addEventListener('change', async () => {
