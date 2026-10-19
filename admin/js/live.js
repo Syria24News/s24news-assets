@@ -3,6 +3,7 @@
    الإصدار 1.5 — 19 أكتوبر 2026 (حذف تغطية مؤرشفة نهائياً: زر «حذف» في جدول الأرشيف فقط — يحذف بطاقتها
      وكل أخبارها في فترتها من live_coverage، ويزيل خبرها السريع العاجل من الشريط إن بقي. مقالات بلوغر لا تُمسّ.
      يتطلب قاعدة Firestore تسمح للمشرف بحذف أخبار live_coverage؛ إن رفضتها القواعد لا يُحذف شيء)
+   الإصدار 1.5.2 — 19 أكتوبر 2026 (يعرض «التلقائية تعمل دائماً» حين يكون مفتاح ALWAYS_ON مفعّلاً في Syria24_Coverage_Sync 2.6)
    الإصدار 1.5.1 — 19 أكتوبر 2026 (تنبيه: مقالة بلوغر من تغطية محذوفة تُكتب من جديد إن عُدّلت وفيها رمز التغطية،
      فتصير خبراً يتيماً لا يظهر — احذف مقالات التجربة من بلوغر أو أزل رمزها. القاعدة نُشرت: allow delete: if isAdmin())
    الإصدار 1.4.1 — 19 أكتوبر 2026 (تنسيق جدول المجموعات: قائمة الحالة تأخذ الصنف المشترك status-sel فلا تنضغط إلى سهم،
@@ -303,6 +304,7 @@ export default {
     // حالة المزامنة التلقائية من Apps Script 2.5 (activeUntil: -1 = تغطية مثبّتة، 0 = لا نشاط)
     function autoSyncText() {
       if (!syncInfo || syncInfo.activeUntil == null) return '';
+      if (syncInfo.alwaysOn) return ' · التلقائية تعمل دائماً (السرعة الكاملة ALWAYS_ON)';
       if (syncInfo.activeUntil === -1) return ' · التلقائية تعمل (تغطية مثبّتة)';
       if (syncInfo.autoSync) return ' · التلقائية تعمل حتى ' + fmtDate(syncInfo.activeUntil);
       return ' · التلقائية متوقفة: لا تغطية نشطة (بعد نشر خبر في تغطية هادئة اضغط «زامن الآن»)';
@@ -313,7 +315,7 @@ export default {
       if (!SYNC_URL || !isOnline()) return;
       fetch(SYNC_URL + '?action=wake').then((r) => r.json()).then((j) => {
         if (!j || j.activeUntil == null) return;
-        syncInfo = Object.assign({}, syncInfo || {}, { autoSync: j.autoSync, activeUntil: j.activeUntil });
+        syncInfo = Object.assign({}, syncInfo || {}, { autoSync: j.autoSync, activeUntil: j.activeUntil, alwaysOn: j.alwaysOn === true });
         renderSyncInfo();
       }).catch(() => {});
     }
