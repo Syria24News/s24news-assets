@@ -151,7 +151,7 @@ const MARKUP = `
     <details class="card im-guide">
       <summary>دليل الاستخدام: هام</summary>
       <ol>
-        <li><b>خبر من اللوحة:</b> اكتب النص، اختر المدة (الافتراضية يوم)، ثم «نشر». يظهر في صندوق «هام» في الصفحة الرئيسية خلال دقيقة.</li>
+        <li><b>خبر من اللوحة:</b> اكتب النص، اختر المدة (الافتراضية يوم)، ثم «نشر». يظهر في صندوق «هام» في الصفحة الرئيسية: فوراً لمن يفتحها الآن، وخلال 5 دقائق لمن يتصفح الموقع، و10 دقائق لمن ترك الرئيسية مفتوحة. وإن كان في الصندوق خبر آخر يظهر أسرع (دقيقتان إلى 5 دقائق). الإنهاء يختفي خلال دقيقتين إلى 5 دقائق.</li>
         <li>بلا رابط يظهر نصاً غير قابل للضغط. حين تنشر مقالته: «تعديل / ربط» ← اختر المقالة أو الصق رابطها.</li>
         <li><b>مقالة من بلوغر:</b> أضف لها التصنيف (Label) <code>*I</code>، فتظهر في الصندوق مدة «مقالات *I» أدناه من وقت نشرها.</li>
         <li>خبر اللوحة المربوط بمقالة <code>*I</code> يظهر مرة واحدة بنص اللوحة ومدّتها.</li>
@@ -579,10 +579,14 @@ export default {
 
       const id = 'i_' + now;
       const it = { title, url: url || '', time: tIn, start, end, hidden: false, src: 'panel' };
+      // الموقع يجلب حسب النشاط (important-news.js 1.2): خبر آخر ظاهر = وصول أسرع
+      const busy = Object.values(items()).some(x => x && !x.hidden && x.title && Number(x.start) <= now && Number(x.end) > now);
       data.items = { ...items(), [id]: it };
       $('imPublish').disabled = true;
       const ok = await save({ ['items.' + id]: it },
-        sched ? 'جُدول — يظهر ' + fmtDate(start) : 'نُشر في «هام» — يظهر للقراء خلال دقيقة',
+        sched ? 'جُدول — يظهر ' + fmtDate(start)
+          : busy ? 'نُشر في «هام» — يظهر للقراء خلال دقيقتين إلى 5 دقائق'
+          : 'نُشر في «هام» — يظهر فوراً لمن يفتح الرئيسية الآن، وخلال 5 إلى 10 دقائق لمن يتصفح',
         () => { delete data.items[id]; });
       $('imPublish').disabled = false;
       if (ok) {
@@ -688,7 +692,7 @@ export default {
       const prev = it.end;
       const now = Date.now();
       it.end = now;
-      await save({ ['items.' + id + '.end']: now }, 'أُزيل من الصندوق (يختفي عند القراء خلال دقيقة)',
+      await save({ ['items.' + id + '.end']: now }, 'أُزيل من الصندوق (يختفي عند القراء خلال دقيقتين إلى 5 دقائق)',
         () => { it.end = prev; });
     }
     async function delItem(id) {
