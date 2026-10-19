@@ -1,5 +1,7 @@
 /* ============================================================
    S24News — وحدة التغطية الحية في لوحة التحكم (admin/js/live.js)
+   الإصدار 1.4.1 — 19 أكتوبر 2026 (تنسيق جدول المجموعات: قائمة الحالة تأخذ الصنف المشترك status-sel فلا تنضغط إلى سهم،
+     وأزرار المجموعة تلتف إلى سطرين، والتاريخ ينكسر عند الفاصلة تحت 1200px — فلا يتجاوز الجدول عرض الصفحة)
    الإصدار 1.4 — 19 أكتوبر 2026 (الجلب حسب النشاط — يتطلب Syria24_Coverage_Sync 2.5):
      • المزامنة التلقائية كل 5 دقائق تعمل فقط ما دامت هناك تغطية نشطة (خبر أو بداية خلال 24 ساعة، أو تغطية مثبّتة)
      • تغيير الحالة أو «تغطية جديدة» أو إضافة خانة يوقظ المزامنة فوراً (?action=wake)
@@ -60,6 +62,11 @@ const MARKUP = `
       #liveView .lv-id{font-size:12px;opacity:.7;direction:ltr;text-align:right}
       #liveView .lv-name{width:100%;min-width:150px;margin-top:4px}
       #liveView .lv-why{font-size:12px;opacity:.75;margin-top:4px}
+      /* أزرار المجموعة تلتف إلى سطرين بدل أن تمدّ الجدول خارج الصفحة فيُقصّ آخرها («الصفحة») */
+      #liveView #lvBody .actions{flex-wrap:wrap;min-width:230px}
+      /* التاريخ ينكسر عند الفاصلة إلى سطرين حين يضيق المكان فقط (كان nowrap فيمدّ الجدول) */
+      #liveView .lv-date{min-width:96px}
+      @media (min-width:1200px){#liveView .lv-date{white-space:nowrap}}
       #liveView .lv-arc-h{font-size:17px;margin:22px 0 4px}
       /* دليل الكاتب: إطار بمسافات داخلية مريحة، وفاصل عن شريط الأدوات تحته */
       #liveView .lv-guide{margin-bottom:14px;overflow:hidden}
@@ -390,10 +397,10 @@ export default {
       const tr = document.createElement('tr');
       tr.innerHTML =
         '<td class="q-cell"><div class="lv-id"></div><input class="input lv-name" maxlength="80" aria-label="اسم التغطية"></td>' +
-        '<td data-label="الحالة"><select class="input btn-sm lv-st" aria-label="الحالة" title="' + esc(STATUS_TITLE[st]) + '">' + opts + '</select></td>' +
+        '<td data-label="الحالة"><select class="input btn-sm lv-st status-sel" aria-label="الحالة" title="' + esc(STATUS_TITLE[st]) + '">' + opts + '</select></td>' +
         '<td data-label="في الرئيسية">' + badge + '</td>' +
-        '<td data-label="آخر خبر" style="white-space:nowrap">' + (last ? esc(fmtAgo(last)) : '—') + '</td>' +
-        '<td data-label="البداية" style="white-space:nowrap">' + (start ? esc(fmtDate(start)) : 'منذ البداية') + '</td>' +
+        '<td data-label="آخر خبر" class="lv-date">' + (last ? esc(fmtAgo(last)) : '—') + '</td>' +
+        '<td data-label="البداية" class="lv-date">' + (start ? esc(fmtDate(start)) : 'منذ البداية') + '</td>' +
         '<td><div class="actions">' +
           '<button class="btn btn-sm btn-primary" data-act="quick" type="button">+ خبر سريع</button>' +
           '<button class="btn btn-sm" data-act="tag" type="button">نسخ الوسم</button>' +
