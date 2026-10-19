@@ -2,6 +2,9 @@
    S24News — نظام الاستطلاع والتصويت (Poll)
    ملف خارجي — لا يُعدَّل داخل قالب بلوجر
    v2.0 (9 أكتوبر 2026): القراءة من Firestore + التصويت عبر S24 Polls Gateway
+   v2.4 (19 أكتوبر 2026): الجلب حسب النشاط — نسخة قائمة الاستطلاعات على جهاز الزائر (localStorage):
+        دقيقتان ما دام في الموقع استطلاع ظاهر، و30 دقيقة حين لا يوجد استطلاع.
+        مفتاح السرعة الكاملة: window.S24_SPEED = 'full' في config.js يجعلها دقيقتين دائماً.
    ============================================================ */
 
 (function() {
@@ -14,9 +17,15 @@
     const PUBLIC_DOC_URL = "https://firestore.googleapis.com/v1/projects/s24n-views/databases/(default)/documents/polls_public/active";
     // 🆕 مفتاح موقع reCAPTCHA v3 (عام وليس سرياً). فارغ = التحقق معطّل ويبقى مربع الكابتشا القديم
     const RECAPTCHA_SITE_KEY = "6LdBaIAtAAAAAJSkw_tfRgJWp2Rm9kfVcaDBj8Q-";
-    // 🆕 كاش القراءة في الجلسة (دقيقتان) لتقليل القراءات عند التنقل بين الصفحات
+    // 🆕 نسخة القائمة على جهاز الزائر (v2.4: localStorage بدل الجلسة) — عمرها حسب النشاط
     const CACHE_KEY = 's24_polls_public_v1';
-    const CACHE_TTL = 2 * 60 * 1000;
+    const CACHE_TTL = 2 * 60 * 1000;          // يوجد استطلاع ظاهر (وكذلك نسخة النتائج)
+    const CACHE_TTL_IDLE = 30 * 60 * 1000;    // لا استطلاع ظاهر: نسخة 30 دقيقة
+    // عمر نسخة القائمة: السرعة الكاملة أو وجود استطلاع = دقيقتان، وإلا 30 دقيقة
+    function listTtl(list) {
+        if (window.S24_SPEED === 'full') return CACHE_TTL;
+        return (list && list.length) ? CACHE_TTL : CACHE_TTL_IDLE;
+    }
     const FETCH_TIMEOUT = 15000;  
     const SUBMIT_TIMEOUT = 15000; 
     const DEBUG = false;
@@ -83,11 +92,11 @@
         return null;
     }
 
-    // 🆕 قراءة البولات النشطة من Firestore (مستند واحد) مع كاش الجلسة
+    // 🆕 قراءة البولات النشطة من Firestore (مستند واحد) مع نسخة على جهاز الزائر حسب النشاط
     async function getFromFirestore() {
         try {
-            const c = JSON.parse(sessionStorage.getItem(CACHE_KEY) || 'null');
-            if (c && (Date.now() - c.t) < CACHE_TTL && Array.isArray(c.d)) return c.d;
+            const c = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null');
+            if (c && Array.isArray(c.d) && (Date.now() - c.t) < listTtl(c.d)) return c.d;
         } catch (e) {}
 
         const controller = new AbortController();
@@ -102,7 +111,7 @@
                 .filter(x => x && x.pollId && x.q && x.opt1)
                 .sort((a, b) => ((Number(b.order) || 0) - (Number(a.order) || 0)) ||
                                 ((Number(b.createdAt) || 0) - (Number(a.createdAt) || 0)));
-            try { sessionStorage.setItem(CACHE_KEY, JSON.stringify({ t: Date.now(), d: list })); } catch (e) {}
+            try { localStorage.setItem(CACHE_KEY, JSON.stringify({ t: Date.now(), d: list })); } catch (e) {}
             return list;
         } finally {
             clearTimeout(timeoutId);
@@ -430,7 +439,7 @@
             try {
                 localStorage.setItem('voted_' + qData.pollId, 'true');
             } catch(e) {}
-            try { sessionStorage.removeItem(CACHE_KEY); } catch(e) {}  // 🆕 لتظهر الأرقام المحدّثة في الصفحة التالية
+            try { localStorage.removeItem(CACHE_KEY); } catch(e) {}  // 🆕 لتظهر الأرقام المحدّثة في الصفحة التالية
             // 🆕 v2.3: حفظ النتائج التي أعادها التصويت في كاش الجلسة
             try {
                 const cq = allQuestions[currentQIndex], cd = { total: cq.total };
