@@ -1,5 +1,13 @@
 /* ============================================================
    S24News — شريط الأخبار العاجلة (breaking-news.js)
+   الإصدار 2.1 — 19 أكتوبر 2026: الجلب حسب النشاط (فكرة حسان)
+     - يوجد عاجل في الشريط: نسخة دقيقة، والصفحة المفتوحة تقرأ اللوحة كل 3 دقائق.
+     - لا عاجل: نسخة 5 دقائق، والصفحة المفتوحة تقرأ اللوحة كل 10 دقائق.
+     - مقالات *A تأتي من خلاصة المدونة (مجانية، خارج حصة Firestore)، فتُفحص كل دقيقتين
+       دائماً؛ وظهور مقالة *A يحوّل الشريط فوراً إلى وضع النشاط.
+     - لا جلب إجباري بعد اليوم: كل الفحوص تحترم النسخة المحفوظة، فتتشاركها
+       التبويبات المفتوحة بدل أن يقرأ كل تبويب لنفسه.
+     - عودة التبويب إلى الظهور تفحص فوراً (من النسخة إن كانت صالحة).
    الإصدار 2.0 — 14 أكتوبر 2026: لوحة التحكم مصدر الإدارة الوحيد
    (النسخة السابقة محفوظة باسم breaking-news-legacy.js للتراجع)
 
@@ -8,14 +16,14 @@
         items.<b_وقت> = { title, url, start, end, hidden, src, ref }
         autoMinutes     = مدة ظهور مقالات *A بالدقائق (افتراضياً 60)
         hiddenPosts     = معرّفات مقالات *A المخفاة من الشريط من اللوحة
-      يُقرأ بطلب REST واحد بلا مكتبة Firebase، مع كاش دقيقة على جهاز الزائر
+      يُقرأ بطلب REST واحد بلا مكتبة Firebase، مع كاش على جهاز الزائر مدته حسب النشاط
       (التنقل بين الصفحات لا يكلّف قراءات إضافية).
    2) مقالات التصنيف *A في المدونة — تظهر autoMinutes دقيقة من وقت نشرها.
 
    منع التكرار: خبر اللوحة المربوط بمقالة يحجب المقالة نفسها إن كانت *A
    (المقارنة بالرابط بعد توحيده)، فيظهر الخبر مرة واحدة بنص اللوحة ومدّتها،
    ولا تعود المقالة إلى الشريط بعد انتهاء خبر اللوحة أو إنهائه يدوياً.
-   الترتيب: الأحدث أولاً. الصفحة المفتوحة طويلاً تتحدّث كل 5 دقائق ما دامت ظاهرة.
+   الترتيب: الأحدث أولاً. الصفحة المفتوحة تتحدّث ما دامت ظاهرة، بفاصل حسب النشاط (انظر 2.1).
 
    ⚠️ أُلغي مصدرا LinkList5 وورقة Google (AppSheet): لم يعد السكربت يقرأهما.
    autoConfig في ودجت HTML3 لم يعد لازماً؛ إن وُجد يُؤخذ منه maxResults و labelName فقط.
@@ -27,8 +35,12 @@ document.addEventListener('DOMContentLoaded', function () {
 
   var DOC_URL = 'https://firestore.googleapis.com/v1/projects/s24n-views/databases/(default)/documents/breaking_news/current';
   var CACHE_KEY = 's24_breaking_v2';
-  var CACHE_MS = 60 * 1000;          // كاش مستند اللوحة على جهاز الزائر
-  var REFRESH_MS = 5 * 60 * 1000;    // تحديث الصفحة المفتوحة
+  // ⚙️ الجلب حسب النشاط — لتغيير السرعة مستقبلاً عدّل هذه القيم فقط
+  var CACHE_ACTIVE_MS = 60 * 1000;         // عاجل نشط: عمر نسخة اللوحة على جهاز الزائر
+  var REFRESH_ACTIVE_MS = 3 * 60 * 1000;   // عاجل نشط: قراءة اللوحة في الصفحة المفتوحة
+  var CACHE_IDLE_MS = 5 * 60 * 1000;       // لا عاجل: عمر النسخة
+  var REFRESH_IDLE_MS = 10 * 60 * 1000;    // لا عاجل: قراءة اللوحة في الصفحة المفتوحة
+  var FEED_MS = 2 * 60 * 1000;             // فحص مقالات *A (خلاصة المدونة، مجاني)
   var ROTATE_MS = 5000;              // تبديل الخبر في الشريط
   var DEFAULT_AUTO_MIN = 60;         // مدة *A إن لم يُضبط في اللوحة
 
@@ -76,14 +88,35 @@ document.addEventListener('DOMContentLoaded', function () {
     return null;
   }
 
-  // مستند اللوحة: من الكاش إن كان حديثاً، وإلا طلب واحد
-  function loadPanelDoc(force) {
+  // هل في مستند اللوحة خبر ظاهر الآن؟ (بلا شبكة)
+  function panelHasLive(panel) {
+    var items = (panel && panel.items) || {}, now = Date.now();
+    return Object.keys(items).some(function (k) {
+      var it = items[k] || {};
+      if (it.hidden === true || !it.title) return false;
+      var start = Number(it.start) || 0, end = Number(it.end) || 0;
+      return end && now >= start && now < end;
+    });
+  }
+
+  // النشاط = خبر ظاهر في الشريط الآن، أو خبر ظاهر في آخر نسخة محفوظة من اللوحة
+  function isActive() {
+    if (list.length) return true;
+    try {
+      var rec = JSON.parse(localStorage.getItem(CACHE_KEY));
+      return !!(rec && panelHasLive(rec.data));
+    } catch (e) { return false; }
+  }
+
+  // مستند اللوحة: من الكاش إن كان حديثاً (مدته حسب النشاط)، وإلا طلب واحد
+  function loadPanelDoc() {
+    var ttl = isActive() ? CACHE_ACTIVE_MS : CACHE_IDLE_MS;
     // طبقة القراءة الموحّدة (utils.js) — والكود أدناه احتياط إن لم تُحمَّل بعد
     if (window.S24Feed) {
-      return window.S24Feed.get('breaking_news/current', { key: CACHE_KEY, ttl: CACHE_MS, force: force })
+      return window.S24Feed.get('breaking_news/current', { key: CACHE_KEY, ttl: ttl })
         .then(function (d) { return d || {}; });
     }
-    var c = !force && window.S24Cache ? window.S24Cache.get(CACHE_KEY, CACHE_MS) : null;
+    var c = window.S24Cache ? window.S24Cache.get(CACHE_KEY, ttl) : null;
     if (c) return Promise.resolve(c);
     return fetch(DOC_URL).then(function (r) {
       if (r.status === 404) return {};             // لم يُنشأ المستند بعد
@@ -206,16 +239,43 @@ document.addEventListener('DOMContentLoaded', function () {
     }
   }
 
-  var panelCache = null, autoCache = null;
-  function refresh(force) {
-    Promise.all([loadPanelDoc(force), loadAutoPosts()]).then(function (r) {
+  var panelCache = null, autoCache = null, nextT = null;
+  function refresh() {
+    Promise.all([loadPanelDoc(), loadAutoPosts()]).then(function (r) {
       panelCache = r[0] || {};
       autoCache = r[1] || [];
       render(build(panelCache, autoCache));
+      schedule();
     });
   }
 
-  refresh(false);
+  // الفحص التالي للصفحة المفتوحة: أسرع ما دام في الشريط عاجل، وأبطأ في الهدوء
+  function schedule() {
+    clearTimeout(nextT);
+    nextT = setTimeout(function () {
+      if (document.hidden) { schedule(); return; }  // التبويب المخفي لا يقرأ
+      refresh();
+    }, isActive() ? REFRESH_ACTIVE_MS : REFRESH_IDLE_MS);
+  }
+
+  refresh();
+
+  // العودة إلى التبويب بعد غياب: فحص فوري (لا يكلّف قراءة إن كانت النسخة صالحة)
+  document.addEventListener('visibilitychange', function () {
+    if (!document.hidden) refresh();
+  });
+
+  // مقالات *A: فحص الخلاصة المجانية وحدها، بلا قراءة من Firestore.
+  // إن ظهرت مقالة عاجلة والشريط كان هادئاً، تُقرأ اللوحة فوراً ويبدأ وضع النشاط.
+  setInterval(function () {
+    if (document.hidden) return;
+    loadAutoPosts().then(function (posts) {
+      var wasActive = list.length > 0;
+      autoCache = posts;
+      render(build(panelCache || {}, autoCache));
+      if (!wasActive && list.length) refresh();
+    });
+  }, FEED_MS);
 
   // تغيّر عرض الشاشة (تدوير الهاتف مثلاً) يغيّر عدد السطور: نعيد القياس
   var resizeT = null;
@@ -228,8 +288,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }, 200);
   });
 
-  // الصفحة المفتوحة طويلاً: تحديث دوري ما دامت ظاهرة، وإعادة فحص الصلاحية كل دقيقة بلا طلبات
-  setInterval(function () { if (!document.hidden) refresh(true); }, REFRESH_MS);
+  // إعادة فحص الصلاحية كل دقيقة بلا طلبات (انتهاء خبر، أو بدء خبر مجدول)
   setInterval(function () {
     if (!document.hidden && panelCache) render(build(panelCache, autoCache || []));
   }, 60 * 1000);
