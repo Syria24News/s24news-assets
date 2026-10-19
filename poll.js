@@ -5,12 +5,12 @@
    v2.4 (19 أكتوبر 2026): الجلب حسب النشاط — نسخة قائمة الاستطلاعات على جهاز الزائر (localStorage):
         دقيقتان ما دام في الموقع استطلاع ظاهر، و30 دقيقة حين لا يوجد استطلاع.
         مفتاح السرعة الكاملة: window.S24_SPEED = 'full' في config.js يجعلها دقيقتين دائماً.
+   v2.5 (19 أكتوبر 2026): حذف الرجوع إلى مشروع «استطلاع رأي» القديم — عند تعذّر Firestore
+        تُعرض آخر نسخة محفوظة على جهاز الزائر إن وُجدت، وإلا «لا توجد استطلاعات».
    ============================================================ */
 
 (function() {
     // ⚙️ الإعدادات العامة
-    // البوابة القديمة: تُستخدم للقراءة فقط عند تعذّر الوصول إلى Firestore (مدة المراقبة)
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw0gcfY_hhjNpEWFTuY_MBXNNO59k_XZoU7kevKj6_PaBPDO0x2B3K6v6TK0CewvGExNQ/exec";
     // 🆕 البوابة الجديدة: كل الأصوات تذهب إليها
     const GATEWAY_URL = "https://script.google.com/macros/s/AKfycbx6S27AM5zuftOmha8Zf-QixGfCiUGUbaapLY7qklwXcxDXLInbXDTn4UqdzYs5tT4/exec";
     // 🆕 مستند العرض العام في Firestore (قراءة واحدة لكل زيارة)
@@ -29,13 +29,11 @@
     const FETCH_TIMEOUT = 15000;  
     const SUBMIT_TIMEOUT = 15000; 
     const DEBUG = false;
-    const MAX_RETRIES = 3;  
     
     let allQuestions = [];
     let currentQIndex = 0;
     let isCaptchaDone = false;
     let isSubmitting = false;
-    let isLoadingPolls = false;  // ✅ منع طلبات متزامنة
 
     // 🛡️ توليد معرف فريد للمصوت (محسّن)
     function getVoterId() {
@@ -55,26 +53,6 @@
 
     function log(msg, data = null) {
         if(DEBUG) console.log(`[SY-Poll] ${msg}`, data || '');
-    }
-
-    // ✅ التحقق من صحة البيانات
-    function validatePollData(data) {
-        if (!Array.isArray(data)) return false;
-        
-        return data.every(item => {
-            // تحقق من الحقول الأساسية
-            if (!item.pollId || !item.q || !item.opt1) return false;
-            
-            // تحقق من أن عدادات الأصوات رقمية
-            for (let i = 1; i <= 6; i++) {
-                const countKey = `opt${i}Count`;
-                if (item[countKey] !== undefined && typeof item[countKey] !== 'number') {
-                    return false;
-                }
-            }
-            
-            return true;
-        });
     }
 
     // 🆕 تحويل قيمة Firestore REST إلى قيمة JavaScript عادية
@@ -118,15 +96,19 @@
         }
     }
 
-    // 🆕 المصدر الأول Firestore؛ والبوابة القديمة فقط عند فشل الاتصال (لا عند غياب الاستطلاعات)
+    // 🆕 المصدر الوحيد Firestore؛ عند تعذّر الاتصال تُعرض آخر نسخة محفوظة على الجهاز (مهما كان عمرها)
     async function getPolls() {
         try {
             const list = await getFromFirestore();
             log("Firestore: " + list.length + " استطلاع");
             return list;
         } catch (err) {
-            console.error("Poll Firestore Error, fallback to legacy:", err);
-            return getPollData();
+            console.error("Poll Firestore Error:", err);
+            try {
+                const c = JSON.parse(localStorage.getItem(CACHE_KEY) || 'null');
+                if (c && Array.isArray(c.d)) return c.d;
+            } catch (e) {}
+            return [];
         }
     }
 
@@ -161,50 +143,6 @@
             .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
     }
 
-    // 🔄 جلب البيانات مع GET (بدل POST لتجنب CORS)
-    const getPollData = async (attempt = 0) => {
-        try {
-            // ✅ منع طلبات متزامنة
-            if (isLoadingPolls) return null;
-            isLoadingPolls = true;
-            
-            const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), FETCH_TIMEOUT);
-            
-            log(`جلب البيانات (المحاولة ${attempt + 1}/${MAX_RETRIES + 1})`);
-            
-            // ✅ استخدم GET بدل POST (تجنب CORS)
-            const res = await fetch(SCRIPT_URL + "?action=getAll", { 
-                signal: controller.signal 
-            });
-            clearTimeout(timeoutId);
-            
-            if (!res.ok) throw new Error(`HTTP error! status: ${res.status}`);
-            const data = await res.json();
-            
-            // ✅ تحقق من صحة البيانات
-            if (!validatePollData(data)) {
-                throw new Error("Invalid poll data structure");
-            }
-            
-            log("البيانات جُلبت بنجاح", data.length + " استطلاع");
-            return data;
-        } catch (err) {
-            console.error("Poll Fetch Error (attempt " + (attempt + 1) + "):", err);
-            
-            if (attempt < MAX_RETRIES) {
-                const delay = 1000 * (attempt + 1); 
-                log(`إعادة محاولة بعد ${delay}ms`);
-                await new Promise(r => setTimeout(r, delay));
-                return getPollData(attempt + 1);
-            }
-            
-            return null;
-        } finally {
-            isLoadingPolls = false;  // ✅ امسح الـ flag
-        }
-    };
-
     // 🚀 تشغيل النظام عند اكتمال تحميل الصفحة
     document.addEventListener("DOMContentLoaded", function() {
         getPolls().then(data => {
@@ -230,7 +168,7 @@
                 log("❌ لم يتم جلب استطلاعات");
             }
         }).catch(err => {
-            console.error("Error in getPollData:", err);
+            console.error("Poll init error:", err);
         });
     });
 
