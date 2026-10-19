@@ -193,7 +193,7 @@ const MARKUP = `
     <details class="card br-guide">
       <summary>دليل الاستخدام: الخبر العاجل</summary>
       <ol>
-        <li><b>خبر من اللوحة:</b> اكتب النص، اختر المدة (الافتراضية ساعة)، ثم «نشر». يظهر في الشريط الأحمر تحت الهيدر خلال دقيقة.</li>
+        <li><b>خبر من اللوحة:</b> اكتب النص، اختر المدة (الافتراضية ساعة)، ثم «نشر». يظهر في الشريط الأحمر تحت الهيدر: فوراً لمن يفتح الموقع الآن، وخلال 5 دقائق لمن يتصفحه، و10 دقائق لمن ترك صفحته مفتوحة. وإن كان في الشريط عاجل آخر نشط يظهر أسرع (دقيقة إلى 3 دقائق). الإنهاء يختفي خلال دقيقة إلى 3 دقائق.</li>
         <li>بلا رابط يظهر نصاً غير قابل للضغط. حين تنشر مقالته: «تعديل / ربط» ← اختر المقالة أو الصق رابطها.</li>
         <li><b>مقالة من بلوغر:</b> أضف لها التصنيف (Label) <code>*A</code>، فتظهر في الشريط وفي التغطية الحية (إن كان فيها وسم التغطية) مدة «مقالات *A» أدناه من وقت نشرها.</li>
         <li>خبر اللوحة المربوط بمقالة <code>*A</code> يظهر مرة واحدة بنص اللوحة ومدّتها.</li>
@@ -566,9 +566,13 @@ export default {
 
       const id = 'b_' + now;
       const it = { title, url: url || '', start: now, end, hidden: false, src: 'panel', ref: '' };
+      // الموقع يجلب حسب النشاط (breaking-news.js 2.1): عاجل آخر نشط = وصول أسرع
+      const busy = Object.values(items()).some(x => x && !x.hidden && x.title && Number(x.start) <= now && Number(x.end) > now);
       data.items = { ...items(), [id]: it };
       $('brPublish').disabled = true;
-      const ok = await save({ ['items.' + id]: it }, 'نُشر في الشريط — يظهر للقراء خلال دقيقة',
+      const ok = await save({ ['items.' + id]: it }, busy
+        ? 'نُشر في الشريط — يظهر للقراء خلال دقيقة إلى 3 دقائق'
+        : 'نُشر في الشريط — يظهر فوراً لمن يفتح الموقع الآن، وخلال 5 إلى 10 دقائق لمن يتصفحه',
         () => { delete data.items[id]; });
       $('brPublish').disabled = false;
       if (ok) {
@@ -645,7 +649,7 @@ export default {
       const prev = it.end;
       const now = Date.now();
       it.end = now;
-      await save({ ['items.' + id + '.end']: now }, 'أُزيل من الشريط (يختفي عند القراء خلال دقيقة)',
+      await save({ ['items.' + id + '.end']: now }, 'أُزيل من الشريط (يختفي عند القراء خلال دقيقة إلى 3 دقائق)',
         () => { it.end = prev; });
     }
     async function delItem(id) {
