@@ -4,14 +4,16 @@
    • تقرأ خلاصة الصفحات الثابتة (/feeds/pages/default) وتعرض كل صفحة يبدأ رابطها بـ /p/team-
    • من كل صفحة: العنوان = الاسم، وأول صورة = الصورة، و.s24p-role = الصفة، وdata-order في .s24p = الترتيب
    • إضافة شخص = صفحة جديدة رابطها team-… بقالب الشخص (لا تعديل هنا ولا في القالب)
-   • نسخة على جهاز الزائر ساعة واحدة (s24_team_v1)؛ الخلاصة مجانية ولا تستهلك أي حصة
+   • نسخة على جهاز الزائر 15 دقيقة (s24_team_v2) — والقائمة الفارغة لا تُحفظ؛ الخلاصة مجانية ولا تستهلك أي حصة
    • التنسيق في s24-main.css تحت «فريق سوريا 24»
    ============================================================ */
 (function () {
   var box = document.getElementById('s24-team');
   if (!box) return;
 
-  var KEY = 's24_team_v1', TTL = 60 * 60 * 1000;
+  // v2: إبطال نسخ v1 الفارغة؛ 15 دقيقة كي يظهر الشخص الجديد سريعاً
+  var KEY = 's24_team_v2', TTL = 15 * 60 * 1000;
+  try { localStorage.removeItem('s24_team_v1'); } catch (e) {}
 
   function status(text) {
     box.innerHTML = '';
@@ -88,14 +90,15 @@
 
   try {
     var c = JSON.parse(localStorage.getItem(KEY) || 'null');
-    if (c && Date.now() - c.t < TTL && Array.isArray(c.d)) { render(c.d); return; }
+    // لا تُستعمل نسخة فارغة أبداً، فقد تكون حُفظت قبل نشر أول صفحة شخص
+    if (c && Date.now() - c.t < TTL && Array.isArray(c.d) && c.d.length) { render(c.d); return; }
   } catch (e) {}
 
   fetch('/feeds/pages/default?alt=json&max-results=150')
     .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
     .then(function (j) {
       var list = parse(j);
-      try { localStorage.setItem(KEY, JSON.stringify({ t: Date.now(), d: list })); } catch (e) {}
+      if (list.length) { try { localStorage.setItem(KEY, JSON.stringify({ t: Date.now(), d: list })); } catch (e) {} }
       render(list);
     })
     .catch(function (err) {
