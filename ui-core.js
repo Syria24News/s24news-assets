@@ -161,45 +161,71 @@ document.addEventListener("DOMContentLoaded", function() {
         });
     }
 
+    /* ── أقسام الموقع (أداة LinkList2 «القائمة اليمنى (دول)») ──
+       مصدر واحد لأقسام الموقع: الأسماء والترتيب من الأداة في «التنسيق»،
+       واللون من وسم القسم في قاموس S24_TAGS (config.js) لا من ترتيبه،
+       فإضافة قسم أو تغيير ترتيبه لا يخلط الألوان.
+       window.S24Sections() تعيد القائمة لأي سكربت، وكل عنصر فيه data-s24-sections
+       يُملأ تلقائياً بها (مثل صفحة «من نحن»). */
+    var SECTION_EXTRA = { 'video-club': '--sy-video' }; // أقسام بلا وسم: جزء من الرابط ← متغيّر اللون
+    function sectionColor(href) {
+        var m = /\/search\/label\/([^?#]+)/.exec(href || '');
+        if (m) {
+            var tag = decodeURIComponent(m[1]);
+            var t = window.S24_TAGS && window.S24_TAGS[tag];
+            if (t && t[2]) return 'var(' + t[2] + ')';
+            var c = window.S24_CATEGORY_COLORS && window.S24_CATEGORY_COLORS[tag];
+            if (c) return c;
+        }
+        for (var k in SECTION_EXTRA) { if ((href || '').indexOf(k) > -1) return 'var(' + SECTION_EXTRA[k] + ')'; }
+        return 'var(--sy-green)';
+    }
+
     var sidebarBottom = document.getElementById('Right_Sidebar_Bottom');
+    var sectionsList = [];
     if (sidebarBottom) {
         var linksB = sidebarBottom.querySelectorAll('a');
-        
-        // مصفوفة الألوان
-        var colors = [
-            "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 100'%3E%3Ctext x='50%25' y='70%25' font-size='70' fill='red' text-anchor='middle'%3E★★★%3C/text%3E%3C/svg%3E\") center / contain no-repeat, linear-gradient(to bottom, var(--color-JadeGreen) 33%, var( --color-white) 33%, #FFFFFF 66%, var(--color-black) 66%)", 
-            'var(--sy-ArabNews)', 
-            'var(--sy-INT)', 
-            'var(--sy-Econ)', 
-            'var(--sy-sport)', 
-            'var(--sy-purple)', 
-            'var(--sy-Reports)', 
-            'var(--sy-docs)', 
-            'var(--sy-video)', 
-            '#1b6b66',
-            '#34495e'
-        ];
+        // علم سوريا لمربّع قسم سوريا في القائمة الجانبية فقط
+        var SYRIA_FLAG = "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 100'%3E%3Ctext x='50%25' y='70%25' font-size='70' fill='red' text-anchor='middle'%3E★★★%3C/text%3E%3C/svg%3E\") center / contain no-repeat, linear-gradient(to bottom, var(--color-JadeGreen) 33%, var( --color-white) 33%, #FFFFFF 66%, var(--color-black) 66%)";
 
-        linksB.forEach(function(link, index) {
-            if (colors[index]) {
-                var colorSpan = document.createElement('span');
-                colorSpan.className = 'sy-color-box';
-                
-                colorSpan.style.background = colors[index];
-                
-                if(index === 0 || index === 1) {
-                    colorSpan.style.border = "1px solid #ddd";
-                }
-                
-                link.insertBefore(colorSpan, link.firstChild);
-                
-                var arrow = document.createElement('span');
-                arrow.innerHTML = '&#9662;'; 
-                arrow.style.marginRight = 'auto'; 
-                arrow.style.fontSize = '0px';
-                
-                link.appendChild(arrow);
-            }
+        linksB.forEach(function(link) {
+            var href = link.getAttribute('href') || '';
+            var color = sectionColor(href);
+            sectionsList.push({ name: link.textContent.trim(), href: href, color: color });
+
+            var isSyria = /\/search\/label\/\*Sy$/.test(href);
+            var colorSpan = document.createElement('span');
+            colorSpan.className = 'sy-color-box';
+            colorSpan.style.background = isSyria ? SYRIA_FLAG : color;
+            // إطار خفيف للمربعات الفاتحة (العلم والأصفر) كما كان سابقاً
+            if (isSyria || /\/search\/label\/\*AN$/.test(href)) colorSpan.style.border = "1px solid #ddd";
+            link.insertBefore(colorSpan, link.firstChild);
+
+            var arrow = document.createElement('span');
+            arrow.innerHTML = '&#9662;';
+            arrow.style.marginRight = 'auto';
+            arrow.style.fontSize = '0px';
+            link.appendChild(arrow);
         });
     }
+    window.S24Sections = function () { return sectionsList.slice(); };
+
+    // ملء أي قائمة <ul data-s24-sections="صنف-النقطة"> في الصفحات بأقسام الموقع
+    document.querySelectorAll('[data-s24-sections]').forEach(function (ul) {
+        if (!sectionsList.length) return; // تبقى القائمة المكتوبة يدوياً إن لم توجد الأداة
+        var dotClass = ul.getAttribute('data-s24-sections') || 's24-sec-dot';
+        ul.innerHTML = '';
+        sectionsList.forEach(function (sec) {
+            var li = document.createElement('li');
+            var a = document.createElement('a');
+            a.href = sec.href;
+            var dot = document.createElement('span');
+            dot.className = dotClass;
+            dot.style.background = sec.color;
+            a.appendChild(dot);
+            a.appendChild(document.createTextNode(sec.name));
+            li.appendChild(a);
+            ul.appendChild(li);
+        });
+    });
 });
