@@ -6,8 +6,10 @@
 
 /* ============ 1) قائمة «معلومات عامة» (LinkList3) — طيّ + مجموعات فرعية ============
    • زر «معلومات عامة» يفتح القائمة ويغلقها (toggleLinkList3 كما كان)
-   • أي رابط في الأداة عنوانه URL هو «#» يصبح رأس مجموعة، والروابط التي تليه تدخل تحته
-     حتى رأس المجموعة التالي (تُدار كلها من «التنسيق» ← أداة «معلومات عامة»)
+   • أي رابط في الأداة عنوانه URL هو «#» يصبح رأس مجموعة
+   • الرابط الذي يبدأ اسمه بشرطة «-» يدخل تحت أقرب رأس مجموعة فوقه (وتُحذف الشرطة من العرض)
+   • الرابط بلا شرطة يبقى مستقلاً في القائمة الرئيسية، ويُنهي المجموعة التي قبله
+     (تُدار كلها من «التنسيق» ← أداة «معلومات عامة»، والفرز «بلا فرز»)
    • فتح مجموعة يغلق الأخرى، والمجموعة التي فيها الصفحة الحالية تُفتح تلقائياً وتُميَّز الصفحة */
 function toggleLinkList3(btn) {
   var content = document.getElementById('linklist3-content');
@@ -65,7 +67,16 @@ document.addEventListener('DOMContentLoaded', function () {
         }
       } catch (e) {}
     }
-    if (group) group.sub.appendChild(li);   // نقل الرابط تحت مجموعته
+    // الشرطة في أول الاسم = تابع لأقرب مجموعة فوقه؛ بلا شرطة = رابط مستقل يُنهي المجموعة
+    var dash = /^\s*[-\u2013\u2014]\s*/;
+    if (a && dash.test(a.textContent) && group) {
+      a.textContent = a.textContent.replace(dash, '');
+      group.sub.appendChild(li);
+    } else {
+      if (a) a.textContent = a.textContent.replace(dash, '');
+      if (a && a.classList.contains('s24m-current')) currentGroup = null;
+      group = null;
+    }
   });
 
   function toggle(li) {
