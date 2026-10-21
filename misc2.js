@@ -1,20 +1,89 @@
 /* ============================================================
    S24News — متفرقات صغيرة (خمس كتل مستقلة)
-   قائمة الروابط · سنة الحقوق · صندوق الكوكيز
+   قائمة «معلومات عامة» بمجموعاتها الفرعية · سنة الحقوق · صندوق الكوكيز
    صنف صفحة الموسوعة · زر العودة للبث
    ============================================================ */
 
-/* ============ 1) طيّ قائمة الروابط ============ */
-      function toggleLinkList3(btn) {
-        var content = document.getElementById('linklist3-content');
-        if (content.style.display === 'block') {
-          content.style.display = 'none';
-          btn.classList.remove('active');
-        } else {
-          content.style.display = 'block';
-          btn.classList.add('active');
+/* ============ 1) قائمة «معلومات عامة» (LinkList3) — طيّ + مجموعات فرعية ============
+   • زر «معلومات عامة» يفتح القائمة ويغلقها (toggleLinkList3 كما كان)
+   • أي رابط في الأداة عنوانه URL هو «#» يصبح رأس مجموعة، والروابط التي تليه تدخل تحته
+     حتى رأس المجموعة التالي (تُدار كلها من «التنسيق» ← أداة «معلومات عامة»)
+   • فتح مجموعة يغلق الأخرى، والمجموعة التي فيها الصفحة الحالية تُفتح تلقائياً وتُميَّز الصفحة */
+function toggleLinkList3(btn) {
+  var content = document.getElementById('linklist3-content');
+  if (content.style.display === 'block') {
+    content.style.display = 'none';
+    btn.classList.remove('active');
+  } else {
+    content.style.display = 'block';
+    btn.classList.add('active');
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+  var box = document.getElementById('linklist3-content');
+  var list = box && box.querySelector('ul');
+  if (!list) return;
+
+  var CHEVRON = '<svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>';
+  var here = location.pathname.replace(/\/$/, '');
+  var items = Array.prototype.slice.call(list.children);
+  var group = null, groups = [], currentGroup = null;
+
+  function isHeader(a) {
+    var h = a ? (a.getAttribute('href') || '') : '';
+    return h === '#' || /\/#$/.test(h);
+  }
+
+  items.forEach(function (li) {
+    var a = li.querySelector('a');
+    if (isHeader(a)) {
+      // تحويل الرابط إلى رأس مجموعة قابلة للفتح
+      var head = document.createElement('button');
+      head.type = 'button';
+      head.className = 's24m-head';
+      head.setAttribute('aria-expanded', 'false');
+      head.innerHTML = '<span></span>' + CHEVRON;
+      head.firstChild.textContent = a.textContent.trim();
+      var sub = document.createElement('ul');
+      sub.className = 's24m-sub';
+      li.className = 's24m-group';
+      li.innerHTML = '';
+      li.appendChild(head);
+      li.appendChild(sub);
+      group = { li: li, head: head, sub: sub };
+      groups.push(group);
+      head.addEventListener('click', function () { toggle(li); });
+      return;
+    }
+    // تمييز رابط الصفحة الحالية
+    if (a) {
+      try {
+        if (new URL(a.href, location.href).pathname.replace(/\/$/, '') === here) {
+          a.classList.add('s24m-current');
+          if (group) currentGroup = group.li;
         }
-      }
+      } catch (e) {}
+    }
+    if (group) group.sub.appendChild(li);   // نقل الرابط تحت مجموعته
+  });
+
+  function toggle(li) {
+    var open = !li.classList.contains('is-open');
+    groups.forEach(function (g) {
+      var on = open && g.li === li;
+      g.li.classList.toggle('is-open', on);
+      g.head.setAttribute('aria-expanded', on ? 'true' : 'false');
+    });
+  }
+
+  // فتح القائمة والمجموعة تلقائياً إذا كانت الصفحة الحالية من روابطها
+  if (currentGroup) {
+    toggle(currentGroup);
+    var btn = document.querySelector('.custom-dropdown-container .dropdown-btn');
+    if (btn && box.style.display !== 'block') toggleLinkList3(btn);
+  }
+});
 
 /* ============ 2) تحديث سنة الحقوق ============ */
   // كود تحديث السنة تلقائياً في الحقوق
