@@ -1,7 +1,7 @@
 /* ============================================================
-   S24News — متفرقات صغيرة (خمس كتل مستقلة)
+   S24News — متفرقات صغيرة (ست كتل مستقلة)
    قائمة «معلومات عامة» بمجموعاتها الفرعية · سنة الحقوق · صندوق الكوكيز
-   صنف صفحة الموسوعة · زر العودة للبث
+   صنف صفحة الموسوعة · زر العودة للبث · زر «انسخ الرابط» لصفحات الفريق
    ============================================================ */
 
 /* ============ 1) قائمة «معلومات عامة» (LinkList3) — طيّ + مجموعات فرعية ============
@@ -166,4 +166,18 @@ document.addEventListener("DOMContentLoaded", () => {
             }, 800);
         }
     }
+});
+
+/* ============ 6) زر «انسخ الرابط» في صفحات أعضاء الفريق (/p/team-…) ============
+   في قالب الشخص: <a class="s24p-copy" href="#">انسخ الرابط</a> — بلا سكربت داخل الصفحة نفسها */
+document.addEventListener('click', function (e) {
+  var btn = e.target.closest && e.target.closest('.s24p-copy');
+  if (!btn) return;
+  e.preventDefault();
+  var url = location.origin + location.pathname;
+  var old = btn.getAttribute('data-label') || btn.textContent;
+  btn.setAttribute('data-label', old);
+  var done = function () { btn.textContent = 'تم النسخ ✓'; setTimeout(function () { btn.textContent = old; }, 2000); };
+  try { navigator.clipboard.writeText(url).then(done, function () { window.prompt('', url); }); }
+  catch (err) { window.prompt('', url); }
 });
