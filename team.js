@@ -64,13 +64,12 @@
       a.href = p.url;
       var ph = document.createElement('div');
       ph.className = 's24team-photo';
+      // الصورة خلفية CSS لا وسم <img>: سكربت القالب داخل الصفحات يحذف href من أي رابط
+      // في .post-body يحوي <img> (لمنع فتح صور المقال)، فتتعطّل البطاقة عند العرض من النسخة المحفوظة
       if (p.img) {
-        var im = document.createElement('img');
-        im.loading = 'lazy';
-        im.alt = p.name;
-        im.src = p.img;
-        im.onerror = function () { im.remove(); };
-        ph.appendChild(im);
+        ph.style.backgroundImage = 'url("' + p.img.replace(/"/g, '%22') + '")';
+        ph.setAttribute('role', 'img');
+        ph.setAttribute('aria-label', p.name);
       }
       a.appendChild(ph);
       var n = document.createElement('span');

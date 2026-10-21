@@ -5173,9 +5173,8 @@ a.s24-imp-item:hover .s24-imp-title{color:var(--sy-green,#77bd1d)}
 .s24team { direction: rtl; margin: 10px auto 30px; font-family: var(--font-main); }
 .s24team-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 22px 18px; }
 .post-body .s24team a.s24team-card { display: flex; flex-direction: column; gap: 4px; color: var(--text-main); text-decoration: none; font-weight: 400; }
-.s24team-photo { aspect-ratio: 16 / 9; overflow: hidden; border-radius: 6px; background: var(--border-color); }
-.s24team-photo img { display: block; width: 100%; height: 100%; object-fit: cover; transition: filter 0.2s; }
-.s24team-card:hover .s24team-photo img { filter: brightness(1.08); }
+.s24team-photo { aspect-ratio: 16 / 9; overflow: hidden; border-radius: 6px; background-color: var(--border-color); background-size: cover; background-position: center; transition: filter 0.2s; }
+.s24team-card:hover .s24team-photo { filter: brightness(1.08); }
 .s24team-name { margin-top: 8px; font-family: var(--font-title); font-size: 17px; font-weight: 700; line-height: 1.5; }
 .s24team-card:hover .s24team-name { color: var(--sy-green); }
 .s24team-role { font-size: 13px; color: var(--text-sec); }
