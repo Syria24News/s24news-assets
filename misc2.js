@@ -67,9 +67,12 @@ document.addEventListener('DOMContentLoaded', function () {
         }
       } catch (e) {}
     }
-    // الشرطة في أول الاسم = تابع لأقرب مجموعة فوقه؛ بلا شرطة = رابط مستقل يُنهي المجموعة
-    var dash = /^\s*[-\u2013\u2014]\s*/;
-    if (a && dash.test(a.textContent) && group) {
+    // الشرطة (- أو – أو —) أو الشرطة السفلية (_ أو ـ) في أول الاسم أو آخره = تابع لأقرب مجموعة فوقه؛
+    // بلا شرطة = رابط مستقل يُنهي المجموعة. تُحذف العلامة من الاسم الظاهر
+    // (آخر الاسم أيضاً لأن المحرر قد يضعها هناك في الكتابة من اليمين لليسار)
+    var isChild = /^\s*[-_\u2013\u2014\u0640]|[-_\u2013\u2014\u0640]\s*$/;
+    var dash = /^\s*[-_\u2013\u2014\u0640]+\s*|\s*[-_\u2013\u2014\u0640]+\s*$/g;
+    if (a && isChild.test(a.textContent) && group) {
       a.textContent = a.textContent.replace(dash, '');
       group.sub.appendChild(li);
     } else {
