@@ -3829,6 +3829,13 @@ body.item-page .post-body > .s24-cover-injected:has(~ div[dir="rtl"] .s24-galler
 html[data-sh="in"] .sy-section-header { margin: 0 0 24px; padding: 18px 22px; background: var(--bg-card, #fff); border: 1px solid var(--border-color, #eee); border-radius: 10px; box-shadow: 0 2px 10px rgba(0, 0, 0, .04); }
 html[data-sh="in"] .sy-section-title-row { margin-bottom: 0; }
 html[data-sh="in"] .sy-section-header .sy-section-desc { margin: 12px 0 0; padding: 12px 0 0; font-size: 14px; border-top: 1px solid var(--border-color, #eee); }
+/* أ-2) الأقسام التي في ترويستها أزرار فروع (سوريا، الاقتصاد، العربي، العالم، الرياضة):
+        الأزرار تحلّ محل الوصف كما في RT، والمسافات تُضغط لتبقى البطاقة متماسكة */
+html[data-sh="in"] .sy-section-header:has(.sy-mosaic-container, .sy-related-list) .sy-section-desc { display: none; }
+html[data-sh="in"] .sy-section-header .sy-mosaic-container { margin: 16px 0 0; }
+html[data-sh="in"] .sy-section-header .sy-related-title { font-size: 15px; margin: 18px 0 10px; color: var(--text-sec); }
+html[data-sh="in"] .sy-section-header .sy-related-list { margin-bottom: 0; }
+html[data-sh="in"] .sy-section-header .sy-mosaic-container + .sy-related-title { padding-top: 16px; border-top: 1px solid var(--border-color, #eee); }
 /* ب) الوصف خارج البطاقة: البطاقة حول سطر العنوان وحده */
 html[data-sh="out"] .sy-section-title-row { margin-bottom: 12px; padding: 18px 22px; background: var(--bg-card, #fff); border: 1px solid var(--border-color, #eee); border-radius: 10px; box-shadow: 0 2px 10px rgba(0, 0, 0, .04); }
 html[data-sh="out"] .sy-section-header .sy-section-desc { font-size: 15px; }
