@@ -352,8 +352,22 @@
     '#s24-prayer-page{direction:rtl;text-align:right;font-family:var(--font-main,inherit);line-height:1.7}',
     '#s24-prayer-page *{box-sizing:border-box}',
     '.s24pt-bar{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:12px;padding-bottom:14px;border-bottom:1px solid rgba(128,128,128,.28)}',
-    '.s24pt-bar select{font:inherit;font-size:15px;color:inherit;background:transparent;border:1px solid rgba(128,128,128,.35);border-radius:6px;padding:6px 10px}',
+    /* زر اختيار المدينة: سهم مخصّص بمسافة 12px عن الحافة اليسرى بدل سهم المتصفح الملتصق */
+    '.s24pt-bar select{font:inherit;font-size:15px;color:inherit;border:1px solid rgba(128,128,128,.35);border-radius:6px;padding:6px 12px 6px 36px;min-width:150px;cursor:pointer;-webkit-appearance:none;-moz-appearance:none;appearance:none;background:transparent url("data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 width=%2712%27 height=%278%27 viewBox=%270 0 12 8%27%3E%3Cpath d=%27M1 1.5l5 5 5-5%27 fill=%27none%27 stroke=%27%238a8a8a%27 stroke-width=%271.8%27 stroke-linecap=%27round%27 stroke-linejoin=%27round%27/%3E%3C/svg%3E") no-repeat left 12px center/12px 8px;transition:border-color .15s ease}',
+    '.s24pt-bar select:hover{border-color:rgba(128,128,128,.6)}',
+    '.s24pt-bar select:focus-visible{outline:none;border-color:var(--sy-green,#77bd1d);box-shadow:0 0 0 2px rgba(119,189,29,.25)}',
     '.s24pt-bar select option{color:var(--text-main);background:var(--bg-card)}',
+    '.s24pt-bar select option:checked{background:var(--sy-green,#77bd1d);color:#fff}',
+    /* القائمة القابلة للتخصيص (Chrome/Edge الحديثة): ألوان الموقع بدل أزرق النظام */
+    '@supports (appearance:base-select){' +
+      '.s24pt-bar select,.s24pt-bar select::picker(select){appearance:base-select}' +
+      '.s24pt-bar select::picker-icon{display:none}' +
+      '.s24pt-bar select::picker(select){direction:rtl;margin-top:4px;padding:4px;max-height:60vh;border:1px solid rgba(128,128,128,.35);border-radius:8px;background:var(--bg-card,#fff);color:var(--text-main,inherit);box-shadow:0 8px 24px rgba(0,0,0,.25)}' +
+      '.s24pt-bar select option{padding:6px 12px;border-radius:5px;cursor:pointer}' +
+      '.s24pt-bar select option::checkmark{display:none}' +
+      '.s24pt-bar select option:hover,.s24pt-bar select option:focus-visible{background:rgba(119,189,29,.18);outline:none}' +
+      '.s24pt-bar select option:checked{background:var(--sy-green,#77bd1d);color:#fff}' +
+    '}',
     '.s24pt-dates{font-size:14px;opacity:.85}',
     '.s24pt-dates b{font-weight:600;display:block;font-size:15px;opacity:1}',
     '.s24pt-next{margin:18px 0;padding:14px 16px;border:1px solid rgba(128,128,128,.35);border-radius:8px;font-size:17px;font-weight:600}',
