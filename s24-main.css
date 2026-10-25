@@ -3842,6 +3842,8 @@ body.item-page .post-body > .s24-cover-injected:has(~ div[dir="rtl"] .s24-galler
 /* صفحة المنوعات حشوتها صفر أصلاً، فلا تُسحب البطاقة فيها */
 @media (min-width: 1024px) { .main-container:has(#subcats-wrapper) .sy-section-header { margin-inline: 0; } }
 @media (max-width: 768px) { .sy-section-header { padding: 14px 16px; margin-bottom: 18px; } }
+/* حين تلي البطاقةُ شريطَ القصص مباشرة يُحذف خطه السفلي وحشوته: البطاقة نفسها هي الفاصل */
+.stories-container:has(+ .sy-section-header) { border-bottom: none; padding-bottom: 0; margin-bottom: 20px; }
 /* ---------- نهاية ترويسة البطاقة ---------- */
 
 /* 2. المربعات الملونة والأعلام (Generic Square)*/
