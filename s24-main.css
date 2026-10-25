@@ -3837,6 +3837,20 @@ html[data-sh-size="24"] .sy-section-header .sy-section-title-text { font-size: 2
 /* د) الشريط الجانبي بلون القسم (على اليمين في RTL) */
 html[data-sh="in"][data-sh-bar] .sy-section-header,
 html[data-sh="out"][data-sh-bar] .sy-section-title-row { box-shadow: inset -4px 0 0 var(--sh-color, var(--sy-green)), 0 2px 10px rgba(0, 0, 0, .04); } /* ظل داخلي بدل الحدّ ليبقى الشريط مستقيماً مع الزوايا الدائرية */
+/* هـ) البطاقة بعرض العمود الأوسط كاملاً (كما في RT): تخرج من حشوة .main-container
+      بهامش سالب يساوي الحشوة — 15px حتى 1449px، و72px من 1450px فما فوق.
+      الجوال يبقى بلا تغيير (هامش 15px مريح من حافتي الشاشة). */
+@media (min-width: 769px) {
+  html[data-sh="in"] .sy-section-header, html[data-sh="out"] .sy-section-title-row { margin-inline: -15px; }
+}
+@media (min-width: 1450px) {
+  html[data-sh="in"] .sy-section-header, html[data-sh="out"] .sy-section-title-row { margin-inline: -72px; }
+}
+/* صفحة المنوعات حشوتها صفر أصلاً، فلا تُسحب البطاقة فيها */
+@media (min-width: 769px) {
+  html[data-sh="in"] .main-container:has(#subcats-wrapper) .sy-section-header,
+  html[data-sh="out"] .main-container:has(#subcats-wrapper) .sy-section-title-row { margin-inline: 0; }
+}
 /* الجوال: هوامش أصغر */
 @media (max-width: 768px) {
   html[data-sh="in"] .sy-section-header, html[data-sh="out"] .sy-section-title-row { padding: 14px 16px; }
