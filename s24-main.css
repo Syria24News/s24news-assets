@@ -1329,6 +1329,7 @@ body.item-page:not(.static-page-view) .post-body a:not([class]):not(:has(img)) {
 .s24-toc-toggle {
   background: none;
   border: none;
+  font-family: var(--font-main); /* الأزرار لا ترث الخط تلقائياً: نفرض خط المدونة الأساسي */
   color: var(--sy-green);
   font-size: 13px;
   cursor: pointer;
