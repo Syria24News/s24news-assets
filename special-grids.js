@@ -1,6 +1,14 @@
 /* ============================================================
    S24News — محرّك الشبكات المميزة (الرئيسية + صفحات الأقسام)
    ملف خارجي — لا يُعدَّل داخل قالب بلوجر
+
+   الإصدار 2.0 — 26 أكتوبر 2026: التحكم اليدوي بشبكة الرئيسية من لوحة التحكم المركزية
+     - قسم «الشبكة المميزة» في اللوحة (ملف HomeGrid.gs) يكتب اختيارك في home-grid.json
+       في هذا المستودع، والرئيسية تقرؤه من GitHub Pages: صفر قراءات Firestore وصفر Apps Script.
+     - الخانة 1 = الخبر الكبير، 2–5 = الأربعة تحته. الخانة غير المختارة تُملأ آلياً بأحدث مقالات *Fa
+       (بلا تكرار مقالة مثبّتة). ملف فارغ أو تعذّرت قراءته = الشبكة آلية بالكامل كما كانت.
+     - شكل الملف: { "v":1, "updated":"…", "slots": { "1": { "t":"العنوان", "u":"الرابط", "img":"الصورة" }, … } }
+     - شبكة صفحات الأقسام لا تتأثر: آلية دائماً.
    ============================================================ */
 
 // ==========================================
@@ -13,7 +21,9 @@ document.addEventListener("DOMContentLoaded", function() {
         {
             // شبكة "مختارات" في الرئيسية
             containerId: 'special-news-grid',
-            cacheKey: 's24_special_grid_v1',
+            cacheKey: 's24_special_grid_v2',
+            // اختيارك من لوحة التحكم (قسم «الشبكة المميزة»)؛ يُقرأ من GitHub Pages مجاناً
+            pinsUrl: 'https://syria24news.github.io/s24news-assets/home-grid.json',
             titleElId: 'grid-label-title',
             getLabel: function() {
                 const labelWidget = document.getElementById('Special_Grid_Label');
@@ -30,7 +40,7 @@ document.addEventListener("DOMContentLoaded", function() {
         {
             // شبكة "أهم أخبار القسم" في صفحات التصنيفات
             containerId: 'category-special-grid',
-            cacheKey: 's24_special_grid_category',
+            cacheKey: 's24_special_grid_category_v2',
             wrapperId: 'category-grid-wrapper',
             removeDuplicates: true,
             getLabel: function(el) {
@@ -82,18 +92,24 @@ document.addEventListener("DOMContentLoaded", function() {
         }
 
         function fetchGridData(isSilent) {
-            const feedUrl = '/feeds/posts/summary/-/' + encodeURIComponent(labelName) + '?alt=json&max-results=5';
+            // مع ملف التثبيت نجلب 10 من *Fa احتياطاً لما يُستبعد منها لأنه مثبّت
+            const feedUrl = '/feeds/posts/summary/-/' + encodeURIComponent(labelName) + '?alt=json&max-results=' + (cfg.pinsUrl ? 10 : 5);
 
-            fetch(feedUrl)
-            .then(res => {
-                if (!res.ok) throw new Error("HTTP error " + res.status);
-                return res.json();
-            })
-            .then(data => {
-                if (data.feed && data.feed.entry && data.feed.entry.length > 0) {
-                    window.S24Cache.set(cfg.cacheKey, data.feed.entry);
-                    if (!isSilent || JSON.stringify(data.feed.entry) !== JSON.stringify(cachedData)) {
-                         renderGrid(data.feed.entry);
+            Promise.all([
+                // فشل الخلاصة لا يُسقط المثبّت: تُعرض الخانات المثبّتة وحدها
+                fetch(feedUrl).then(res => {
+                    if (!res.ok) throw new Error("HTTP error " + res.status);
+                    return res.json();
+                }).catch(err => { console.error(err); return {}; }),
+                fetchPins()
+            ])
+            .then(([data, pins]) => {
+                const auto = (data.feed && data.feed.entry ? data.feed.entry : []).map(entryToItem);
+                const items = mergeItems(pins, auto);
+                if (items.length > 0) {
+                    window.S24Cache.set(cfg.cacheKey, items);
+                    if (!isSilent || JSON.stringify(items) !== JSON.stringify(cachedData)) {
+                         renderGrid(items);
                     }
                 } else {
                     handleEmpty(isSilent, 'تأكد من اسم التسمية: ' + labelName);
@@ -103,6 +119,35 @@ document.addEventListener("DOMContentLoaded", function() {
                 console.error(err);
                 handleEmpty(isSilent, 'لا توجد مقالات بتسمية (' + labelName + ')');
             });
+        }
+
+        // ملف التثبيت: أي فشل (غير موجود، شبكة، صيغة) = لا تثبيت، والشبكة آلية
+        // ?t= يتغيّر كل دقيقة فلا يبقى اختيار قديم في كاش المتصفح
+        function fetchPins() {
+            if (!cfg.pinsUrl) return Promise.resolve({});
+            return fetch(cfg.pinsUrl + '?t=' + Math.floor(Date.now() / 60000))
+                .then(res => res.ok ? res.json() : {})
+                .then(j => (j && j.slots && typeof j.slots === 'object') ? j.slots : {})
+                .catch(() => ({}));
+        }
+
+        // الخانات 1–5: المثبّت في خانته، والباقي بالترتيب من أحدث *Fa غير المثبّتة
+        function mergeItems(pins, auto) {
+            const pinned = {}, used = {};
+            for (let k = 1; k <= 5; k++) {
+                const p = pins[String(k)];
+                if (p && p.u && p.t && !used[cleanUrl(p.u)]) {
+                    pinned[k] = { title: String(p.t), link: String(p.u), img: String(p.img || '') };
+                    used[cleanUrl(p.u)] = true;
+                }
+            }
+            const rest = auto.filter(it => !used[cleanUrl(it.link)]);
+            const out = [];
+            for (let k = 1; k <= 5; k++) {
+                const it = pinned[k] || rest.shift();
+                if (it) out.push(it);
+            }
+            return out;
         }
 
         function handleEmpty(isSilent, msg) {
@@ -115,20 +160,20 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         }
 
-        function renderGrid(entries) {
+        function renderGrid(items) {
             let htmlMain = '';
             let htmlSub = '<div class="sub-grid">';
 
-            entries.forEach((entry, i) => {
-                const title = entry.title.$t;
-                const link = getEntryLink(entry.link);
+            items.forEach((item, i) => {
+                const title = esc(item.title);
+                const link = esc(item.link);
                 const imgRes = (i === 0) ? '/w720-h405-c/' : '/w348-h196-c/';
                 const imgSize = (i === 0) ? 'width="720" height="405"' : 'width="348" height="196"';
                 const loadingAttr = (i === 0) ? 'fetchpriority="high"' : 'loading="lazy"';
 
                 let img = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Crect width="100" height="100" fill="%23e0e0e0"/%3E%3C/svg%3E';
-                if (entry.media$thumbnail) {
-                    img = entry.media$thumbnail.url.replace(/\/s[0-9]+.*?\//, imgRes);
+                if (item.img) {
+                    img = item.img.replace(/\/s[0-9]+.*?\//, imgRes);
                 }
 
                 const itemHTML = `
@@ -148,29 +193,37 @@ document.addEventListener("DOMContentLoaded", function() {
             gridContainer.innerHTML = htmlMain + htmlSub;
 
             if (cfg.removeDuplicates) {
-                removeDuplicatePostsFromList(entries);
+                removeDuplicatePostsFromList(items);
             }
-        }
-
-        function getEntryLink(links) {
-            const l = links.find(k => k.rel === 'alternate');
-            return l ? l.href : '#';
         }
     }
 
+    // مقالة الخلاصة ← { title, link, img } (الشكل نفسه لمقالات الخلاصة والمثبّتة)
+    function entryToItem(entry) {
+        const l = (entry.link || []).find(k => k.rel === 'alternate');
+        return {
+            title: entry.title.$t,
+            link: l ? l.href : '#',
+            img: entry.media$thumbnail ? entry.media$thumbnail.url : ''
+        };
+    }
+
+    // العنوان والرابط يُدرجان في HTML: تهريب الرموز الخاصة (علامات الاقتباس خاصة)
+    function esc(v) {
+        return String(v == null ? '' : v).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[c]);
+    }
+
+    function cleanUrl(u) { return String(u || '').split('?')[0].split('#')[0]; }
+
     // دالة مشتركة: إخفاء المقالات المكررة من القائمة العادية أسفل الصفحة
-    function removeDuplicatePostsFromList(entries) {
-        const featuredLinks = entries.map(entry => {
-            let link = '';
-            entry.link.forEach(l => { if (l.rel === 'alternate') link = l.href; });
-            return link.split('?')[0].split('#')[0];
-        });
+    function removeDuplicatePostsFromList(items) {
+        const featuredLinks = items.map(it => cleanUrl(it.link));
 
         const regularPosts = document.querySelectorAll('.blog-posts .post-outer');
         regularPosts.forEach(post => {
             const postLinkElement = post.querySelector('.post-title a') || post.querySelector('.item-thumbnail a');
             if (postLinkElement) {
-                const postUrl = postLinkElement.href.split('?')[0].split('#')[0];
+                const postUrl = cleanUrl(postLinkElement.href);
                 if (featuredLinks.includes(postUrl)) {
                     post.style.display = 'none';
                 }
