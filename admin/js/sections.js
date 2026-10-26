@@ -1,6 +1,6 @@
 /* ============================================================
    S24News — وحدة الأقسام في لوحة التحكم (admin/js/sections.js)
-   الإصدار 1.0 — 18 أكتوبر 2026
+   الإصدار 1.1 — 26 أكتوبر 2026 (اختيار أي متغيّر قالب للأقسام والفروع)
 
    إضافة قسم رئيسي (وسم نجمة *X) أو فرع (تسمية عادية) وتعديلهما وإيقافهما
    دون GitHub ودون القالب.
@@ -56,7 +56,11 @@ const THEME_COLORS = {
   '--sy-Arena': '#556B2F', '--sy-syria': '#C0392B', '--sy-black': '#000000', '--sy-Reports': '#800080',
   '--sy-Miscellaneous': '#ff9800', '--sy-weather': '#3498db', '--sy-education': '#7986cb',
   '--sy-health': '#2ecc71', '--sy-social': '#caa6c6', '--sy-culture': '#8d6e63', '--sy-history': '#8e5431',
-  '--sy-spo-sco': '#a3e08e', '--sy-orange': '#e67e22'
+  '--sy-spo-sco': '#a3e08e', '--sy-orange': '#e67e22',
+  // فروع الاقتصاد (26 أكتوبر 2026) — متغيرات cat.econXxx في «تخصيص» بلوغر
+  '--sy-econ-syria': '#00838F', '--sy-econ-markets': '#1E8449', '--sy-econ-fx': '#16A085',
+  '--sy-econ-metals': '#D4AF37', '--sy-econ-crypto': '#5B2C6F', '--sy-econ-world': '#1A5276',
+  '--sy-econ-energy': '#D35400', '--sy-econ-analysis': '#800020', '--sy-econ-opinion': '#5D6D7E'
 };
 const varName = (color) => (String(color || '').match(/--[\w-]+/) || [''])[0];
 // لون قابل للعرض في اللوحة: hex كما هو، أو درجة متغيّر القالب، أو اللون الاحتياطي داخل '--x, #hex'
@@ -159,7 +163,9 @@ const MARKUP = `
             <div class="sc-color">
               <input type="color" id="scColor" value="#77bd1d">
               <label id="scThemeWrap" style="display:flex;gap:6px;align-items:center">
-                <input type="checkbox" id="scUseTheme"> <span>لون القالب <code id="scVar"></code> (يُغيَّر من «تخصيص» بلوغر)</span>
+                <input type="checkbox" id="scUseTheme"> <span>متغيّر القالب</span>
+                <select class="input" id="scVar" style="width:auto"></select>
+                <span>(يُغيَّر من «تخصيص» بلوغر)</span>
               </label>
               <button class="btn btn-sm" id="scInherit" type="button">لون القسم الأم</button>
             </div>
@@ -300,8 +306,12 @@ export default {
     // fallback: متغيّر القالب الافتراضي للقسم، كي يبقى خيار «لون القالب» متاحاً بعد اختيار لون مخصص
     function setColor(color, fallback) {
       const v = varName(color) || varName(fallback), sw = swatchOf(color) || swatchOf(fallback);
-      $('scVar').textContent = v || '';
-      $('scThemeWrap').hidden = !v;
+      // كل متغيرات القالب المعروفة متاحة لأي قسم أو فرع (1.1 — 26 أكتوبر 2026)
+      const vars = Object.keys(Object.assign({}, THEME_COLORS, liveColors)).filter((k) => /^--sy-|^--color-/.test(k)).sort();
+      if (v && vars.indexOf(v) === -1) vars.unshift(v);
+      $('scVar').innerHTML = '<option value="">— اختر —</option>' + vars.map((k) =>
+        '<option value="' + esc(k) + '"' + (k === v ? ' selected' : '') + '>' + esc(k) + '</option>').join('');
+      $('scThemeWrap').hidden = false;
       $('scUseTheme').checked = !!v && !HEX_RE.test(String(color));
       $('scColor').value = sw || '#77bd1d';
       $('scColor').disabled = $('scUseTheme').checked;
@@ -341,7 +351,7 @@ export default {
       return Object.keys(obj).reduce((m, k) => Math.max(m, Number(obj[k].order) || 0), 0);
     }
     function chosenColor() {
-      if ($('scUseTheme').checked && $('scVar').textContent) return $('scVar').textContent;
+      if ($('scUseTheme').checked && $('scVar').value) return $('scVar').value;
       const c = $('scColor').value;
       return HEX_RE.test(c) ? c.toUpperCase() : '';
     }
@@ -408,6 +418,12 @@ export default {
     $('scReload').addEventListener('click', () => load(true));
     $('scSave').addEventListener('click', save);
     $('scUseTheme').addEventListener('change', () => { $('scColor').disabled = $('scUseTheme').checked; });
+    $('scVar').addEventListener('change', () => {
+      const v = $('scVar').value;
+      $('scUseTheme').checked = !!v;
+      $('scColor').disabled = !!v;
+      if (v && swatchOf(v)) $('scColor').value = swatchOf(v);
+    });
     $('scInherit').addEventListener('click', () => {
       const p = mergedTags()[$('scParent').value];
       if (!p) { $('scMsg').textContent = 'اختر القسم الأم أولاً.'; return; }
