@@ -1,5 +1,7 @@
 /* ============================================================
    S24News — شريط الأخبار العاجلة (breaking-news.js)
+   الإصدار 2.3 — 27 أكتوبر 2026: إصلاح وميض الشريط على الهاتف أثناء التمرير —
+     إعادة القياس عند تغيّر عرض الشاشة فقط، لا ارتفاعها (شريط عنوان المتصفح).
    الإصدار 2.2 — 19 أكتوبر 2026: مفتاح السرعة الكاملة — window.S24_SPEED = 'full' في config.js
      يجعل الإيقاع النشط دائماً (طريق العودة عند الحاجة أو الاشتراك).
    الإصدار 2.1 — 19 أكتوبر 2026: الجلب حسب النشاط (فكرة حسان)
@@ -281,10 +283,15 @@ document.addEventListener('DOMContentLoaded', function () {
   }, FEED_MS);
 
   // تغيّر عرض الشاشة (تدوير الهاتف مثلاً) يغيّر عدد السطور: نعيد القياس
-  var resizeT = null;
+  // تُقاس الشاشة عند تغيّر العرض فقط: متصفحات الهاتف تغيّر الارتفاع أثناء التمرير
+  // (إخفاء شريط العنوان وإظهاره)، وإعادة القياس عندها كانت تعيد رسم الشريط فيومض
+  var resizeT = null, lastW = window.innerWidth;
   window.addEventListener('resize', function () {
     clearTimeout(resizeT);
     resizeT = setTimeout(function () {
+      var w = window.innerWidth;
+      if (w === lastW) return;                      // تغيّر الارتفاع وحده لا يعني شيئاً هنا
+      lastW = w;
       if (!list.length) return;
       measure();
       show(index);
