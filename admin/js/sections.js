@@ -53,7 +53,7 @@ const THEME_COLORS = {
   '--sy-purple': '#d53ef7', '--sy-light-green': '#0bfa02', '--sy-dark-green': '#1b6950',
   '--sy-health-light': '#34eb7d', '--sy-tech': '#c2fff6', '--sy-docs': '#2c3e50', '--sy-gold': '#f1c40f',
   '--sy-docfilms': '#5E35B1', '--sy-syworld': '#8E1B2E',
-  '--sy-Arena': '#556B2F', '--sy-syria': '#C0392B', '--sy-black': '#000000', '--sy-Reports': '#800080',
+  '--sy-Arena': '#556B2F', '--sy-syria': '#C0392B', '--sy-Reports': '#800080',
   '--sy-Miscellaneous': '#ff9800', '--sy-weather': '#3498db', '--sy-education': '#7986cb',
   '--sy-health': '#2ecc71', '--sy-social': '#caa6c6', '--sy-culture': '#8d6e63', '--sy-history': '#8e5431',
   '--sy-spo-sco': '#a3e08e', '--sy-orange': '#e67e22',
