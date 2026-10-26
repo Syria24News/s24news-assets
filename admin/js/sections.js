@@ -52,7 +52,7 @@ const THEME_COLORS = {
   '--sy-Econ': '#e01010', '--sy-sport': '#ff8c00', '--sy-ArabNews': '#ebdf09', '--sy-INT': '#0000ff',
   '--sy-purple': '#d53ef7', '--sy-light-green': '#0bfa02', '--sy-dark-green': '#1b6950',
   '--sy-health-light': '#34eb7d', '--sy-tech': '#c2fff6', '--sy-docs': '#2c3e50', '--sy-gold': '#f1c40f',
-  '--sy-oil': '#4E342E', '--sy-docfilms': '#5E35B1', '--sy-syworld': '#8E1B2E',
+  '--sy-docfilms': '#5E35B1', '--sy-syworld': '#8E1B2E',
   '--sy-Arena': '#556B2F', '--sy-syria': '#C0392B', '--sy-black': '#000000', '--sy-Reports': '#800080',
   '--sy-Miscellaneous': '#ff9800', '--sy-weather': '#3498db', '--sy-education': '#7986cb',
   '--sy-health': '#2ecc71', '--sy-social': '#caa6c6', '--sy-culture': '#8d6e63', '--sy-history': '#8e5431',
@@ -111,7 +111,7 @@ const MARKUP = `
     <div class="card" style="padding:12px 14px;margin-bottom:14px">
       <div class="hint">
         <b>قسم رئيسي:</b> وسم يبدأ بنجمة مثل <code>*S</code> — له اسم قصير (الشارة) واسم كامل (رأس صفحة القسم) ووصف.<br>
-        <b>فرع:</b> تسمية عادية مثل «نفط» — تأخذ لوناً، وتغلب شارتها شارة قسمها الأم.<br>
+        <b>فرع:</b> تسمية عادية مثل «طاقة وموارد» — تأخذ لوناً، وتغلب شارتها شارة قسمها الأم.<br>
         التغيير يصل إلى الزوار خلال 6 ساعات كحد أقصى (وفوراً عندك بعد مسح بيانات الموقع).
         رابط القسم في القائمة العلوية يُضاف من «التنسيق» في بلوغر.
       </div>
@@ -122,7 +122,7 @@ const MARKUP = `
 
     <h3>الفروع المضافة من اللوحة</h3>
     <div class="sc-list" id="scBranches"></div>
-    <div class="hint" style="margin-bottom:12px">الفروع القديمة المكتوبة في الكود (مثل «نفط» و«ذهب») تعمل كما هي ولا تظهر هنا. إن أضفت فرعاً بالاسم نفسه هنا، يغلب إعداد اللوحة.</div>
+    <div class="hint" style="margin-bottom:12px">الفروع المكتوبة في الكود (مثل فروع الاقتصاد «عملات وصرف» و«طاقة وموارد») تعمل كما هي ولا تظهر هنا. إن أضفت فرعاً بالاسم نفسه هنا، يغلب إعداد اللوحة.</div>
     <div class="hint" id="scInfo"></div>
   </section>
 
