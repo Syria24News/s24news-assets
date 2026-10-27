@@ -145,6 +145,7 @@ document.addEventListener("DOMContentLoaded", function() {
         var totalToFetch = storiesMetadata.length;
         
         storiesMetadata.forEach(function (item) {
+            // طلب واحد لكل دائرة: يعطينا عدد مقالات آخر 24 ساعة، وأحدثها (للصورة والرابط)
             fetch('/feeds/posts/summary/-/' + encodeURIComponent(item.label) + '?alt=json&max-results=40')
                 .then(res => res.json())
                 .then(data => {
@@ -156,6 +157,7 @@ document.addEventListener("DOMContentLoaded", function() {
                         if (validPosts.length > 0) {
                             item.lastPostDate = new Date(validPosts[0].published.$t).getTime();
                             item.postCount = validPosts.length;
+                            item.latestEntry = validPosts[0]; // أحدث مقالة: تُغني عن طلب ثانٍ
                         }
                     }
                     
@@ -165,6 +167,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     }
                 })
                 .catch(() => {
+                    item.fetchFailed = true; // تعذّر الجلب: تبقى الدائرة كما كانت سابقاً
                     fetchedCount++;
                     if (fetchedCount === totalToFetch) {
                         sortAndRenderStories_Option1(storiesMetadata);
@@ -188,6 +191,8 @@ document.addEventListener("DOMContentLoaded", function() {
             grid.innerHTML = '';
             
             items.forEach(function (metadata) {
+                // دائرة بلا مقالات خلال 24 ساعة لا تُرسم أصلاً (كانت تُرسم ثم تُخفى بطلب ثانٍ)
+                if (!metadata.latestEntry && !metadata.fetchFailed) return;
                 var a = document.createElement('a');
                 a.setAttribute('href', metadata.label);
                 a.className = 'story-item';
@@ -204,6 +209,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 a.appendChild(span);
                 
                 metadata.domElement = a;
+                if (metadata.latestEntry) applyLatestEntry(a, img, metadata.label, metadata.latestEntry);
                 grid.appendChild(a);
             });
             
@@ -214,38 +220,29 @@ document.addEventListener("DOMContentLoaded", function() {
     // ============================================================
     // 1. تحديث دوائر الدخول
     // ============================================================
+    // صورة الدائرة ورابط أحدث مقالة وحالة «شوهدت» — من بيانات الطلب الأول نفسه
+    function applyLatestEntry(item, imgElement, label, entry) {
+        var imgUrl = '';
+        if (entry.media$thumbnail) {
+            var u = entry.media$thumbnail.url;
+            // صيغتا روابط بلوجر: ‎/s72-c/‎ القديمة و‎=s72-c‎ الحديثة
+            imgUrl = /=s\d+(-c)?$/.test(u) ? u.replace(/=s\d+(-c)?$/, '=s150-c') : u.replace(/\/s[0-9]+.*?\//, '/s150-c/');
+        } else {
+            var html = (entry.content && entry.content.$t) || (entry.summary && entry.summary.$t) || '';
+            var m = html.match(/<img.+?src="([^"]+)"/);
+            if (m) imgUrl = m[1];
+        }
+        if (imgUrl) { imgElement.src = imgUrl; imgElement.style.animation = 'fadeIn 0.5s ease-in'; }
+
+        var alt = (entry.link || []).find(l => l.rel === 'alternate');
+        if (!alt) return;
+        item.setAttribute('data-latest-post', alt.href);
+        if (seenStories[label] === alt.href) item.classList.add('story-seen');
+        else item.classList.remove('story-seen');
+    }
+
     function reinitializeStoryItemsArray() {
-        const storyItems = document.querySelectorAll('#main-stories-grid .story-item');
-        storyItemsArray = Array.from(storyItems);
-        
-        storyItemsArray.forEach(item => {
-            const label = item.getAttribute('href');
-            const imgElement = item.querySelector('img');
-            if (!label || label === '#' || !imgElement) return;
-            
-            fetch('/feeds/posts/summary/-/' + encodeURIComponent(label) + '?alt=json&max-results=1')
-                .then(res => res.json()).then(data => {
-                    const entry = (data.feed && data.feed.entry && data.feed.entry.length > 0) ? data.feed.entry[0] : null;
-
-                    if (!entry || !isWithin24h(entry.published && entry.published.$t)) {
-                        item.style.display = 'none';
-                        return;
-                    }
-                    item.style.display = '';
-
-                    let imgUrl = "";
-                    if (entry.media$thumbnail) imgUrl = entry.media$thumbnail.url.replace(/\/s[0-9]+.*?\//, '/s150-c/');
-                    else if (entry.content && entry.content.$t.match(/<img.+?src="([^"]+)"/)) imgUrl = entry.content.$t.match(/<img.+?src="([^"]+)"/)[1];
-                    if (imgUrl) { imgElement.src = imgUrl; imgElement.style.animation = "fadeIn 0.5s ease-in"; }
-                    let latestPostUrl = entry.link.find(l => l.rel === 'alternate').href;
-                    item.setAttribute('data-latest-post', latestPostUrl);
-                    
-                    let seenStories = JSON.parse(sessionStorage.getItem('s24_seen_stories') || '{}');
-                    if (seenStories[label] === latestPostUrl) item.classList.add('story-seen');
-                    else item.classList.remove('story-seen');
-                })
-                .catch(() => {});
-        });
+        storyItemsArray = Array.from(document.querySelectorAll('#main-stories-grid .story-item'));
         
         // ✅ تحديث الـ listeners
         setTimeout(function() {
