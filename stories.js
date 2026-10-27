@@ -83,6 +83,43 @@ document.addEventListener("DOMContentLoaded", function() {
     var STORY_GROUP_MAX_RESULTS = 40;
     var GROUP_CACHE_TTL_MS = 60 * 60 * 1000;
     
+    // ============================================================
+    // الاختيار اليدوي من اللوحة المركزية (قسم «القصص» — Stories.gs)
+    // ملف stories-pins.json على GitHub Pages: { labels: { '*WH': { pin: [روابط], hide: [روابط] } } }
+    // 📌 pin = أول القصة بالترتيب، 🚫 hide = خارج القصة. قاعدة الـ 24 ساعة تبقى كما هي.
+    // الملف غير موجود أو تعذّر جلبه خلال 3 ثوانٍ ← القصص آلية بالكامل كما كانت.
+    // ============================================================
+    var STORY_PINS_URL = 'https://syria24news.github.io/s24news-assets/stories-pins.json';
+    var storyPins = {};
+    var storyPinsReady = Promise.race([
+        fetch(STORY_PINS_URL + '?t=' + Math.floor(Date.now() / 60000))   // يتجدد كل دقيقة
+            .then(function (r) { return r.ok ? r.json() : {}; })
+            .then(function (d) { storyPins = (d && d.labels) || {}; })
+            .catch(function () {}),
+        new Promise(function (res) { setTimeout(res, 3000); })
+    ]);
+
+    // مقارنة الروابط بالمسار وحده (http/https و?m=1 لا تهم)
+    function storyPathOf(u) {
+        try { return new URL(u, location.origin).pathname; } catch (e) { return String(u || ''); }
+    }
+
+    // يطبّق التثبيت والإخفاء على قائمة؛ urlOf تعيد رابط العنصر
+    function applyStoryPins(label, list, urlOf) {
+        var cfg = storyPins[label];
+        if (!cfg) return list;
+        var pin = (cfg.pin || []).map(storyPathOf), hide = (cfg.hide || []).map(storyPathOf);
+        var visible = list.filter(function (x) { return hide.indexOf(storyPathOf(urlOf(x))) === -1; });
+        var pinned = [], rest = [];
+        visible.forEach(function (x) { (pin.indexOf(storyPathOf(urlOf(x))) > -1 ? pinned : rest).push(x); });
+        pinned.sort(function (a, b) { return pin.indexOf(storyPathOf(urlOf(a))) - pin.indexOf(storyPathOf(urlOf(b))); });
+        return pinned.concat(rest);
+    }
+    function storyEntryUrl(entry) {
+        var l = (entry.link || []).find(function (x) { return x.rel === 'alternate'; });
+        return l ? l.href : '';
+    }
+
     function isWithin24h(dateStr) {
         if (!dateStr) return false;
         var postTime = new Date(dateStr).getTime();
@@ -154,28 +191,35 @@ document.addEventListener("DOMContentLoaded", function() {
                             isWithin24h(entry.published && entry.published.$t)
                         );
                         
-                        if (validPosts.length > 0) {
-                            item.lastPostDate = new Date(validPosts[0].published.$t).getTime();
-                            item.postCount = validPosts.length;
-                            item.latestEntry = validPosts[0]; // أحدث مقالة: تُغني عن طلب ثانٍ
-                        }
+                        item.validPosts = validPosts; // تُفرز بعد وصول ملف الاختيار اليدوي
                     }
                     
                     fetchedCount++;
                     if (fetchedCount === totalToFetch) {
-                        sortAndRenderStories_Option1(storiesMetadata);
+                        storyPinsReady.then(function () { sortAndRenderStories_Option1(storiesMetadata); });
                     }
                 })
                 .catch(() => {
                     item.fetchFailed = true; // تعذّر الجلب: تبقى الدائرة كما كانت سابقاً
                     fetchedCount++;
                     if (fetchedCount === totalToFetch) {
-                        sortAndRenderStories_Option1(storiesMetadata);
+                        storyPinsReady.then(function () { sortAndRenderStories_Option1(storiesMetadata); });
                     }
                 });
         });
         
         function sortAndRenderStories_Option1(items) {
+            // بعد الإخفاء والتثبيت: الأحدث الظاهر يحدد ترتيب الدائرة، والأول (المثبّت إن وُجد) يعطيها صورتها
+            items.forEach(function (item) {
+                var shown = applyStoryPins(item.label, item.validPosts || [], storyEntryUrl);
+                if (!shown.length) return;
+                var newest = shown.slice().sort(function (a, b) { return new Date(b.published.$t) - new Date(a.published.$t); })[0];
+                item.lastPostDate = new Date(newest.published.$t).getTime();
+                item.postCount = shown.length;
+                item.latestEntry = shown[0];
+                item.newestUrl = storyEntryUrl(newest);
+            });
+
             items.sort((a, b) => {
                 if (a.lastPostDate !== b.lastPostDate) {
                     return (b.lastPostDate || 0) - (a.lastPostDate || 0);
@@ -209,7 +253,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 a.appendChild(span);
                 
                 metadata.domElement = a;
-                if (metadata.latestEntry) applyLatestEntry(a, img, metadata.label, metadata.latestEntry);
+                if (metadata.latestEntry) applyLatestEntry(a, img, metadata.label, metadata.latestEntry, metadata.newestUrl);
                 grid.appendChild(a);
             });
             
@@ -221,7 +265,7 @@ document.addEventListener("DOMContentLoaded", function() {
     // 1. تحديث دوائر الدخول
     // ============================================================
     // صورة الدائرة ورابط أحدث مقالة وحالة «شوهدت» — من بيانات الطلب الأول نفسه
-    function applyLatestEntry(item, imgElement, label, entry) {
+    function applyLatestEntry(item, imgElement, label, entry, newestUrl) {
         var imgUrl = '';
         if (entry.media$thumbnail) {
             var u = entry.media$thumbnail.url;
@@ -234,10 +278,11 @@ document.addEventListener("DOMContentLoaded", function() {
         }
         if (imgUrl) { imgElement.src = imgUrl; imgElement.style.animation = 'fadeIn 0.5s ease-in'; }
 
-        var alt = (entry.link || []).find(l => l.rel === 'alternate');
-        if (!alt) return;
-        item.setAttribute('data-latest-post', alt.href);
-        if (seenStories[label] === alt.href) item.classList.add('story-seen');
+        // «شوهدت» تتبع أحدث مقالة فعلاً، لا المثبّتة: مقالة جديدة تعيد الدائرة ملوّنة
+        var latest = newestUrl || storyEntryUrl(entry);
+        if (!latest) return;
+        item.setAttribute('data-latest-post', latest);
+        if (seenStories[label] === latest) item.classList.add('story-seen');
         else item.classList.remove('story-seen');
     }
 
@@ -288,6 +333,7 @@ document.addEventListener("DOMContentLoaded", function() {
                         groupPosts.push({ title: cleanTitle, img: img, link: link, views: null, video: videoInfo });
                     });
                 }
+                groupPosts = applyStoryPins(label, groupPosts, function (p) { return p.link; });
                 var groupData = { label: label, sectionName: sectionName, sectionIcon: sectionIcon, posts: groupPosts, targetLink: targetLink, fetchedAt: Date.now() };
                 groupDataCache[groupIndex] = groupData;
                 callback(groupData);
