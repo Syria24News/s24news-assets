@@ -4029,8 +4029,12 @@ body.item-page .post-body > .s24-cover-injected:has(~ div[dir="rtl"] .s24-galler
 @media only screen and (max-width:768px) {
 
 
-  .progress-wrap { bottom: 65px !important; left: 15px !important; width: 42px !important; height: 42px !important; }
+  /* زر العودة للأعلى على الموبايل: دائري بخلفية صلبة (القالب يجعلها شفافة فيظهر النص من تحته).
+     bottom: 65px مقصود لتعلو فوق المشغّل المصغّر للبث، وlive-player.js يعيده إلى 20px عند إغلاقه */
+  .progress-wrap { bottom: 65px !important; left: 14px !important; width: 44px !important; height: 44px !important; border-radius: 50% !important; background-color: var(--bg-card) !important; }
   .progress-arrow svg { width: 20px !important; height: 20px !important; }
+  /* مساحة أسفل سطر الحقوق كي لا يغطيه الزر في نهاية الصفحة */
+  .custom-copyright-footer { padding-bottom: 76px !important; }
 
 
   .breaking-news-container .widget-content a, .breaking-news-container .widget-content span { font-weight: 600; }
