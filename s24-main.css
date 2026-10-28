@@ -879,8 +879,9 @@ section.important-sections {
 #story-overlay {
     position: fixed !important; top: 0 !important; left: 0 !important; right: 0 !important; bottom: 0 !important;
     width: 100vw !important; height: 100vh !important;
-    background: rgba(10,10,10,0.05) !important;
-    backdrop-filter: blur(1px) !important; -webkit-backdrop-filter: blur(1px) !important;
+    /* خلفية معتمة 50% بلا ضبابية — كما في RT (stories-modal: rgba(0,0,0,.5)) */
+    background: rgba(0,0,0,0.5) !important;
+    backdrop-filter: none !important; -webkit-backdrop-filter: none !important;
     z-index: 2147483647; display: none; flex-direction: column;
     align-items: center; justify-content: center; gap: 14px;
     transition: background 0.3s ease;
@@ -966,7 +967,11 @@ section.important-sections {
 .story-segment-fill { height: 100%; width: 0%; background-color: #ffffff; border-radius: 3px; }
 
 /* زر الإغلاق للكمبيوتر */
-.close-story-btn { background: #fff; border: none; color: rgba(0,0,0,0.4); font-size: 32px; cursor: pointer; position: absolute; top: 2px; left: 24px; z-index: 30; width: 33px; height: 33px; border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 10px rgba(0,0,0,0.3); }
+.close-story-btn { /* أيقونة RT: دائرة بيضاء مفرّغة وفيها ×، في زاوية الشاشة لا فوق البطاقة */
+    position: fixed; top: 24px; left: 24px; z-index: 30; width: 40px; height: 40px; padding: 0; border: 0; border-radius: 50%;
+    background: transparent url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 40 40' fill='none' stroke='%23fff' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='20' cy='20' r='18.5'/%3E%3Cpath d='M14 14l12 12M26 14L14 26'/%3E%3C/svg%3E") center / 40px 40px no-repeat; box-shadow: none;
+    color: transparent; font-size: 0; cursor: pointer; transition: opacity .3s ease-in-out; }
+.close-story-btn:hover, .close-story-btn:focus-visible { opacity: .8; }
 
 /* كتلة الهيدر (البطاقة النشطة) */
 .story-top-content { padding: 40px 16px 14px; text-align: center; background: #0d0d0d; }
@@ -1117,13 +1122,14 @@ section.important-sections {
     }
 
     /* زر الإغلاق الجديد المصغر والمثبت */
+    /* الموبايل: أيقونة 24px كما في RT (تحت شريط التقدم)، ومساحة لمس 40px حولها */
     .close-story-btn {
         position: absolute !important;
         top: 24px !important;
-        left: 15px !important;
-        width: 25px !important;
-        height: 25px !important;
-        font-size: 20px !important;
+        left: 8px !important;
+        width: 40px !important;
+        height: 40px !important;
+        background-size: 24px 24px !important;
         z-index: 35 !important;
     }
 
