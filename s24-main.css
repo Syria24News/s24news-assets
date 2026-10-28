@@ -831,14 +831,47 @@ section.important-sections {
 /* ============================================================
    🌟 منظومة الستوريز (دوائر الدخول) — S24 STORIES (نمط RT)
    ============================================================ */
-.stories-container { padding: 15px 0 25px 0; width: 100%; max-width: 100vw; overflow: hidden; border-bottom: 1px solid var(--border-color); margin-bottom: 25px; direction: rtl; }
-.stories-grid { display: flex; gap: 14px; overflow-x: auto; padding: 0 10px; scroll-padding-inline: 15px; cursor: grab; user-select: none; scrollbar-width: none; -webkit-overflow-scrolling: touch; -ms-overflow-style: none; overscroll-behavior: contain; }
+/* المقاسات والمسافات منقولة من روسيا اليوم (rtar.css) كما هي:
+   الكمبيوتر: دائرة 96px، مسافة 1.8rem، لا حشوة جانبية، 40px تحت الشريط، بلا خط فاصل
+   الموبايل (أقل من 1024px): دائرة 82px، مسافة 16px، حشوة جانبية 16px والشريط من الحافة للحافة، 24px تحته */
+.stories-container { padding: 0; width: 100%; max-width: 100vw; overflow: hidden; border-bottom: none; margin-bottom: 40px; direction: rtl; }
+.stories-grid { display: flex; align-items: flex-start; gap: 1.8rem; overflow-x: auto; padding: 0; cursor: grab; user-select: none; -webkit-user-select: none; scrollbar-width: none; -webkit-overflow-scrolling: touch; -ms-overflow-style: none; overscroll-behavior: contain; }
 .stories-grid::-webkit-scrollbar { display: none; }
-.stories-grid:active { cursor: grabbing; }
-.story-item { display: flex; flex-direction: column; align-items: center; width: 100px; min-width: 100px; text-decoration: none; }
-.story-item img { width: 96px; height: 96px; border-radius: 50%; border: 3px solid var(--sy-green); padding: 3px; background: var(--bg-card); object-fit: cover; margin-bottom: 8px; transition: 0.3s ease; }
+.stories-grid.is-dragging { cursor: grabbing; scroll-behavior: auto; }
+.stories-grid.is-dragging .story-item { pointer-events: none; }
+.stories-grid img { -webkit-user-drag: none; }
+.story-item { display: flex; flex-direction: column; align-items: center; flex: 0 0 96px; width: 96px; min-width: 96px; text-decoration: none; }
+/* الحلقة: إطار أخضر 3px ثم فاصل 3px بلون الخلفية ثم الصورة */
+.story-item img { display: block; width: 96px; height: 96px; border-radius: 50%; border: 3px solid var(--sy-green); padding: 3px; background: var(--bg-body, #f7f7f7); object-fit: cover; margin: 0 0 8px; transition: opacity .3s ease-in-out, border-color .3s ease-in-out; }
+.story-item:hover img, .story-item:focus-visible img { opacity: .8; }
 .story-item.story-seen img { border-color: #c9c9c9 !important; opacity: 0.8; }
-.story-caption { font-size: 13px; font-weight: 700; color: var(--text-main); white-space: nowrap; }
+/* العنوان: 13px عريض، يلتف على عرض الدائرة حتى 3 أسطر */
+.story-caption { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; width: 100%; font-size: 13px; font-weight: 700; line-height: 16px; text-align: center; color: var(--text-main); white-space: normal; }
+/* المعاينة المجمّعة (للمقالات على الموبايل) — مخفية في غير ذلك */
+.stories-preview { display: none; }
+@media (max-width: 1023px) {
+  .stories-container { margin-inline: -15px; width: auto; margin-bottom: 24px; padding-top: 14px; }
+  /* الصفحات التي لا حشوة لعمودها الأوسط: لا سحب للحافة، وإلا ظهر تمرير أفقي */
+  body.item-page .stories-container,
+  body.saved-page-mode .stories-container,
+  body.live-page-mode .stories-container { margin-inline: 0; }
+  .stories-grid { gap: 16px; padding-inline: 16px; }
+  .story-item { flex-basis: 82px; width: 82px; min-width: 82px; }
+  .story-item img { width: 82px; height: 82px; padding: 2px; margin-bottom: 3px; }
+
+  /* صفحة المقالة: الشريط يُجمَّع في سطر واحد (عدد الأخبار + 3 دوائر متراكبة)، ولمسة واحدة تفتحه — كما في RT */
+  .stories-container.stories-collapsed { cursor: pointer; }
+  .stories-collapsed .stories-preview { display: flex; align-items: center; gap: 20px; padding-inline: 16px; }
+  .stories-collapsed .stories-grid { max-height: 0; overflow: hidden; pointer-events: none; }
+  .stories-preview-info { font-size: 16px; font-weight: 700; line-height: 20px; white-space: nowrap; color: var(--text-main); }
+  .stories-preview-thumbs { display: flex; align-items: center; }
+  .stories-preview-thumbs img { display: block; width: 56px; height: 56px; border-radius: 50%; border: 2px solid var(--sy-green); padding: 2px; background: var(--bg-body, #f7f7f7); object-fit: cover; }
+  .stories-preview-thumbs img + img { margin-inline-start: -20px; }
+  /* بعد الفتح: الدوائر تكبر وتظهر تدريجياً */
+  .stories-opening .story-item { animation: storiesGrow .3s ease-in-out; }
+}
+@media (min-width: 769px) and (max-width: 1023px) { .main-container:has(#subcats-wrapper) .stories-container { margin-inline: 0; } }
+@keyframes storiesGrow { from { opacity: 0; transform: scale(.68); } to { opacity: 1; transform: none; } }
 
 /* ============================================================
    🎬 النافذة المنبثقة بأسلوب RT
@@ -991,9 +1024,6 @@ section.important-sections {
    🚀 موبايل — التصميم المكدس المطابق لـ RT (أسود - صورة - أسود)
    ========================================================= */
 @media only screen and (max-width: 768px) {
-    .story-item { width: 90px; min-width: 90px; }
-    .story-item img { width: 85px; height: 85px; border-width: 2px; }
-    .story-caption { font-size: 13px; }
 
     /* الحاوية الأساسية (Stage) تملأ الشاشة بالكامل ومثبتة */
     .rt-stories-stage {
@@ -3892,9 +3922,8 @@ body.item-page .post-body > .s24-cover-injected:has(~ div[dir="rtl"] .s24-galler
 /* صفحة المنوعات حشوتها صفر أصلاً، فلا تُسحب البطاقة فيها */
 @media (min-width: 1024px) { .main-container:has(#subcats-wrapper) .sy-section-header { margin-inline: 0; } }
 @media (max-width: 768px) { .sy-section-header { padding: 14px 16px; margin-bottom: 18px; } }
-/* حين تلي البطاقةُ شريطَ القصص مباشرة يُحذف خطه السفلي وحشوته: البطاقة نفسها هي الفاصل */
-.stories-container:has(+ .sy-section-header) { border-bottom: none; padding-bottom: 0; margin-bottom: 20px; }
-/* القصص فوق ترويسة البطاقة: تتسع بعرض البطاقة نفسه، وأول دائرة تحاذي مربع العنوان (هامش البطاقة الداخلي 22px) */
+/* القصص فوق ترويسة البطاقة (صفحات الأقسام، الكمبيوتر): الشريط بعرض البطاقة نفسه،
+   وأول دائرة تبتعد 22px عن حافتها = حشوة البطاقة الداخلية، فتقف فوق مربع العنوان ولا تلتصق بالحافة */
 @media (min-width: 1024px) {
   .stories-container:has(+ .sy-section-header) { width: auto; margin-inline: -15px; }
   .stories-container:has(+ .sy-section-header) .stories-grid { padding-inline: 22px; }

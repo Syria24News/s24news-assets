@@ -258,6 +258,60 @@ document.addEventListener("DOMContentLoaded", function() {
             });
             
             reinitializeStoryItemsArray();
+            buildStoriesPreview(items);
+        }
+
+        // المعاينة المجمّعة (نهج RT في صفحات المقالات على الموبايل):
+        // سطر واحد فيه عدد الأخبار و3 دوائر متراكبة؛ لمسة واحدة تفتح الشريط كاملاً.
+        // الـ CSS يُظهرها تحت 1024px فقط، فالكمبيوتر يرى الشريط كاملاً دائماً.
+        function buildStoriesPreview(items) {
+            var box = grid.parentElement;
+            var bc = document.body.classList;
+            // المقالات فقط (الصفحات الثابتة كـ«من نحن» تبقى بالشريط الكامل)
+            if (!box || !bc.contains('item-page') || bc.contains('static-page-view')) return;
+            var drawn = items.filter(function (m) { return m.domElement; });
+            if (!drawn.length) return;
+
+            var total = drawn.reduce(function (n, m) { return n + (m.postCount || 0); }, 0);
+            var old = box.querySelector('.stories-preview');
+            if (old) old.remove();
+
+            var pv = document.createElement('div');
+            pv.className = 'stories-preview';
+            var info = document.createElement('span');
+            info.className = 'stories-preview-info';
+            info.textContent = storiesCountText(total || drawn.length);
+            var thumbs = document.createElement('div');
+            thumbs.className = 'stories-preview-thumbs';
+            drawn.slice(0, 3).forEach(function (m) {
+                var src = m.domElement.querySelector('img');
+                var t = document.createElement('img');
+                t.src = src ? src.src : '';
+                t.alt = '';
+                thumbs.appendChild(t);
+            });
+            pv.appendChild(info);
+            pv.appendChild(thumbs);
+            box.insertBefore(pv, grid);
+            box.classList.add('stories-collapsed');
+
+            box.addEventListener('click', function openStrip(e) {
+                if (!box.classList.contains('stories-collapsed')) return;
+                if (window.innerWidth >= 1024) return;
+                e.preventDefault(); e.stopPropagation();
+                box.classList.remove('stories-collapsed');
+                box.classList.add('stories-opening');
+                setTimeout(function () { box.classList.remove('stories-opening'); }, 400);
+                box.removeEventListener('click', openStrip, true);
+            }, true);
+        }
+
+        // العدد بصيغته العربية الصحيحة
+        function storiesCountText(n) {
+            if (n === 1) return 'خبر واحد';
+            if (n === 2) return 'خبران';
+            if (n >= 3 && n <= 10) return n + ' أخبار';
+            return n + ' خبراً';
         }
     })();
 
@@ -677,19 +731,43 @@ document.addEventListener("DOMContentLoaded", function() {
     // ============================================================
     // 11. سحب شريط الدوائر بالماوس
     // ============================================================
-    const slider = document.querySelector('.stories-grid');
+    // اللمس يبقى على التمرير الأصلي للمتصفح؛ هذا القسم للماوس فقط:
+    //  • السحب يتبع اليد 1:1 ويبدأ بعد 6px (النقرة العادية تبقى نقرة)
+    //  • يستمر السحب لو خرج المؤشر من الشريط (المتابعة على window)
+    //  • بعد السحب تُلغى النقرة التالية فلا تُفتح قصة بالخطأ
+    //  • يُمنع سحب الصورة/الرابط الأصلي للمتصفح (الصورة الشبحية التي توقف الحركة)
+    //  (على نهج روسيا اليوم: سحب فقط بلا أسهم ولا تمرير بالعجلة)
+    const slider = document.getElementById('main-stories-grid') || document.querySelector('.stories-grid');
     if (slider) {
-        let isDown = false, startX, scrollLeft;
-        slider.style.cursor = 'grab';
-        slider.addEventListener('mousedown', (e) => { isDown = true; slider.style.cursor = 'grabbing'; startX = e.pageX - slider.offsetLeft; scrollLeft = slider.scrollLeft; });
-        slider.addEventListener('mouseleave', () => { isDown = false; slider.style.cursor = 'grab'; });
-        slider.addEventListener('mouseup', () => { isDown = false; slider.style.cursor = 'grab'; });
-        slider.addEventListener('mousemove', (e) => {
-            if (!isDown) return; e.preventDefault();
-            const x = e.pageX - slider.offsetLeft;
-            const walk = (x - startX) * 2;
-            slider.scrollLeft = scrollLeft - walk;
+        let isDown = false, moved = false, startX = 0, startScroll = 0;
+        const DRAG_THRESHOLD = 6;
+
+        slider.addEventListener('dragstart', (e) => e.preventDefault());
+
+        slider.addEventListener('mousedown', (e) => {
+            if (e.button !== 0) return;
+            isDown = true; moved = false;
+            startX = e.clientX; startScroll = slider.scrollLeft;
         });
+        window.addEventListener('mousemove', (e) => {
+            if (!isDown) return;
+            const dx = e.clientX - startX;
+            if (!moved && Math.abs(dx) < DRAG_THRESHOLD) return;
+            if (!moved) { moved = true; slider.classList.add('is-dragging'); }
+            e.preventDefault();
+            slider.scrollLeft = startScroll - dx;
+        });
+        window.addEventListener('mouseup', () => {
+            if (!isDown) return;
+            isDown = false;
+            slider.classList.remove('is-dragging');
+        });
+        // مرحلة الالتقاط: تسبق مستمع فتح القصة على document
+        slider.addEventListener('click', (e) => {
+            if (!moved) return;
+            moved = false;
+            e.preventDefault(); e.stopPropagation();
+        }, true);
     }
 
     // ✅ تهيئة الـ listeners عند البدء
