@@ -533,6 +533,58 @@ body .sy-no-results {
 }
 
 /* --------------------------------------------------------------------------
+   4.6-ب صفحة الخطأ 404 (فرع data:view.isError في Blog1)
+   رقم كبير بلون العلامة + رسالة + البحث المضمن (.sy-inline-search) + روابط
+   (.sy-related-btn) + أحدث الأخبار (.sy-related-*) يملؤها error-404.js
+   بلا أي حركة: التفاعل تغيير لون فقط
+   -------------------------------------------------------------------------- */
+.s24-404 {
+  text-align: center;
+  padding: 40px 16px 32px;
+  margin: 0 auto;
+  max-width: 720px;
+  box-sizing: border-box;
+}
+
+.s24-404-code {
+  font-family: var(--font-title);
+  font-size: clamp(96px, 24vw, 180px);
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: 4px;
+  color: var(--sy-green);
+  direction: ltr;
+  margin-bottom: 16px;
+}
+
+.s24-404-title {
+  font-family: var(--font-title);
+  font-size: clamp(20px, 4.5vw, 26px);
+  font-weight: 700;
+  color: var(--text-main);
+  margin: 0 0 10px;
+  line-height: 1.5;
+}
+
+.s24-404-text {
+  font-size: 16px;
+  color: var(--text-sec);
+  margin: 0 0 28px;
+  line-height: 1.8;
+}
+
+.s24-404 .sy-inline-search { margin-bottom: 24px; }
+
+.s24-404 .sy-related-list {
+  justify-content: center;
+  margin-bottom: 0;
+  gap: 8px;
+}
+
+.s24-404-latest { margin-top: 8px; }
+.s24-404-latest .sy-related-main-title { margin-bottom: 16px; }
+
+/* --------------------------------------------------------------------------
    4.7 أيقونات متفرقة
    -------------------------------------------------------------------------- */
 .icon-satellite {
@@ -2939,19 +2991,17 @@ a.sy-news-link:last-child {
 
     /* --- خصائص أخرى --- */
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: color 0.3s ease, border-color 0.3s ease, background-color 0.3s ease;
     text-decoration: none;
     outline: none;
     line-height: normal;
 }
 
-/* 3. تأثير المرور (Hover) - الحركة والظل الأخضر */
+/* 3. تأثير المرور (Hover) - تغيير لون فقط، بلا حركة ولا ظل */
 .home-link:hover {
     background-color: var(--bg-body);
     color: var(--sy-green);
     border-color: var(--sy-green);
-    transform: none; /* حركة خفيفة للأعلى */
-    box-shadow: none; /* ظل أخضر */
     text-decoration: none;
 }
 
