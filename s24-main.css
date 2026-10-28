@@ -381,7 +381,6 @@ a {
   fill: none;
   stroke: currentColor;
   stroke-width: 2.5;
-  transform: translate(0px, 10px);
 }
 
 /* --------------------------------------------------------------------------
@@ -510,7 +509,8 @@ body .sy-no-results {
   }
 }
 
-.sy-no-results svg {
+/* أيقونة الصندوق الكبيرة فقط (الابن المباشر) — لا تمسّ أيقونة زر البحث داخله */
+.sy-no-results > svg {
   width: 80px;
   height: 80px;
   stroke: #ccc;
