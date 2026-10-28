@@ -375,11 +375,22 @@ document.addEventListener("DOMContentLoaded", function() {
     // 🟢 إصلاح: تجميع القراءة والتحديث في دالة واحدة تُنفَّذ عبر requestAnimationFrame
     // بدل التنفيذ الفوري في كل حدث scroll (يتكرر عشرات المرات بالثانية ويُجبر إعادة حساب التخطيط)
     let progressTicking = false;
+    // نص المقالة نفسه: الشريط يكتمل 100% عند آخر سطر فيها، لا عند الفوتر والتعليقات
+    const progressArticle = document.querySelector('[id^="post-body-"]');
     function updateReadingProgress() {
         const scrollTop = document.documentElement.scrollTop || document.body.scrollTop;
-        const scrollHeight = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+        const viewH = document.documentElement.clientHeight;
+        let scrollHeight;
+        if (progressArticle) {
+            // المسافة المطلوبة حتى يظهر آخر سطر من المقالة أسفل الشاشة
+            const articleBottom = progressArticle.getBoundingClientRect().bottom + scrollTop;
+            scrollHeight = articleBottom - viewH;
+        } else {
+            // احتياط: إن لم يوجد نص المقالة نقيس الصفحة كاملة كما كان
+            scrollHeight = document.documentElement.scrollHeight - viewH;
+        }
         // 🟢 إصلاح: حماية من القسمة على صفر/سالب في المقالات القصيرة التي لا تحتاج تمريراً إطلاقاً
-        let scrolled = scrollHeight > 0 ? (scrollTop / scrollHeight) * 100 : 0;
+        let scrolled = scrollHeight > 0 ? Math.min(100, (scrollTop / scrollHeight) * 100) : 0;
         progressBar.style.width = scrolled + '%';
         progressTicking = false;
     }

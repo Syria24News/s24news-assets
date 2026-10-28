@@ -11,13 +11,38 @@
         if(progressWrap) {
             var offset = 100; // المسافة التي يظهر بعدها الزر (100 بكسل)
             
-            window.addEventListener('scroll', function() {
-                if (window.scrollY > offset) {
-                    progressWrap.classList.add('active-progress');
-                } else {
-                    progressWrap.classList.remove('active-progress');
+            // الموبايل (حتى 768px، نقطة الكسر نفسها في s24-main.css):
+            // يظهر بعد شاشة ونصف، يختفي عند النزول (القراءة)، يعود عند الصعود، ويبقى ظاهراً قرب نهاية الصفحة
+            var mobileMQ = window.matchMedia('(max-width: 768px)');
+            var lastY = window.scrollY;
+            var ticking = false;
+
+            function updateBackToTop() {
+                var y = window.scrollY;
+                var dy = y - lastY;
+                var show = progressWrap.classList.contains('active-progress');
+
+                if (!mobileMQ.matches) {
+                    show = y > offset; // سطح المكتب: السلوك الأصلي كما هو
+                } else if (y < window.innerHeight * 1.5) {
+                    show = false;
+                } else if (window.innerHeight + y >= document.documentElement.scrollHeight - 200) {
+                    show = true;  // نهاية الصفحة: هنا يحتاجه القارئ فعلاً
+                } else if (dy < -8) {
+                    show = true;  // صعود
+                } else if (dy > 8) {
+                    show = false; // نزول = قراءة: لا يغطي النص ولا الفيديو
                 }
-            });
+
+                progressWrap.classList.toggle('active-progress', show);
+                if (Math.abs(dy) > 8) lastY = y; // هامش 8px لتجاهل اهتزاز الإصبع
+                ticking = false;
+            }
+
+            // passive + requestAnimationFrame: حساب واحد لكل إطار بدل كل حدث تمرير
+            window.addEventListener('scroll', function() {
+                if (!ticking) { ticking = true; requestAnimationFrame(updateBackToTop); }
+            }, { passive: true });
         }
     });
 
