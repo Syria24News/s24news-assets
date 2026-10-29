@@ -4339,6 +4339,17 @@ body.item-page .post-body > div[dir="rtl"] .s24-lead-video-wrapper {
     max-width: calc(100% + 130px) !important;
 }
 
+/* تحت 1023px تصبح حشوة المقال 20px لا 65px — فيُكسر بالقيمة نفسها، وإلا خرج الفيديو
+   عن الشاشة 45px من كل جانب وقُصّت حافتاه وأزرار المشغّل (كما في المعرض القائد) */
+@media only screen and (max-width: 1023px) {
+    body.item-page .post-body > div[dir="rtl"] .s24-lead-video-wrapper {
+        margin-left: -20px !important;
+        margin-right: -20px !important;
+        width: calc(100% + 40px) !important;
+        max-width: calc(100% + 40px) !important;
+    }
+}
+
 body.item-page.s24-video-article .s24-lead-video-wrapper iframe,
 body.s24-video-article .s24-lead-video-wrapper object.BLOG_video_class,
 body.s24-video-article .s24-lead-video-wrapper video {
