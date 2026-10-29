@@ -3961,18 +3961,18 @@ body.item-page .post-body > .s24-cover-injected:has(~ div[dir="rtl"] .s24-galler
 /* القصص فوق ترويسة البطاقة (صفحات الأقسام، الكمبيوتر): الشريط بعرض البطاقة نفسه،
    وأول دائرة تبتعد 22px عن حافتها = حشوة البطاقة الداخلية، فتقف فوق مربع العنوان ولا تلتصق بالحافة */
 /* الحالة الثانية: صفحات الأكثر قراءة وكل الأخبار والمحفوظات — البطاقة من القالب داخل #Blog_Content
-   وليست الأخت التالية للقصص، فتُلتقط بالأخ اللاحق (~) */
+   وليست الأخت التالية للقصص، فتُلتقط بالأخ اللاحق (~). في /search تقع البطاقة أعمق بمستوى داخل .blog-posts */
 @media (min-width: 1024px) {
   .stories-container:has(+ .sy-section-header),
-  .stories-container:has(~ #Blog_Content .widget.Blog > .sy-section-header) { width: auto; margin-inline: -15px; }
+  .stories-container:has(~ #Blog_Content .widget.Blog > .sy-section-header, ~ #Blog_Content .widget.Blog > .blog-posts > .sy-section-header) { width: auto; margin-inline: -15px; }
   .stories-container:has(+ .sy-section-header) .stories-grid,
-  .stories-container:has(~ #Blog_Content .widget.Blog > .sy-section-header) .stories-grid { padding-inline: 22px; }
+  .stories-container:has(~ #Blog_Content .widget.Blog > .sy-section-header, ~ #Blog_Content .widget.Blog > .blog-posts > .sy-section-header) .stories-grid { padding-inline: 22px; }
   /* صفحة المنوعات: البطاقة لا تتسع هناك، فلا تتسع القصص أيضاً */
   .main-container:has(#subcats-wrapper) .stories-container:has(+ .sy-section-header) { margin-inline: 0; }
 }
 @media (min-width: 1450px) {
   .stories-container:has(+ .sy-section-header),
-  .stories-container:has(~ #Blog_Content .widget.Blog > .sy-section-header) { margin-inline: -72px; }
+  .stories-container:has(~ #Blog_Content .widget.Blog > .sy-section-header, ~ #Blog_Content .widget.Blog > .blog-posts > .sy-section-header) { margin-inline: -72px; }
 }
 /* ---------- نهاية ترويسة البطاقة ---------- */
 
