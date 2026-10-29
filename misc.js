@@ -84,6 +84,8 @@ document.addEventListener("DOMContentLoaded", function() {
     var allLabels = document.querySelectorAll('a[rel="tag"], .sy-meta-label, .custom-post-tags a');
     
     allLabels.forEach(function(label) {
+        // الشارة الملونة المختارة (category-colors.js) لا تُخفى ولو كان اسمها في القائمة
+        if (label.classList.contains('sy-badge-main')) return;
         var text = label.innerText.trim();
         
         // التحقق: هل يحتوي على * ؟ أو هل الاسم موجود في القائمة بالأعلى؟

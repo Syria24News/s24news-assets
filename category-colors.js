@@ -412,6 +412,8 @@ document.addEventListener("DOMContentLoaded", function() {
 
         // تطبيق التغييرات
         if (selectedLabel) {
+            // علامة الشارة المختارة: كود إخفاء الوسوم في misc.js يتجاوزها
+            selectedLabel.classList.add('sy-badge-main');
             selectedLabel.style.removeProperty('display');
             selectedLabel.style.setProperty('display', 'flex', 'important'); 
             
