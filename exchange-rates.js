@@ -288,6 +288,7 @@
     '#s24-fx-page{direction:rtl;text-align:right;font-family:var(--font-main,inherit);line-height:1.7}',
     '#s24-fx-page *{box-sizing:border-box}',
     '#s24-fx-page [hidden]{display:none!important}',
+    '.s24fx-note:empty,.s24fx-meta:empty{display:none}',
     '.s24fx-tabs{display:flex;gap:8px;padding-bottom:14px;border-bottom:1px solid rgba(128,128,128,.28);margin-bottom:16px}',
     '.s24fx-tabs button{font:inherit;font-size:15px;font-weight:600;color:inherit;background:transparent;border:1px solid rgba(128,128,128,.35);border-radius:999px;padding:6px 18px;cursor:pointer;transition:background .15s ease,border-color .15s ease}',
     '.s24fx-tabs button:hover{border-color:rgba(128,128,128,.6)}',
