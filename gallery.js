@@ -12,6 +12,9 @@
    5. إن تعذّر تحميل Swiper خلال 10 ثوانٍ تظهر الصور عادية بدل اختفائها
    6. الشريحة الأولى في المعرض القائد تُحمَّل فوراً (تحسين LCP)
    7. نص بديل صحيح ومُهرَّب للصور، وتنقّل بأسهم لوحة المفاتيح
+   2.1: المصغّرات بنسبة الصورة 16:9 وبدقة مضاعفة (300×169) — القص القديم 3:2 كان
+        يقطع شعار 24SN فيبقى منه «2»؛ وفراغ 10px عند طرفي الشريط؛ وتوسيط المصغّرات
+        حين لا تملأ الشريط
    ============================================================ */
 
 /* ---------- أدوات مشتركة ---------- */
@@ -264,7 +267,7 @@ function initS24SwiperGallery(tries) {
 
                 var alt = (img.getAttribute('alt') || '').trim() || caption || defaultAlt;
                 var bigImg = s24ResizeBlogger(src, 'w1200-rw');        // بلا قص: الصورة كاملة
-                var thumbImg = s24ResizeBlogger(src, 'w150-h100-c-rw'); // المصغّرة مقصوصة على مقاسها
+                var thumbImg = s24ResizeBlogger(src, 'w300-h169-c-rw'); // المصغّرة 16:9 كالصورة (لا يُقطع الشعار)، بدقة مضاعفة
 
                 // الشريحة الأولى في المعرض القائد هي أول ما يراه القارئ: تُحمَّل فوراً
                 var loadAttr = (isLead && n === 0) ? 'loading="eager" fetchpriority="high"' : 'loading="lazy"';
@@ -299,6 +302,9 @@ function initS24SwiperGallery(tries) {
 
             var thumbSwiper = new Swiper(wrapperEl.querySelector('.s24-thumb-swiper'), {
                 spaceBetween: 10,
+                slidesOffsetBefore: 10,          // فراغ بين حافة الحاوية وأول مصغّرة (بقيمة المسافة بينها نفسها)
+                slidesOffsetAfter: 10,           // والفراغ نفسه عند الطرف الآخر
+                centerInsufficientSlides: true,  // المصغّرات القليلة تتوسط الشريط بدل التكدّس على جانب
                 slidesPerView: 4,
                 freeMode: true,
                 watchSlidesProgress: true,

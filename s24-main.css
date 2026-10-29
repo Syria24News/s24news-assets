@@ -3633,18 +3633,18 @@ body.item-page .rt-album-source.s24-album-fallback { display: block !important; 
     font-weight: bold;
 }
 
-/* 6. سلايدر الصور المصغرة (السفلي) */
+/* 6. سلايدر الصور المصغرة (السفلي) — ارتفاعه من نسبة المصغّرة 16:9 لا رقم ثابت */
 .s24-thumb-swiper {
     width: 100%;
-    height: 85px !important;
-    min-height: 85px !important;
-    max-height: 85px !important;
+    height: auto !important;
     padding-bottom: 0 !important;
     margin-bottom: 0 !important;
 }
 
 .s24-thumb-swiper .swiper-slide {
     width: 20%;
+    height: auto !important;
+    aspect-ratio: 16 / 9; /* نسبة الصورة نفسها: تظهر كاملة بشعارها */
     opacity: 0.4; /* بهتان للصور غير المحددة */
     cursor: pointer;
     border-radius: 6px;
@@ -3661,10 +3661,6 @@ body.item-page .rt-album-source.s24-album-fallback { display: block !important; 
 
 /* 7. إعدادات الموبايل */
 @media (max-width: 768px) {
-    .s24-thumb-swiper {
-        height: 65px !important;
-        min-height: 65px !important;
-    }
     .s24-gallery-wrapper .s24-slide-caption {
         font-size: 12.5px !important;
         padding: 22px 12px 10px 85px;
