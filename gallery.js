@@ -15,6 +15,9 @@
    2.1: المصغّرات بنسبة الصورة 16:9 وبدقة مضاعفة (300×169) — القص القديم 3:2 كان
         يقطع شعار 24SN فيبقى منه «2»؛ وفراغ 10px عند طرفي الشريط؛ وتوسيط المصغّرات
         حين لا تملأ الشريط
+   2.2: سطر «بلا معرض» في المقالة يمنع بناء المعرض فيها (عكس «منطقة الألبوم»):
+        يُكتب سطراً وحده في أي مكان من المقالة، فيُخفى عن القارئ وتبقى الصور عادية.
+        أو في عرض HTML: أي عنصر بالصنف no-gallery
    ============================================================ */
 
 /* ---------- أدوات مشتركة ---------- */
@@ -55,6 +58,34 @@ function s24EscAttr(s) {
         .replace(/</g, '&lt;').replace(/>/g, '&gt;');
 }
 
+/* ---------- 0. منع المعرض في مقالة بعينها ---------- */
+
+// 🚫 هل طلب الكاتب «بلا معرض»؟ — سطر وحده نصه «بلا معرض» (تُتجاهل الرموز والإيموجي حوله)،
+//    أو أي عنصر بالصنف no-gallery. يُخفى السطر عن القارئ، ويُعلَّم الجسم بـ s24-no-gallery
+//    فلا يُبنى معرض، وأي حاوية ألبوم قديمة مكتوبة يدوياً تظهر صورها عادية
+function s24NoGalleryRequested(postBody) {
+    if (document.body.classList.contains('s24-no-gallery')) return true; // فُحص مسبقاً
+    var NO_GALLERY_TEXT = 'بلا معرض';
+    var found = false;
+
+    if (postBody.querySelector('.no-gallery')) found = true;
+
+    postBody.querySelectorAll('p, div, span, b, strong, h2, h3, h4').forEach(function(el) {
+        if (el.children.length > 1) return; // السطر المقصود قصير بسيط، لا كتلة فيها عناصر كثيرة
+        var t = (el.textContent || '').replace(/[^\u0600-\u06FF\s]/g, '').replace(/\s+/g, ' ').trim();
+        if (t === NO_GALLERY_TEXT) {
+            el.style.setProperty('display', 'none', 'important');
+            found = true;
+        }
+    });
+
+    if (found) {
+        document.body.classList.add('s24-no-gallery');
+        postBody.querySelectorAll('.rt-album-source').forEach(function(s) { s.classList.add('s24-album-fallback'); });
+    }
+    return found;
+}
+
 /* ---------- 1. بناء حاوية المصدر ---------- */
 
 // يبني تلقائياً حاوية "rt-album-source" — إما من النص المرجعي "📷 منطقة الألبوم" (وضع يدوي، له الأولوية دائماً إن وُجد)
@@ -64,6 +95,8 @@ function s24AutoWrapAlbumFromMarker() {
     if (!document.body.classList.contains('item-page')) return;
     var postBody = document.querySelector('[id^="post-body-"]');
     if (!postBody) return;
+
+    if (s24NoGalleryRequested(postBody)) return; // الكاتب طلب «بلا معرض» في هذه المقالة
 
     var existingSource = postBody.querySelector('.rt-album-source');
     if (existingSource) {
@@ -219,6 +252,7 @@ function initS24SwiperGallery(tries) {
     tries = tries || 0;
 
     if (tries === 0) s24AutoWrapAlbumFromMarker(); // مرة واحدة فقط، لا مع كل إعادة محاولة
+    if (document.body.classList.contains('s24-no-gallery')) return; // «بلا معرض»: لا بناء
 
     var sources = document.querySelectorAll('.rt-album-source');
     if (sources.length === 0) return;
