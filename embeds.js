@@ -9,8 +9,8 @@ document.addEventListener("DOMContentLoaded", function() {
         // 🆕 نبني حاوية المعرض التلقائي (إن وُجدت) فوراً هنا بدل انتظار مؤقّت الثانية —
         // الدالة معرّفة عالمياً بحلول وقت التنفيذ الفعلي رغم وجودها بسكربت لاحق بالملف
         if (typeof s24AutoWrapAlbumFromMarker === 'function') s24AutoWrapAlbumFromMarker();
-        var needsSwiper = document.querySelector('.swiper, .swiper-container, [class*="swiper"], .rt-album-source')
-            || (document.body.textContent && document.body.textContent.indexOf('منطقة الألبوم') > -1);
+        // دالة الالتفاف أعلاه تحوّل «منطقة الألبوم» إلى .rt-album-source، فلا حاجة لفحص نص الصفحة كاملة
+        var needsSwiper = document.querySelector('.swiper, .swiper-container, [class*="swiper"], .rt-album-source');
         if (needsSwiper) {
 
 

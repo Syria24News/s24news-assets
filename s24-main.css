@@ -3506,16 +3506,14 @@ body.most-read-page .main-layout {
 /* ========================================= */
 
 
-/* --- S24News Smart Gallery System (Mobile Fill Fixed) --- */
-
-
 /* =========================================================
-   🌟 S24News Swiper Gallery System (Professional & Fixed) 🌟
+   🌟 S24News Swiper Gallery System — يعمل مع gallery.js 2.0 🌟
    ========================================================= */
 
-/* 1. إخفاء المصدر الخام للصور دائماً */
-body:not(.item-page) .rt-album-source { display: none !important; }
+/* 1. إخفاء المصدر الخام للصور دائماً —
+   إلا حين يفشل تحميل Swiper (gallery.js يضيف s24-album-fallback) فتظهر الصور كمقال عادي */
 .rt-album-source { display: none !important; }
+body.item-page .rt-album-source.s24-album-fallback { display: block !important; }
 
 /* 2. الحاوية الرئيسية للمعرض */
 .s24-gallery-wrapper {
@@ -3546,6 +3544,11 @@ body:not(.item-page) .rt-album-source { display: none !important; }
     display: block !important;
     border: none !important;
     box-shadow: none !important;
+}
+
+/* الشريحة الكبيرة: الصورة كاملة بلا قص (العمودية تظهر بطولها على الخلفية الداكنة) */
+.s24-main-swiper .swiper-slide img {
+    object-fit: contain !important;
 }
 
 /* ضمان أن الشريحة تملأ الطول بالكامل */
@@ -3589,6 +3592,23 @@ body:not(.item-page) .rt-album-source { display: none !important; }
     direction: ltr;
     letter-spacing: 2px;
     line-height: 1.5 !important;
+}
+
+/* 4.1 تعليق الصورة وحقوق المصوّر (من tr-caption) — أسفل الشريحة، مع ترك يسارها للعدّاد */
+.s24-gallery-wrapper .s24-slide-caption {
+    position: absolute;
+    right: 0;
+    left: 0;
+    bottom: 0;
+    padding: 28px 16px 14px 100px;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0.75), rgba(0, 0, 0, 0));
+    color: #fff;
+    font-family: var(--font-main) !important;
+    font-size: 14px !important; /* الحاوية تصفّر الخط، فيُسترجع هنا */
+    line-height: 1.7 !important;
+    text-align: right;
+    direction: rtl;
+    pointer-events: none;
 }
 
 /* 5. أسهم التنقل الجانبية */
@@ -3645,6 +3665,10 @@ body:not(.item-page) .rt-album-source { display: none !important; }
         height: 65px !important;
         min-height: 65px !important;
     }
+    .s24-gallery-wrapper .s24-slide-caption {
+        font-size: 12.5px !important;
+        padding: 22px 12px 10px 85px;
+    }
     /* إخفاء الأسهم في الموبايل والاعتماد على السحب بالإصبع */
     .s24-gallery-wrapper .swiper-button-next,
     .s24-gallery-wrapper .swiper-button-prev {
@@ -3660,6 +3684,16 @@ body.item-page .post-body > div[dir="rtl"] .s24-gallery-wrapper.s24-gallery-lead
     margin-right: -65px !important;
     width: calc(100% + 130px) !important;
     max-width: calc(100% + 130px) !important;
+}
+
+/* 8.1 تحت 1023px تصبح حشوة المقال 20px لا 65px — فيُكسر بالقيمة نفسها، وإلا تجاوز المعرض الشاشة وقُصّت أطرافه وعدّاده */
+@media only screen and (max-width: 1023px) {
+    body.item-page .post-body > div[dir="rtl"] .s24-gallery-wrapper.s24-gallery-lead {
+        margin-left: -20px !important;
+        margin-right: -20px !important;
+        width: calc(100% + 40px) !important;
+        max-width: calc(100% + 40px) !important;
+    }
 }
 
 /* إلغاء الحواف الدائرية والظل — بنفس القيد المحلي */
@@ -3681,7 +3715,7 @@ body.item-page .post-body > .s24-cover-injected:has(~ .s24-gallery-wrapper.s24-g
 body.item-page .post-body > .s24-cover-injected:has(~ div[dir="rtl"] .s24-gallery-wrapper.s24-gallery-lead) {
     display: none !important;
 }
-/* --- نهاية S24News Smart Gallery System (Mobile Fill Fixed) --- */
+/* --- نهاية S24News Swiper Gallery System --- */
 
 
 /* ================================================= */
@@ -4450,8 +4484,7 @@ body:not(.item-page) .post-body iframe[src*="tiktok.com"],
 body:not(.item-page) .post-body iframe[id^="twitter-widget-"],
 body:not(.item-page) .post-body img,
 body:not(.item-page) .post-body .separator,
-body:not(.item-page) .note-box,
-body:not(.item-page) .rt-album-parent {
+body:not(.item-page) .note-box {
     display: none !important;
     visibility: hidden !important;
     height: 0 !important;

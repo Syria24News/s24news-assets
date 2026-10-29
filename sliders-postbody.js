@@ -106,8 +106,8 @@ document.addEventListener("DOMContentLoaded", function() {
                     classList.includes('fb-post') || 
                     classList.includes('fb-video') ||
                     child.classList.contains('post-footer') ||
-                    child.classList.contains('rt-album-parent') || 
-                    child.classList.contains('rt-album-wrapper') || 
+                    child.classList.contains('rt-album-source') ||     // مصدر المعرض المخفي (فيه تعليقات الصور)
+                    child.classList.contains('s24-gallery-wrapper') || // المعرض نفسه (عدّاده وتعليقاته) 
                     child.classList.contains('thumb-nav-btn');
 
                 if (isMediaOrSocial) continue;
