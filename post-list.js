@@ -38,7 +38,7 @@ document.addEventListener("DOMContentLoaded", function() {
     if (activeNextLink) {
 
         var loadMoreHTML = `
-            <div id="load-more-container" style="width: 100%; display: block; clear: both; margin-top: 20px; margin-bottom: 20px;">
+            <div id="load-more-container"><!-- التنسيق والهوامش في s24-main.css (#load-more-container) -->
                 <button id="load-more-btn">
                     <span>تحميل المزيد</span>
                     <div class="loading-spinner-btn"></div>

@@ -1200,7 +1200,7 @@ body#layout #grid-label-config { display: block; border: 2px dashed orange; back
     box-sizing: border-box;
     margin: 0 auto;
     padding-inline: 15px;
-    padding-bottom: 50px;
+    padding-bottom: 0; /* المسافة قبل الفوتر يملكها .custom-copyright-footer وحده */
     transition: padding 0.3s ease;
 }
 /* ================================================= */
@@ -2875,7 +2875,7 @@ a.sy-news-link:last-child {
 #load-more-container {
     width: 100%;
     text-align: center;
-    margin: 30px 0 50px 0;
+    margin: 20px 0 0 0; /* لا هامش سفلي: المسافة قبل الفوتر يملكها الفوتر */
     clear: both;
 }
 
@@ -3004,7 +3004,7 @@ a.sy-news-link:last-child {
 /* 1. ضبط حاوية الزر لتكون في المنتصف */
 #blog-pager {
     text-align: center;
-    margin: 30px 0 50px 0; /* مسافات مريحة من الأعلى والأسفل */
+    margin: 30px 0 0 0; /* لا هامش سفلي: المسافة قبل الفوتر يملكها الفوتر */
     clear: both;
     width: 100%;
 }
@@ -4107,7 +4107,7 @@ body.item-page .post-body > .s24-cover-injected:has(~ div[dir="rtl"] .s24-galler
   .progress-wrap { bottom: 65px !important; left: 14px !important; width: 44px !important; height: 44px !important; border-radius: 50% !important; background-color: var(--bg-card) !important; }
   .progress-arrow svg { width: 20px !important; height: 20px !important; }
   /* مساحة أسفل سطر الحقوق كي لا يغطيه الزر في نهاية الصفحة */
-  .custom-copyright-footer { padding-bottom: 76px !important; }
+  .custom-copyright-footer { padding-bottom: 76px !important; margin-bottom: 0; }
 
 
   .breaking-news-container .widget-content a, .breaking-news-container .widget-content span { font-weight: 600; }
@@ -5173,7 +5173,6 @@ body.live-page-mode .main-container { max-width: 720px !important; margin: 0 aut
 @media screen and (min-width: 1201px) {
     .main-container {
         max-width: 864px !important; /* تثبيت العرض الأقصى للعمود */
-        padding-bottom: 72px !important; /* 🎯 التعديل هنا: 72 بكسل بالضبط */
     }
 }
 
