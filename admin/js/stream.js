@@ -1,5 +1,6 @@
 /* ============================================================
    S24News — وحدة البث المباشر في لوحة التحكم (admin/js/stream.js)
+   الإصدار 1.1 — 30 أكتوبر 2026: قنوات الشريط (channels) تحت شاشة صفحة البث
    الإصدار 1.0 — 18 أكتوبر 2026
 
    مستند واحد يقرؤه الموقع: live_stream/current
@@ -10,6 +11,7 @@
      title      عنوان اختياري (شاشة القفل في الهاتف)
      poster     صورة غلاف اختيارية (فارغ = الغلاف الحالي في الموقع)
      recent     آخر 8 أرقام مستخدمة [{ id, title, at }]
+     channels   قنوات الشريط [{ name, kind 'video'|'channel', id, logo }] — حتى 10
 
    الموقع (live-player.js 2.0 عبر S24Feed في utils.js) يغذّي منه صفحة البث
    والمشغّل المصغّر، ويعود إلى LIVE_CONFIG إن فشل الجلب.
@@ -22,6 +24,7 @@ const SITE = 'https://www.syria24.news';
 const LIVE_PAGE = SITE + '/p/live.html';
 const RECENT_MAX = 8;
 const TITLE_MAX = 120;
+const CH_MAX = 10;
 const streamRef = () => doc(db, 'live_stream', 'current');
 
 /* ============ استخراج المعرّفات من الروابط ============ */
@@ -85,6 +88,7 @@ const MARKUP = `
         <li><b>متوقف:</b> يُخفي المشغّل المصغّر في الرئيسية، وتعرض صفحة البث رسالة «البث متوقف حالياً».</li>
         <li>يصل التغيير إلى صفحة البث خلال دقيقة، وإلى الرئيسية خلال 15 دقيقة على الأكثر (كاش الزوار لتوفير الحصة).</li>
         <li>«آخر الأرقام المستخدمة» تعيد بثاً سابقاً بضغطة.</li>
+        <li><b>قنوات الشريط:</b> تظهر تحت الشاشة في صفحة البث ويختار منها الزائر. الصق رابط بث القناة (أو معرّفها <code>UC...</code>) واسمها، ثم «إضافة» ثم «حفظ». القناة بمعرّف <code>UC</code> تحتاج رابط شعار، وإلا ظهر الحرف الأول من اسمها. جرّب كل قناة بعد إضافتها، فبعض القنوات تمنع عرض بثها خارج يوتيوب.</li>
       </ol>
     </details>
 
@@ -127,6 +131,21 @@ const MARKUP = `
         </label>
       </div>
 
+      <div class="field"><span>قنوات الشريط تحت الشاشة (حتى ${CH_MAX})</span></div>
+      <div class="st-row">
+        <label class="field"><span>اسم القناة</span>
+          <input class="input" id="stChName" maxlength="40" placeholder="مثال: الجزيرة مباشر">
+        </label>
+        <label class="field"><span>رابط البث أو معرّف القناة</span>
+          <input class="input" id="stChId" dir="ltr" placeholder="youtube.com/watch?v=... أو UC...">
+        </label>
+        <label class="field"><span>رابط الشعار (اختياري)</span>
+          <input class="input" id="stChLogo" type="url" dir="ltr" placeholder="https://...">
+        </label>
+        <button class="btn" id="stChAdd" type="button">إضافة</button>
+      </div>
+      <div class="st-recent" id="stChList"></div>
+
       <div class="st-row" style="align-items:center">
         <button class="btn btn-primary" id="stSave" type="button">حفظ</button>
         <span class="hint" id="stMsg"></span>
@@ -161,6 +180,7 @@ export default {
     let data = {};          // محتوى live_stream/current كما في الخادم
     let loadedAt = 0;
     let dirty = false;      // تعديلات في النموذج لم تُحفظ (لا يُستبدل النموذج عند التحديث)
+    let channels = [];      // قنوات الشريط كما في النموذج (تُحفظ مع «حفظ»)
 
     const radio = (name) => (root.querySelector('input[name="' + name + '"]:checked') || {}).value;
     const setRadio = (name, v) => { const el = root.querySelector('input[name="' + name + '"][value="' + v + '"]'); if (el) el.checked = true; };
@@ -188,6 +208,8 @@ export default {
       $('stChannel').value = data.channelId || '';
       $('stTitle').value = data.title || '';
       $('stPoster').value = data.poster || '';
+      channels = Array.isArray(data.channels) ? data.channels.slice(0, CH_MAX) : [];
+      renderChannels();
       syncMode();
     }
 
@@ -215,6 +237,41 @@ export default {
         ? '<img src="' + thumb(id) + '" alt="" loading="lazy"><div><span class="st-ok">الرقم:</span> <code>' + esc(id) + '</code>' +
           '<div class="hint">تأكد من الصورة أنها البث المطلوب.</div></div>'
         : '<span class="st-bad">لم أجد رقم فيديو في هذا الرابط.</span>';
+    }
+
+    /* ============ قنوات الشريط ============ */
+    function renderChannels() {
+      $('stChList').innerHTML = channels.length ? channels.map((c, i) => {
+        const img = c.logo || (c.kind === 'video' ? thumb(c.id) : '');
+        return '<div class="card st-rec">' +
+          (img ? '<img src="' + esc(img) + '" alt="" loading="lazy">' : '<img alt="">') +
+          '<div class="st-meta"><div>' + esc(c.name) + '</div>' +
+          '<div class="st-sub">' + (c.kind === 'channel' ? 'قناة' : 'فيديو') + ' · <code>' + esc(c.id) + '</code></div></div>' +
+          '<button class="btn btn-sm" type="button" data-ch="up" data-i="' + i + '" aria-label="تقديم"' + (i === 0 ? ' disabled' : '') + '>↑</button>' +
+          '<button class="btn btn-sm" type="button" data-ch="down" data-i="' + i + '" aria-label="تأخير"' + (i === channels.length - 1 ? ' disabled' : '') + '>↓</button>' +
+          '<button class="btn btn-sm" type="button" data-ch="del" data-i="' + i + '">حذف</button>' +
+        '</div>';
+      }).join('') : '<div class="card empty">لا قنوات في الشريط بعد (لا يظهر الشريط في الموقع).</div>';
+    }
+
+    function addChannel() {
+      const msg = $('stMsg');
+      const name = clean($('stChName').value, 40);
+      const raw = $('stChId').value.trim();
+      const logo = $('stChLogo').value.trim();
+      const vid = parseVideoId(raw);
+      const cid = vid ? '' : parseChannelId(raw);
+      if (!name) { msg.textContent = 'اكتب اسم القناة.'; return; }
+      if (!vid && !cid) { msg.textContent = 'لم أجد رقم فيديو ولا معرّف قناة (UC...) في الرابط.'; return; }
+      if (logo && !isHttps(logo)) { msg.textContent = 'رابط الشعار يجب أن يبدأ بـ https://'; return; }
+      if (channels.length >= CH_MAX) { msg.textContent = 'الحد الأقصى ' + CH_MAX + ' قنوات.'; return; }
+      const id = vid || cid;
+      if (channels.some((c) => c.id === id)) { msg.textContent = 'هذه القناة موجودة في الشريط.'; return; }
+      channels.push({ name, kind: vid ? 'video' : 'channel', id, logo });
+      ['stChName', 'stChId', 'stChLogo'].forEach((x) => { $(x).value = ''; });
+      dirty = true;
+      renderChannels();
+      msg.textContent = 'أُضيفت. اضغط «حفظ» لاعتمادها.';
     }
 
     /* ============ العرض ============ */
@@ -265,7 +322,7 @@ export default {
         recent = recent.slice(0, RECENT_MAX);
       }
 
-      const payload = { mode, onAir, videoId, channelId, title, poster, recent, updatedAt: serverTimestamp() };
+      const payload = { mode, onAir, videoId, channelId, title, poster, recent, channels, updatedAt: serverTimestamp() };
       const btn = $('stSave');
       btn.disabled = true; msg.textContent = 'جارٍ الحفظ…';
       try {
@@ -291,6 +348,21 @@ export default {
     ['stVideo', 'stChannel'].forEach((id) => $(id).addEventListener('input', () => { dirty = true; preview(); }));
     ['stTitle', 'stPoster'].forEach((id) => $(id).addEventListener('input', () => { dirty = true; }));
     $('stSave').addEventListener('click', save);
+    $('stChAdd').addEventListener('click', addChannel);
+    $('stChList').addEventListener('click', (e) => {
+      const b = e.target.closest('button[data-ch]');
+      if (!b) return;
+      const i = +b.dataset.i, act = b.dataset.ch;
+      if (act === 'del') channels.splice(i, 1);
+      else {
+        const j = act === 'up' ? i - 1 : i + 1;
+        if (j < 0 || j >= channels.length) return;
+        [channels[i], channels[j]] = [channels[j], channels[i]];
+      }
+      dirty = true;
+      renderChannels();
+      $('stMsg').textContent = 'اضغط «حفظ» لاعتماد التغيير.';
+    });
     $('stReload').addEventListener('click', () => { dirty = false; load(true); });
     $('stRecent').addEventListener('click', (e) => {
       const b = e.target.closest('button[data-id]');

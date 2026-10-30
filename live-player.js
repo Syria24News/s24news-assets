@@ -2,6 +2,7 @@
    S24News — مشغّل البث المباشر (playFast / loadVideoLibs)
    playFast تُستدعى من onclick داخل HTML القالب — يجب أن تبقى دالة عامة
 
+   الإصدار 2.1 — 30 أكتوبر 2026: شريط القنوات تحت شاشة صفحة البث (الحقل channels)
    الإصدار 2.0 — 18 أكتوبر 2026: إعدادات البث من لوحة 24 (تبويب «البث»)
    المصدر: مستند Firestore واحد live_stream/current عبر S24Feed (utils.js)
      mode      'video' فيديو محدد | 'channel' البث الجاري لقناة
@@ -82,6 +83,9 @@ window.S24Live = (function () {
         // صفحة البث: رسالة بدل زر التشغيل حين يكون البث متوقفاً
         if (isLivePage && !state.onAir) showOffAir();
 
+        // صفحة البث: شريط القنوات تحت الشاشة (من المستند نفسه، بلا قراءة إضافية)
+        if (isLivePage) renderStrip(d);
+
         try { document.dispatchEvent(new CustomEvent('s24:live-config', { detail: state })); } catch (e) {}
     }
 
@@ -91,6 +95,77 @@ window.S24Live = (function () {
         overlay.style.display = 'flex';
         overlay.innerHTML = '<div class="s24-live-offair" id="s24-live-offair" role="status">' +
             '<strong>البث متوقف حالياً</strong><span>تابعونا، سيعود البث المباشر قريباً</span></div>';
+    }
+
+    /* ============ شريط القنوات (صفحة البث فقط) ============
+       channels: [{ name, kind 'video'|'channel', id, logo }] — حتى 10 قنوات.
+       الضغط على قناة يبدّل المشغّل داخل متصفح الزائر فقط، ولا يقرأ من Firestore. */
+    var ID_RE = { video: /^[\w-]{11}$/, channel: /^UC[\w-]{22}$/ };
+    var strip = { items: [], active: -1 };
+
+    function escTxt(v) {
+        return String(v || '').replace(/[&<>"']/g, function (c) { return '&#' + c.charCodeAt(0) + ';'; });
+    }
+    // صورة المصغّر: الشعار إن وُجد، وإلا صورة الفيديو من يوتيوب (القناة بلا شعار = الحرف الأول من اسمها)
+    function thumbOf(c) {
+        if (c.logo && /^https:\/\/[^\s"'<>]+$/i.test(c.logo)) return c.logo;
+        return c.kind === 'video' ? 'https://i.ytimg.com/vi/' + c.id + '/mqdefault.jpg' : '';
+    }
+
+    function renderStrip(d) {
+        var host = document.getElementById('main-video-placeholder');
+        if (!host) return;
+        var list = (Array.isArray(d.channels) ? d.channels : []).filter(function (c) {
+            return c && ID_RE[c.kind] && ID_RE[c.kind].test(c.id || '');
+        }).slice(0, 10);
+        var box = document.getElementById('s24-ch-strip');
+        if (!list.length) { if (box) box.remove(); return; }
+
+        // البث الرئيسي أولاً (ما لم يكن متوقفاً)، ثم القنوات بلا تكرار
+        var main = {
+            name: state.title || 'البث الرئيسي', kind: state.mode,
+            id: state.mode === 'channel' ? state.channelId : window.LIVE_CONFIG.videoId,
+            logo: window.LIVE_CONFIG.posterImage
+        };
+        strip.items = state.onAir ? [main] : [];
+        list.forEach(function (c) { if (!(c.kind === main.kind && c.id === main.id)) strip.items.push(c); });
+        strip.active = state.onAir ? 0 : -1;
+
+        if (!box) {
+            box = document.createElement('div');
+            box.id = 's24-ch-strip';
+            box.className = 's24-ch-strip';
+            box.setAttribute('role', 'group');
+            box.setAttribute('aria-label', 'القنوات');
+            host.insertAdjacentElement('afterend', box);
+            box.addEventListener('click', function (e) {
+                var b = e.target.closest('.s24-ch');
+                if (b) switchTo(+b.getAttribute('data-i'));
+            });
+        }
+        box.innerHTML = strip.items.map(function (c, i) {
+            var t = thumbOf(c), on = i === strip.active;
+            return '<button type="button" class="s24-ch' + (on ? ' is-active' : '') + '" data-i="' + i + '" aria-pressed="' + on + '">' +
+                '<span class="s24-ch-thumb">' + (t ? '<img src="' + escTxt(t) + '" alt="" loading="lazy">' : '<b>' + escTxt((c.name || '؟').charAt(0)) + '</b>') + '</span>' +
+                '<span class="s24-ch-name">' + escTxt(c.name || 'قناة') + '</span></button>';
+        }).join('');
+    }
+
+    function switchTo(i) {
+        var c = strip.items[i];
+        if (!c || i === strip.active) return;
+        strip.active = i;
+        state.mode = c.kind;
+        state.onAir = true;                       // اختيار الزائر لقناة = تشغيلها حتى لو كان الرئيسي متوقفاً
+        state.title = c.name || '';
+        if (c.kind === 'channel') state.channelId = c.id;
+        else window.LIVE_CONFIG.videoId = c.id;
+        var bs = document.querySelectorAll('#s24-ch-strip .s24-ch');
+        for (var k = 0; k < bs.length; k++) {
+            bs[k].classList.toggle('is-active', k === i);
+            bs[k].setAttribute('aria-pressed', String(k === i));
+        }
+        restartMain();
     }
 
     function load() {
@@ -111,7 +186,7 @@ window.S24Live = (function () {
     }
 
     document.addEventListener("DOMContentLoaded", load);
-    return { state: state, whenReady: whenReady, embedUrl: embedUrl, MINI_PARAMS: MINI_PARAMS };
+    return { state: state, whenReady: whenReady, embedUrl: embedUrl, MINI_PARAMS: MINI_PARAMS, switchTo: switchTo };
 })();
 
 document.addEventListener("DOMContentLoaded", function() {
@@ -161,6 +236,21 @@ function loadVideoLibs() {
 
 // دوال التشغيل
 var isPlayerActive = false;
+
+// إعادة تشغيل الشاشة الرئيسية بالمصدر الجديد بعد اختيار قناة من الشريط
+function restartMain() {
+    var overlay = document.getElementById('btn-overlay');
+    if (overlay && document.getElementById('s24-live-offair')) {
+        // إزالة رسالة «البث متوقف» وإعادة زر التشغيل
+        overlay.innerHTML = '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg>';
+    }
+    if (!isPlayerActive) { playFast(); return; }
+    var old = window.videojs && videojs.getPlayer && videojs.getPlayer('rt-live-page-player');
+    if (old) old.dispose();
+    document.getElementById('main-real-player-target').innerHTML = '';
+    document.getElementById('fast-loader').style.display = 'block';
+    launchPlayer();
+}
 function playFast() {
     if(isPlayerActive) return;
     if (!S24Live.state.onAir) return;   // البث متوقف من اللوحة
@@ -249,7 +339,8 @@ function launchPlayer() {
         // --- 🟢 محاولة فرض التشغيل عند إطفاء الشاشة 🟢 ---
         // هذا الكود يراقب حالة الصفحة، إذا تم إخفاؤها يحاول إعادة التشغيل
         document.addEventListener("visibilitychange", function() {
-            if (document.hidden && !player.paused()) { // لا يُستأنف البث إن كان المستخدم قد أوقفه بنفسه
+            if (player.isDisposed() || !document.hidden) return; // مشغّل قديم بعد تبديل القناة
+            if (!player.paused()) { // لا يُستأنف البث إن كان المستخدم قد أوقفه بنفسه
                 // إذا أطفأ المستخدم الشاشة، نحاول الاستمرار في التشغيل
                 setTimeout(function(){
                     if(player.paused()) {
