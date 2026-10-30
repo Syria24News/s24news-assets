@@ -50,6 +50,7 @@ const MARKUP = `
       #stView .st-form{padding:16px;margin-bottom:14px;display:flex;flex-direction:column;gap:14px}
       #stView .st-row{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
       #stView .st-row .field{flex:1 1 240px;min-width:0}
+      #stView .st-row.st-top{align-items:flex-start} /* الحقلان على مستوى واحد مهما اختلف طول الملاحظة تحتهما */
       #stView .st-chips{display:flex;flex-wrap:wrap;gap:6px}
       #stView .st-chip{position:relative;cursor:pointer}
       #stView .st-chip input{position:absolute;opacity:0;pointer-events:none}
@@ -118,7 +119,7 @@ const MARKUP = `
       </div>
       <div class="st-preview" id="stPreview"></div>
 
-      <div class="st-row">
+      <div class="st-row st-top">
         <label class="field"><span>العنوان (اختياري)</span>
           <input class="input" id="stTitle" maxlength="${TITLE_MAX}" placeholder="مثال: البث المباشر لقناة الإخبارية السورية">
           <!-- ملاحظة: أين يظهر العنوان -->
