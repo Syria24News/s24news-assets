@@ -5126,7 +5126,10 @@ body #comments .comment-thread .comment-thread { padding-right: 12px !important;
 
 /* شريط القنوات تحت شاشة صفحة البث (live-player.js 2.1) — تمرير أفقي بالإصبع */
 #rt-live-page-iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; z-index: 5; }
-.s24-ch-strip { display: flex; gap: 10px; overflow-x: auto; padding: 12px 15px; background: var(--hover-bg); scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch; scrollbar-width: thin; }
+.s24-ch-strip { display: flex; gap: 10px; overflow-x: auto; padding: 12px 15px !important; scroll-padding-inline: 15px; background: var(--hover-bg); scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch; scrollbar-width: thin; }
+/* مسافة ثابتة لأول قناة وآخرها عن حافة الشاشة (التمرير المغناطيسي كان يلصقها بالحافة على الموبايل) */
+.s24-ch:first-child { margin-inline-start: 4px; }
+.s24-ch:last-child { margin-inline-end: 15px; }
 .s24-ch { flex: 0 0 auto; width: 120px; display: flex; flex-direction: column; gap: 6px; padding: 0; border: 0; background: none; color: var(--text-main); cursor: pointer; scroll-snap-align: start; font-family: var(--font-main); font-size: 13px; text-align: center; }
 .s24-ch-thumb { display: flex; align-items: center; justify-content: center; aspect-ratio: 16 / 9; border-radius: 6px; overflow: hidden; background: var(--color-black); border: 2px solid transparent; transition: border-color 0.2s; }
 .s24-ch-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
