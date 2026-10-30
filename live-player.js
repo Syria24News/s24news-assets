@@ -138,6 +138,11 @@ window.S24Live = (function () {
             box.setAttribute('role', 'group');
             box.setAttribute('aria-label', 'القنوات');
             host.insertAdjacentElement('afterend', box);
+            // ارتفاع الشاشة يُقاس لحظياً ليلتصق الشريط المثبّت تحتها تماماً
+            var setH = function () { document.documentElement.style.setProperty('--s24-player-h', host.offsetHeight + 'px'); };
+            setH();
+            if (window.ResizeObserver) new ResizeObserver(setH).observe(host);
+            else window.addEventListener('resize', setH);
             box.addEventListener('click', function (e) {
                 var b = e.target.closest('.s24-ch');
                 if (b) switchTo(+b.getAttribute('data-i'));
