@@ -247,6 +247,27 @@ function loadVideoLibs() {
     }
 }
 
+// ===== مظهر المشغّل (s24-skin): زرّا رجوع/تقديم 10 ثوانٍ وتعريب «مباشر» =====
+function s24Skin(player) {
+    player.addClass('s24-skin');
+    if (window.videojs && videojs.addLanguage) videojs.addLanguage('ar', { 'LIVE': 'مباشر', 'Play': 'تشغيل', 'Pause': 'إيقاف', 'Mute': 'كتم', 'Unmute': 'صوت', 'Fullscreen': 'ملء الشاشة', 'Non-Fullscreen': 'خروج من ملء الشاشة' });
+    var bar = player.getChild('controlBar');
+    if (!bar || bar.getChild('s24Back')) return;
+    [[-10, 'رجوع 10 ثوانٍ', 1], [10, 'تقديم 10 ثوانٍ', 2]].forEach(function (s) {
+        var b = bar.addChild('button', { name: s[0] < 0 ? 's24Back' : 's24Fwd' }, s[2]);
+        b.addClass('s24-seek');
+        b.controlText(s[1]);
+        // سهم دائري مع الرقم 10 (يُعكس السهم فقط للتقديم)
+        b.el().insertAdjacentHTML('afterbegin', '<svg viewBox="0 0 24 24" aria-hidden="true"><g' + (s[0] > 0 ? ' transform="matrix(-1 0 0 1 24 0)"' : '') +
+            '><path d="M4.5 12a7.5 7.5 0 1 0 2.2-5.3"/><path d="M4.5 3.5v4h4"/></g><text x="12" y="15.3" text-anchor="middle">10</text></svg>');
+        b.on('click', function () {
+            var t = player.currentTime() + s[0], d = player.duration();
+            if (d && isFinite(d)) t = Math.min(t, d);
+            player.currentTime(Math.max(0, t));
+        });
+    });
+}
+
 // دوال التشغيل
 var isPlayerActive = false;
 
@@ -320,10 +341,12 @@ function launchPlayer() {
             "fs": 0 // منع ملء الشاشة التلقائي
         },
         controlBar: { pictureInPictureToggle: false, liveDisplay: true },
-        liveui: true
+        liveui: true,
+        language: 'ar'
     });
 
     player.ready(function() {
+        s24Skin(player);
         player.play();
         
         // --- 🟢 كود Media Session للتحكم من شاشة القفل 🟢 ---
@@ -439,10 +462,12 @@ function launchSidebarPlayer() {
         sources: [{ "type": "video/youtube", "src": getLiveUrl() }],
         youtube: { "iv_load_policy": 3, "modestbranding": 1, "rel": 0, "autoplay": 1 },
         controlBar: { pictureInPictureToggle: false, liveDisplay: true },
-        liveui: true
+        liveui: true,
+        language: 'ar'
     });
 
     player.ready(function () {
+        s24Skin(player);
         player.play();
         player.on('playing', hideCover);
     });
