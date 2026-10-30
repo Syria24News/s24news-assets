@@ -5127,7 +5127,7 @@ body #comments .comment-thread .comment-thread { padding-right: 12px !important;
 /* شريط القنوات تحت شاشة صفحة البث (live-player.js 2.1) — تمرير أفقي بالإصبع */
 #rt-live-page-iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border: 0; z-index: 5; }
 /* الشريط مثبّت تحت الشاشة مباشرة: --s24-player-h يقيسه live-player.js لحظياً */
-.s24-ch-strip { position: sticky; z-index: 899; top: calc(var(--sticky-top-offset, 0px) + var(--s24-breaking-h, 0px) + var(--s24-player-h, 0px)); display: flex; gap: 10px; overflow-x: auto; padding: 12px 15px !important; scroll-padding-inline: 15px; background: var(--hover-bg); scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch; scrollbar-width: thin; }
+.s24-ch-strip { position: sticky; z-index: 899; display: flex; gap: 10px; overflow-x: auto; padding: 10px 15px !important; scroll-padding-inline: 15px; background: var(--hover-bg); scroll-snap-type: x proximity; -webkit-overflow-scrolling: touch; scrollbar-width: thin; }
 /* مسافة ثابتة لأول قناة وآخرها عن حافة الشاشة (التمرير المغناطيسي كان يلصقها بالحافة على الموبايل) */
 .s24-ch:first-child { margin-inline-start: 4px; }
 .s24-ch:last-child { margin-inline-end: 15px; }
@@ -5150,11 +5150,15 @@ body #comments .comment-thread .comment-thread { padding-right: 12px !important;
 body.live-page-mode .comments, body.live-page-mode #comments, body.live-page-mode .post-footer, body.live-page-mode .post-header, body.live-page-mode h3.post-title { display: none !important; }
 body.live-page-mode .main-container { max-width: 720px !important; margin: 0 auto !important; width: 100% !important; padding: 0 !important; }
 .live-stream-wrapper { background-color: var(--bg-card) !important; padding: 0 !important; overflow: visible !important; margin-bottom: 20px; position: relative; direction: rtl; width: 100%; }
-.live-content-inner { padding: 20px 0 0 0 !important; color: var(--text-main) !important; }
+.live-content-inner { padding: 10px 0 0 0 !important; color: var(--text-main) !important; }
 /* سطر التعريف تحت عنوان صفحة البث */
 .live-title-box { min-width: 0; }
-.live-subtitle { margin: 6px 0 0; font-family: var(--font-main); font-size: 14px; font-weight: 400; line-height: 1.7; color: var(--text-sec); }
-@media (max-width: 768px) { .live-subtitle { font-size: 13px; } }
+.live-subtitle { margin: 2px 0 0; font-family: var(--font-main); font-size: 13px; font-weight: 400; line-height: 1.5; color: var(--text-sec); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+@media (max-width: 768px) { .live-subtitle { font-size: 12px; } }
+/* ضغط ترويسة صفحة البث، والشارة في سطر واحد دائماً، وإزالة الفراغ الأبيض أسفل الشريط */
+.live-header { margin-bottom: 10px !important; padding: 0 15px 0 15px !important; gap: 12px; }
+.live-header .status-badge { flex-shrink: 0; white-space: nowrap; }
+.live-stream-wrapper { margin-bottom: 0 !important; }
 .live-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 10px 15px 15px 15px; }
 .live-title { font-size: 24px; font-weight: 900; margin: 0; color: var(--text-main) !important; }
 .status-badge { background: rgba(231, 20, 20, 0.1); color: var(--color-red); padding: 5px 15px; border-radius: 20px; font-weight: bold; display: flex; align-items: center; gap: 8px; font-size: 14px; }
