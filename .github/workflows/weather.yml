@@ -1,0 +1,55 @@
+# S24News — تحديث weather.json (حالة الطقس) آلياً
+# يعمل أربع مرات يومياً، ويمكن تشغيله يدوياً من تبويب Actions ← «حالة الطقس» ← Run workflow.
+# الكود في .github/scripts/weather.mjs — المصدر MET Norway (api.met.no).
+# الاستهلاك: مجاني بالكامل (المستودع عام)، ولا يمس حصص Apps Script ولا Firestore.
+
+name: حالة الطقس
+
+on:
+  schedule:
+    # 23 دقيقة بعد الساعة (المواعيد الدقيقة على رأس الساعة مزدحمة في GitHub)
+    # 00:23 و06:23 و12:23 و18:23 UTC = 03:23 و09:23 و15:23 و21:23 بتوقيت سوريا
+    - cron: '23 */6 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write   # حفظ weather.json في المستودع
+  pages: write      # طلب إعادة بناء GitHub Pages بعد الحفظ
+
+concurrency:
+  group: weather
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: جلب التوقعات وكتابة weather.json
+        run: node .github/scripts/weather.mjs
+
+      - name: حفظ الملف في المستودع
+        run: |
+          git config user.name  "s24-weather-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add weather.json
+          if git diff --cached --quiet; then echo "لا تغيير"; exit 0; fi
+          git commit -m "حالة الطقس: تحديث آلي"
+          # Rates.gs ولوحة التحكم يكتبان في المستودع نفسه: دمج آخر نسخة قبل الرفع، مع إعادة المحاولة
+          for i in 1 2 3; do
+            git pull --rebase --quiet origin main && git push --quiet origin HEAD:main && exit 0
+            sleep 5
+          done
+          exit 1
+
+      - name: طلب إعادة بناء GitHub Pages
+        # الحفظ بمفتاح المهمة قد لا يطلق بناء Pages تلقائياً؛ هذا الطلب يضمنه. فشله لا يُفشل المهمة.
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh api -X POST "repos/${{ github.repository }}/pages/builds" --silent || echo "تعذّر طلب البناء — سيُبنى مع أول تحديث آخر"
