@@ -5184,7 +5184,8 @@ body.live-page-mode .main-container { max-width: 720px !important; margin: 0 aut
 .live-content-inner { padding: 10px 0 0 0 !important; color: var(--text-main) !important; }
 /* سطر التعريف تحت عنوان صفحة البث */
 .live-title-box { min-width: 0; }
-.live-subtitle { margin: 2px 0 0; font-family: var(--font-main); font-size: 13px; font-weight: 400; line-height: 1.5; color: var(--text-sec); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+/* يلتفّ على سطرين في الشاشات الضيقة بدل قطعه بنقاط (كان nowrap + ellipsis) */
+.live-subtitle { margin: 2px 0 0; font-family: var(--font-main); font-size: 13px; font-weight: 400; line-height: 1.5; color: var(--text-sec); }
 @media (max-width: 768px) { .live-subtitle { font-size: 12px; } }
 /* ضغط ترويسة صفحة البث، والشارة في سطر واحد دائماً، وإزالة الفراغ الأبيض أسفل الشريط */
 .live-header { margin-bottom: 10px !important; padding: 0 15px 0 15px !important; gap: 12px; }
