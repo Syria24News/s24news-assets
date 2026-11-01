@@ -1,8 +1,14 @@
 {
   "v": 1,
-  "updated": "",
+  "updated": "2026-11-01T22:30:35.003Z",
   "label": "إعلان",
   "minWords": 400,
   "glossary": false,
-  "slots": {}
+  "slots": {
+    "home-top": {
+      "on": true,
+      "type": "house",
+      "img": "https://cdnv.russiatoday.com/media/pics/2023.04/original/643401904c59b7237a784a78.png"
+    }
+  }
 }
