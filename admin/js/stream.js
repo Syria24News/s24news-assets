@@ -1,5 +1,8 @@
 /* ============================================================
    S24News — وحدة البث المباشر في لوحة التحكم (admin/js/stream.js)
+   الإصدار 1.2 — 1 نوفمبر 2026: صندوق «مراقبة المحطات» من live_stream/health
+     (يكتبه StreamWatch.gs في اللوحة المركزية كل 3 ساعات عبر YouTube Data API)،
+     ونقطة حالة بجانب كل قناة في الشريط
    الإصدار 1.1 — 30 أكتوبر 2026: قنوات الشريط (channels) تحت شاشة صفحة البث
    الإصدار 1.0 — 18 أكتوبر 2026
 
@@ -12,6 +15,11 @@
      poster     صورة غلاف اختيارية (فارغ = الغلاف الحالي في الموقع)
      recent     آخر 8 أرقام مستخدمة [{ id, title, at }]
      channels   قنوات الشريط [{ name, kind 'video'|'channel', id, logo }] — حتى 10
+
+   مستند ثانٍ للقراءة فقط هنا: live_stream/health (يكتبه StreamWatch.gs بحساب الخدمة)
+     checkedAt  وقت آخر فحص · down عدد المنقطعة · error خطأ الفحص · units وحدات يوتيوب
+     items      [{ name, role 'main'|'strip', kind, id, state, liveId, note }]
+   يصل مع قراءة المجموعة نفسها (smartLoad)، فلا استعلام إضافي. الموقع لا يقرؤه.
 
    الموقع (live-player.js 2.0 عبر S24Feed في utils.js) يغذّي منه صفحة البث
    والمشغّل المصغّر، ويعود إلى LIVE_CONFIG إن فشل الجلب.
@@ -26,6 +34,21 @@ const RECENT_MAX = 8;
 const TITLE_MAX = 120;
 const CH_MAX = 10;
 const streamRef = () => doc(db, 'live_stream', 'current');
+const HEALTH_STALE_H = 7;   // بعد 7 ساعات بلا فحص: المراقبة متوقفة على الأرجح
+
+/* ============ حالات المراقبة (النص نفسه في StreamWatch.gs) ============ */
+const SW_LABEL = {
+  live: 'على الهواء',
+  ended: 'انتهى البث وصار الرقم فيديو عادياً',
+  gone: 'الفيديو محذوف أو صار خاصاً',
+  noembed: 'القناة تمنع عرض البث خارج يوتيوب',
+  nolive: 'لا بث جارٍ في القناة الآن',
+  upcoming: 'بث مجدول لم يبدأ بعد',
+  vod: 'فيديو عادي وليس بثاً مباشراً',
+  error: 'تعذّر الفحص'
+};
+const SW_RED = { ended: 1, gone: 1, noembed: 1, nolive: 1 };
+const swTone = (st) => (st === 'live' ? 'ok' : SW_RED[st] ? 'bad' : 'warn');
 
 /* ============ استخراج المعرّفات من الروابط ============ */
 // يقبل: youtu.be/ID · watch?v=ID · /live/ID · /embed/ID · /shorts/ID · أو الرقم وحده
@@ -75,10 +98,21 @@ const MARKUP = `
       #stView .st-guide[open] summary::after{transform:rotate(135deg);margin:4px 4px 0}
       #stView .st-guide[open] summary{border-bottom:1px solid var(--border,rgba(127,127,127,.25))}
       #stView .st-guide ol{margin:0;padding:14px 44px 18px 20px;line-height:2}
+      #stView .st-health{padding:12px 16px;margin-bottom:14px;display:flex;flex-direction:column;gap:6px;font-size:14px}
+      #stView .st-health.bad{border:1px solid #E71414}
+      #stView .st-health .st-hh{display:flex;flex-wrap:wrap;gap:6px 12px;align-items:baseline;justify-content:space-between}
+      #stView .st-health .st-sub{font-size:12px;opacity:.75}
+      #stView .st-line.bad{color:#E71414;font-weight:600}
+      #stView .st-line.warn{color:#b26a00}
+      #stView .st-dot{display:inline-block;width:9px;height:9px;border-radius:50%;margin-inline-end:6px;vertical-align:middle;background:rgba(127,127,127,.5)}
+      #stView .st-dot.ok{background:var(--brand,#77bd1d)}
+      #stView .st-dot.bad{background:#E71414}
+      #stView .st-dot.warn{background:#e0a100}
       #stView code{direction:ltr;unicode-bidi:isolate;font-family:ui-monospace,Consolas,monospace;background:rgba(119,189,29,.14);padding:1px 6px;border-radius:4px;font-size:.92em}
     </style>
 
     <div class="kpis" id="stKpis"></div>
+    <div id="stHealth"></div>
 
     <details class="card st-guide">
       <summary>دليل الاستخدام: البث المباشر</summary>
@@ -89,6 +123,7 @@ const MARKUP = `
         <li><b>متوقف:</b> يُخفي المشغّل المصغّر في الرئيسية، وتعرض صفحة البث رسالة «البث متوقف حالياً».</li>
         <li>يصل التغيير إلى صفحة البث خلال دقيقة، وإلى الرئيسية خلال 15 دقيقة على الأكثر (كاش الزوار لتوفير الحصة).</li>
         <li>«آخر الأرقام المستخدمة» تعيد بثاً سابقاً بضغطة.</li>
+        <li><b>مراقبة المحطات:</b> اللوحة المركزية تفحص البث الرئيسي وقنوات الشريط كل 3 ساعات تقريباً، وتعرض النتيجة في صندوق أعلى هذا التبويب: الأحمر يعني أن البث انقطع (انتهى، أو حُذف، أو مُنع عرضه، أو لا بث في القناة)، فضع رقماً جديداً واحفظ. النقطة بجانب كل قناة في الشريط تعرض حالتها. للفحص فوراً: مركز الحصص في اللوحة المركزية ← «مراقبة البث» ← «فحص الآن».</li>
         <li><b>قنوات الشريط:</b> تظهر تحت الشاشة في صفحة البث ويختار منها الزائر. الصق رابط بث القناة (أو معرّفها <code>UC...</code>) واسمها، ثم «إضافة» ثم «حفظ». القناة بمعرّف <code>UC</code> تحتاج رابط شعار، وإلا ظهر الحرف الأول من اسمها. جرّب كل قناة بعد إضافتها، فبعض القنوات تمنع عرض بثها خارج يوتيوب.</li>
       </ol>
     </details>
@@ -179,6 +214,7 @@ export default {
     root.innerHTML = MARKUP;
 
     let data = {};          // محتوى live_stream/current كما في الخادم
+    let health = null;      // محتوى live_stream/health (نتيجة آخر فحص للمحطات) أو null
     let loadedAt = 0;
     let dirty = false;      // تعديلات في النموذج لم تُحفظ (لا يُستبدل النموذج عند التحديث)
     let channels = [];      // قنوات الشريط كما في النموذج (تُحفظ مع «حفظ»)
@@ -192,6 +228,8 @@ export default {
         await smartLoad(collection(db, 'live_stream'), 'stream', (snap) => {
           const d = snap.docs.find((x) => x.id === 'current');
           data = d ? d.data() : {};
+          const hd = snap.docs.find((x) => x.id === 'health');
+          health = hd ? hd.data() : null;
           loadedAt = Date.now();
           if (!dirty) fillForm();
           render();
@@ -244,9 +282,11 @@ export default {
     function renderChannels() {
       $('stChList').innerHTML = channels.length ? channels.map((c, i) => {
         const img = c.logo || (c.kind === 'video' ? thumb(c.id) : '');
+        const hs = healthOf('strip', c.id);   // حالة القناة في آخر فحص (إن فُحصت)
+        const dot = hs ? '<span class="st-dot ' + swTone(hs.state) + '" title="' + esc(SW_LABEL[hs.state] || hs.state) + '"></span>' : '';
         return '<div class="card st-rec">' +
           (img ? '<img src="' + esc(img) + '" alt="" loading="lazy">' : '<img alt="">') +
-          '<div class="st-meta"><div>' + esc(c.name) + '</div>' +
+          '<div class="st-meta"><div>' + dot + esc(c.name) + '</div>' +
           '<div class="st-sub">' + (c.kind === 'channel' ? 'قناة' : 'فيديو') + ' · <code>' + esc(c.id) + '</code></div></div>' +
           '<button class="btn btn-sm" type="button" data-ch="up" data-i="' + i + '" aria-label="تقديم"' + (i === 0 ? ' disabled' : '') + '>↑</button>' +
           '<button class="btn btn-sm" type="button" data-ch="down" data-i="' + i + '" aria-label="تأخير"' + (i === channels.length - 1 ? ' disabled' : '') + '>↓</button>' +
@@ -275,12 +315,49 @@ export default {
       msg.textContent = 'أُضيفت. اضغط «حفظ» لاعتمادها.';
     }
 
+    /* ============ مراقبة المحطات (live_stream/health) ============ */
+    const healthItems = () => (health && Array.isArray(health.items) ? health.items : []);
+    function healthOf(role, id) {
+      return healthItems().find((x) => x.role === role && x.id === id) || null;
+    }
+    const tsMs = (t) => (t && t.toMillis ? t.toMillis() : Date.parse(t) || 0);
+
+    function renderHealth() {
+      const box = $('stHealth');
+      if (!health) { box.innerHTML = ''; return; }   // لم يجرِ أول فحص بعد
+      const ageH = (Date.now() - tsMs(health.checkedAt)) / 3600000;
+      const mainId = data.mode === 'channel' ? data.channelId : data.videoId;
+      const lines = [];
+      if (health.error) lines.push('<div class="st-line warn">⚠️ تعذّر آخر فحص: ' + esc(health.error) + '</div>');
+      if (ageH > HEALTH_STALE_H) lines.push('<div class="st-line warn">⚠️ لم تُفحص المحطات منذ ' + Math.floor(ageH) + ' ساعة — راجع المشغّل الساعي في اللوحة المركزية.</div>');
+      let bad = 0, total = 0;
+      healthItems().forEach((x) => {
+        // نتيجة تخص مصدراً غُيّر بعد الفحص: لا تُعرض حتى الفحص القادم
+        if (x.role === 'main' && x.id !== mainId) return;
+        if (x.role === 'strip' && !channels.some((c) => c.id === x.id)) return;
+        total++;
+        if (x.state === 'live') return;
+        const tone = swTone(x.state);
+        if (tone === 'bad') bad++;
+        lines.push('<div class="st-line ' + tone + '"><span class="st-dot ' + tone + '"></span>' + esc(x.name) +
+          ' (' + (x.role === 'main' ? 'البث الرئيسي' : 'الشريط') + '): ' + esc(SW_LABEL[x.state] || x.state) +
+          (x.note ? ' — ' + esc(x.note) : '') + '</div>');
+      });
+      if (total && !lines.length) lines.push('<div class="st-line"><span class="st-dot ok"></span>كل المحطات على الهواء (' + total + ').</div>');
+      box.innerHTML = '<div class="card st-health' + (bad ? ' bad' : '') + '">' +
+        '<div class="st-hh"><b>مراقبة المحطات' + (bad ? ': ' + bad + ' منقطعة' : '') + '</b>' +
+        '<span class="st-sub">آخر فحص: ' + esc(fmtDate(health.checkedAt)) + '</span></div>' +
+        lines.join('') + '</div>';
+    }
+
     /* ============ العرض ============ */
     function kpi(label, value) {
       return '<div class="card kpi"><div class="label">' + label + '</div><div class="value">' + esc(String(value)) + '</div></div>';
     }
     function render() {
       const exists = !!data.mode;
+      renderHealth();
+      renderChannels();   // نقاط الحالة بجانب القنوات بعد وصول نتيجة فحص جديدة
       $('stKpis').innerHTML =
         kpi('الحالة', !exists ? 'لم يُضبط بعد' : (data.onAir === false ? 'متوقف' : 'على الهواء')) +
         kpi('المصدر', !exists ? '—' : (data.mode === 'channel' ? 'قناتي' : 'فيديو محدد')) +
