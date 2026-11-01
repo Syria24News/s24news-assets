@@ -12,6 +12,8 @@
    [26 أكتوبر 2026] شجرة الاقتصاد الجديدة: حُذفت الفروع القديمة (طاقة، نفط، العملات والذهب،
    ذهب، مال وأعمال، اقتصاد محلي) وأُضيفت عشرة فروع بمتغيرات --sy-econ-* المربوطة بمتغيرات
    cat.econXxx في «تخصيص» بلوجر. كل متغيّر معه لون احتياطي يعمل قبل إضافة المتغيّر إلى القالب.
+   [2 نوفمبر 2026] قائمة الأقسام الثمانية: لا تُحفظ في الكاش إلا كاملة (كانت تُحفظ بقسم واحد إن فشلت
+   بقية الطلبات، فيرى الزائر قسماً واحداً ساعة)، ومفتاح الكاش v2 يبطل النسخ الناقصة القديمة.
    [1 نوفمبر 2026] لا فروع للطقس: «تحذيرات جوية» وسم عادي يظهر في وسوم المقال، والشارة تأخذ لون *L.
    «صرف العملات والذهب» باقٍ: هو وسم نشرة الأسعار اليومية في القائمة العلوية، لا فرع اقتصادي.
    [18 أكتوبر 2026] أسماء الأكواز (*X) وألوانها تأتي من القاموس الموحد
@@ -115,7 +117,8 @@ document.addEventListener("DOMContentLoaded", function() {
         return;
     }
 
-    const CACHE_KEY = 's24_cat_list_cache_v1';
+    // v2 (2 نوفمبر 2026): يُبطل نسخاً قديمة حُفظت ناقصة (قسم واحد بدل ثمانية) لمدة ساعة
+    const CACHE_KEY = 's24_cat_list_cache_v2';
     const CACHE_EXPIRY_MS = 60 * 60 * 1000; // ساعة واحدة — عدّلها حسب رغبتك
 
    
@@ -169,10 +172,10 @@ document.addEventListener("DOMContentLoaded", function() {
     function onRequestSettled() {
         settledCount++;
         if (settledCount === totalCount) {
-            if (collectedItems.length > 0) {
+            // تُحفظ النسخة كاملة فقط: إن فشل طلب قسم واحد أو أكثر لا تُحفظ، فتعيد الزيارة التالية المحاولة
+            // (كانت تُحفظ ناقصة فيبقى الزائر يرى قسماً واحداً ساعة كاملة)
+            if (collectedItems.length === totalCount) {
                 window.S24Cache.set(CACHE_KEY, collectedItems);
-            } else if (cachedItems && cachedItems.length > 0) {
-                renderItems(cachedItems);
             } else if (renderedCount === 0) {
                 targetContainer.innerHTML = '<div class="cat-list-empty">تعذر تحميل الأقسام حالياً، حاول لاحقاً.</div>';
             }
