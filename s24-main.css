@@ -5197,6 +5197,27 @@ body.live-page-mode .main-container { max-width: 720px !important; margin: 0 aut
     body.live-page-mode .live-content-inner { display: contents !important; }
     body.live-page-mode .live-header { background: var(--bg-card); margin-bottom: 0 !important; padding-top: 10px !important; padding-bottom: 10px !important; }
 }
+/* المشغّل العائم في صفحة البث (live-player.js 2.5) — الكمبيوتر فقط؛ الموضع (left/top) يكتبه السكربت */
+.s24-float-bar { display: none; }
+@media (min-width: 1024px) {
+    #main-video-placeholder.s24-float {
+        position: fixed !important; bottom: auto !important; right: auto !important;
+        width: 380px !important; height: 214px !important; flex: none !important; padding-top: 0 !important;
+        z-index: 9999 !important; border-radius: 0 0 8px 8px !important;
+        box-shadow: 0 12px 32px rgba(0,0,0,.45) !important;
+        transition: none !important;   /* .video-container فيها transition: top 0.3s فيتأخر الفيديو عن الشريط أثناء السحب */
+    }
+    .s24-float-bar { position: fixed; z-index: 10000; width: 380px; height: 30px; box-sizing: border-box;
+        justify-content: space-between; align-items: center; padding: 0 10px;
+        background: #111; color: #fff; border-radius: 8px 8px 0 0; font: 700 12px var(--font-main);
+        cursor: grab; user-select: none; touch-action: none; }
+    .s24-float-bar.on { display: flex; }
+    .s24-float-bar.drag { cursor: grabbing; }
+    .s24-float-dot { color: #e71414; }
+    .s24-float-bar button { background: none; border: 0; color: #fff; cursor: pointer; font-size: 16px; padding: 0 4px; }
+    .s24-float-bar button:hover, .s24-float-bar button:focus-visible { color: #77bd1d; }
+    body.s24-dragging iframe { pointer-events: none; }   /* لا يبتلع إطار يوتيوب حركة الماوس أثناء السحب */
+}
 /* «شاهد أيضاً» تحت صندوق البث (live-player.js 2.3) — شريط أفقي من فيديوهات الموقع، يُسحب بالإصبع */
 .s24-watch-row { display: flex; gap: 14px; overflow-x: auto; padding: 0 10px 14px; scroll-snap-type: x mandatory; scroll-padding-inline: 10px; -webkit-overflow-scrolling: touch; scrollbar-width: thin; }
 .s24-watch-card { flex: 0 0 calc((100% - 28px) / 3.3); min-width: 160px; display: flex; flex-direction: column; gap: 8px; text-decoration: none; color: var(--text-main); scroll-snap-align: start; }

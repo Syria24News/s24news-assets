@@ -2,6 +2,7 @@
    S24News — مشغّل البث المباشر (playFast / loadVideoLibs)
    playFast تُستدعى من onclick داخل HTML القالب — يجب أن تبقى دالة عامة
 
+   الإصدار 2.5 — 1 نوفمبر 2026: المشغّل العائم على الكمبيوتر (يُسحب ويُحفظ موضعه) حين يخرج الصندوق من الصورة
    الإصدار 2.4 — 1 نوفمبر 2026: «أحدث الأخبار» أولاً ثم «شاهد أيضاً» تحتها؛ وتثبيت الشاشة فوق الأخبار على الموبايل
    الإصدار 2.3 — 1 نوفمبر 2026: «شاهد أيضاً» تحت صندوق البث (فيديوهات *V)، و«أحدث الأخبار» احتياطاً
    الإصدار 2.2 — 1 نوفمبر 2026: على الشاشات العريضة (≥1450px) الشاشة يميناً والقنوات يساراً
@@ -290,8 +291,97 @@ window.S24Live = (function () {
         restartMain();
     }
 
+    /* ============ المشغّل العائم (2.5) — الكمبيوتر فقط (≥1024px) ============
+       حين يخرج صندوق البث من الصورة أثناء التمرير، ينتقل المشغّل نفسه إلى نافذة صغيرة عائمة
+       (position: fixed — لا يُنقل العنصر في الصفحة، فلا يُعاد تحميل إطار يوتيوب). يسحبها القارئ
+       من شريطها الأسود إلى أي مكان ويُحفظ موضعها؛ ⤒ يعيد للشاشة، ✕ يغلقها حتى يعود للصندوق.
+       لا تظهر إلا بعد تشغيل البث. على الموبايل الشاشة مثبّتة أصلاً (2.4)، فلا عائم. */
+    function initFloat() {
+        var host = document.getElementById('main-video-placeholder');
+        var box = host && host.closest('.live-stream-wrapper');
+        if (!host || !box || document.querySelector('.s24-float-bar')) return;
+        var W = 380, H = Math.round(W * 9 / 16), BAR = 30, KEY = 's24_float_pos';
+        var mq = window.matchMedia('(min-width: 1024px)');
+
+        var bar = document.createElement('div');
+        bar.className = 's24-float-bar';
+        bar.innerHTML = '<span><span class="s24-float-dot">●</span> مباشر</span><span>' +
+            '<button type="button" data-a="up" title="العودة إلى الشاشة" aria-label="العودة إلى الشاشة">⤒</button>' +
+            '<button type="button" data-a="x" title="إغلاق" aria-label="إغلاق">✕</button></span>';
+        document.body.appendChild(bar);
+
+        var pos = null;
+        try { pos = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
+        if (!pos || typeof pos.x !== 'number') pos = { x: 20, y: window.innerHeight - H - BAR - 90 };
+
+        // الموضع يُكتب بأولوية important ليغلب قواعد التثبيت (top !important) في s24-main.css
+        function place() {
+            pos.x = Math.min(Math.max(0, pos.x), window.innerWidth - W);
+            pos.y = Math.min(Math.max(0, pos.y), window.innerHeight - H - BAR);
+            bar.style.left = pos.x + 'px';
+            bar.style.top = pos.y + 'px';
+            host.style.setProperty('left', pos.x + 'px', 'important');
+            host.style.setProperty('top', (pos.y + BAR) + 'px', 'important');
+        }
+        var floating = false, dismissed = false;
+        function started() { return !!host.querySelector('.video-js, iframe'); }
+        function setFloat(on) {
+            if (on === floating) return;
+            if (on) { box.style.minHeight = box.offsetHeight + 'px'; place(); }   // حجز المكان فلا تقفز الصفحة
+            else { box.style.minHeight = ''; host.style.removeProperty('left'); host.style.removeProperty('top'); }
+            host.classList.toggle('s24-float', on);
+            bar.classList.toggle('on', on);
+            floating = on;
+        }
+        function check() {
+            if (!mq.matches) return setFloat(false);
+            var top = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--sticky-top-offset')) || 0;
+            var out = box.getBoundingClientRect().bottom < top + 60;
+            if (!out) dismissed = false;
+            setFloat(out && !dismissed && started());
+        }
+        var queued = false;
+        window.addEventListener('scroll', function () {
+            if (queued) return;
+            queued = true;
+            requestAnimationFrame(function () { queued = false; check(); });
+        }, { passive: true });
+        window.addEventListener('resize', function () { if (floating) place(); check(); });
+
+        // السحب من الشريط (لا من الفيديو، كي تبقى أزرار المشغّل تعمل)
+        var drag = null;
+        bar.addEventListener('pointerdown', function (e) {
+            if (e.target.closest('button')) return;
+            drag = { dx: e.clientX - pos.x, dy: e.clientY - pos.y };
+            bar.setPointerCapture(e.pointerId);
+            bar.classList.add('drag');
+            document.body.classList.add('s24-dragging');
+        });
+        bar.addEventListener('pointermove', function (e) {
+            if (!drag) return;
+            pos.x = e.clientX - drag.dx;
+            pos.y = e.clientY - drag.dy;
+            place();
+        });
+        function endDrag() {
+            if (!drag) return;
+            drag = null;
+            bar.classList.remove('drag');
+            document.body.classList.remove('s24-dragging');
+            try { localStorage.setItem(KEY, JSON.stringify(pos)); } catch (e) {}
+        }
+        bar.addEventListener('pointerup', endDrag);
+        bar.addEventListener('pointercancel', endDrag);
+        bar.addEventListener('click', function (e) {
+            var b = e.target.closest('button');
+            if (!b) return;
+            if (b.getAttribute('data-a') === 'x') { dismissed = true; setFloat(false); }
+            else box.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        });
+    }
+
     function load() {
-        if (isLivePage) { ensureSplit(); renderMore(); }
+        if (isLivePage) { ensureSplit(); renderMore(); initFloat(); }
         var needed = isLivePage || document.getElementById('miniLiveWidget') || document.querySelector('.live-tv-widget');
         if (!needed || !window.S24Feed) { ready = Promise.resolve(); return; }
         ready = window.S24Feed.get('live_stream/current', {
