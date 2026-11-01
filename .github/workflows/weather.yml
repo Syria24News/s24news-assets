@@ -13,8 +13,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write   # حفظ weather.json في المستودع
-  pages: write      # طلب إعادة بناء GitHub Pages بعد الحفظ
+  contents: write   # حفظ weather.json في المستودع (الرفع يُطلق بناء GitHub Pages تلقائياً)
 
 concurrency:
   group: weather
@@ -26,10 +25,6 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v5
-        with:
-          # الرفع بمفتاح المهمة الافتراضي لا يُطلق بناء GitHub Pages، فيبقى الملف الجديد في المستودع
-          # ولا يصل إلى الموقع. المفتاح الشخصي S24_BOT_TOKEN (سرّ في إعدادات المستودع) يُطلق البناء.
-          token: ${{ secrets.S24_BOT_TOKEN || github.token }}
 
       - uses: actions/setup-node@v5
         with:
@@ -52,9 +47,3 @@ jobs:
             sleep 5
           done
           exit 1
-
-      - name: طلب إعادة بناء GitHub Pages
-        # الحفظ بمفتاح المهمة قد لا يطلق بناء Pages تلقائياً؛ هذا الطلب يضمنه. فشله لا يُفشل المهمة.
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: gh api -X POST "repos/${{ github.repository }}/pages/builds" --silent || echo "تعذّر طلب البناء — سيُبنى مع أول تحديث آخر"
