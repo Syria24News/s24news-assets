@@ -1,34 +1,8 @@
 {
   "v": 1,
-  "updated": "2026-11-01T22:45:01.516Z",
+  "updated": "2026-11-01T22:47:49.918Z",
   "label": "إعلان",
   "minWords": 400,
   "glossary": false,
-  "slots": {
-    "article-under": {
-      "on": true,
-      "type": "house",
-      "img": "https://cdnv.russiatoday.com/media/pics/2023.04/original/643401904c59b7237a784a78.png"
-    },
-    "article-mid": {
-      "on": true,
-      "type": "house",
-      "img": "https://cdnv.russiatoday.com/media/pics/2023.04/original/643401904c59b7237a784a78.png"
-    },
-    "home-bottom": {
-      "on": true,
-      "type": "house",
-      "img": "https://cdnv.russiatoday.com/media/pics/2023.04/original/643401904c59b7237a784a78.png"
-    },
-    "list-mid": {
-      "on": true,
-      "type": "house",
-      "img": "https://cdnv.russiatoday.com/media/pics/2023.04/original/643401904c59b7237a784a78.png"
-    },
-    "article-end": {
-      "on": true,
-      "type": "house",
-      "img": "https://cdnv.russiatoday.com/media/pics/2023.04/original/643401904c59b7237a784a78.png"
-    }
-  }
+  "slots": {}
 }
