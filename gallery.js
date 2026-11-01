@@ -18,6 +18,8 @@
    2.2: سطر «بلا معرض» في المقالة يمنع بناء المعرض فيها (عكس «منطقة الألبوم»):
         يُكتب سطراً وحده في أي مكان من المقالة، فيُخفى عن القارئ وتبقى الصور عادية.
         أو في عرض HTML: أي عنصر بالصنف no-gallery
+   2.3 (1 نوفمبر 2026): حاوية الإعلان .s24-ad (ads.js) لا تُفحص ولا تُسحب إلى المعرض —
+        إعلان صورة بلا نص كان سيُعدّ صورة من صور المقالة
    ============================================================ */
 
 /* ---------- أدوات مشتركة ---------- */
@@ -116,6 +118,7 @@ function s24AutoWrapAlbumFromMarker() {
         var out = [];
         list.forEach(function(el) {
             if (el.tagName === 'SCRIPT' || el.tagName === 'STYLE') return;
+            if (el.classList.contains('s24-ad')) return; // حاوية إعلان (ads.js) ليست من صور المقالة
             var isPlainRtlWrapper = el.tagName === 'DIV' && el.getAttribute('dir') === 'rtl' &&
                 !el.classList.contains('separator') && !el.classList.contains('rt-album-source');
             if (isPlainRtlWrapper) {

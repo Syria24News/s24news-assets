@@ -1,6 +1,8 @@
 /* ============================================================
-   S24News — المقالات ذات الصلة + وضع كتل الإعلانات
-   (كتلتان متلاصقتان دُمجتا بترتيبهما الأصلي)
+   S24News — المقالات ذات الصلة («إقرأ المزيد»)
+   1 نوفمبر 2026: نُقل وضع كتل الإعلانات من هذا الملف إلى ads.js،
+   وبقي هنا «إقرأ المزيد» فقط. الاسم related-ads.js باقٍ لأن القالب يستدعيه به.
+   الترتيب تحت المقال: المقال ← إعلان article-under (إن وُجد) ← «إقرأ المزيد».
    ============================================================ */
 
 /* =============== 1) المقالات ذات الصلة =============== */
@@ -61,16 +63,15 @@ document.addEventListener("DOMContentLoaded", function() {
                         </div>
                     </div>
                 `;        
-              // التقسيم الذكي وترتيب الصناديق:
-                const mainEntry = document.querySelector('.post.hentry'); 
-                const adUnderPost = document.getElementById('ad-under-post-container'); 
+                // الترتيب: المقال ← إعلان «تحت المقال» (يضعه ads.js) ← إقرأ المزيد
+                const mainEntry = document.querySelector('.post.hentry');
+                const adUnderPost = mainEntry && mainEntry.nextElementSibling &&
+                    mainEntry.nextElementSibling.matches('.s24-ad[data-slot="article-under"]')
+                    ? mainEntry.nextElementSibling : null;
 
-                // الترتيب الصارم: المقال ثم الإعلان ثم إقرأ المزيد
                 if (adUnderPost) {
-                    // إذا وجد صندوق الإعلان، يضع "إقرأ المزيد" تحته
                     adUnderPost.insertAdjacentHTML('afterend', sectionHTML);
                 } else if (mainEntry) {
-                    // إذا لم يجد إعلاناً، يضع "إقرأ المزيد" تحت المقال
                     mainEntry.insertAdjacentHTML('afterend', sectionHTML);
                 }
             }
@@ -79,5 +80,3 @@ document.addEventListener("DOMContentLoaded", function() {
     .catch(err => {});
 });
 
-/* =============== 2) وضع كتل الإعلانات داخل المقال =============== */
-document.addEventListener("DOMContentLoaded",function(){var e=document.getElementById("in-article-ad-wrapper"),t=document.querySelector('[id^="post-body-"]');e&&t&&t.appendChild(e);var n=document.getElementById("ad-under-post-container"),d=document.querySelector(".post.hentry");d&&n&&d.parentNode.insertBefore(n,d.nextSibling)});

@@ -1297,8 +1297,7 @@ body#layout #grid-label-config { display: block; border: 2px dashed orange; back
 
 
 /* إصلاح مشكلة المسافة المضاعفة (الفراغات الوهمية) في الحاوية الرئيسية */
-.main-layout > .section,
-.main-layout > #Ad_Under_Post {
+.main-layout > .section {
     display: none !important;
 }
 
@@ -2027,8 +2026,17 @@ body.item-page .post-body .separator a {
 }
 
 
-/* الإعلانات */
-.ad-banner-wrapper{display:block;width:100%;max-width:864px;margin:20px auto 40px auto;text-align:center;position:relative;overflow:hidden;border-radius:8px;background:transparent}.ad-banner-wrapper img{display:block;width:100%;max-width:100%;height:auto;object-fit:contain;margin:0 auto;border-radius:8px;border:none!important;transition:opacity .3s ease-in-out}#in-article-ad-wrapper{display:block;width:100%;max-width:100%;margin:30px auto;text-align:center;clear:both;overflow:hidden;background:transparent}.ad-under-post-wrapper{width:100%;margin:25px 0;text-align:center;display:flex;justify-content:center;align-items:center;clear:both;background:transparent}.ad-under-post-wrapper .widget{margin:0;padding:0;width:100%}.ad-banner-wrapper ins.adsbygoogle,#in-article-ad-wrapper ins.adsbygoogle,.ad-under-post-wrapper ins.adsbygoogle{display:block!important;margin:0 auto!important;max-width:100%!important}body:not(.item-page) .ad-under-post-wrapper,body.most-read-page .ad-under-post-wrapper,body.saved-page-mode .ad-under-post-wrapper,body:not(.item-page) #in-article-ad-wrapper{display:none!important}
+/* الإعلانات (ads.js) — الحاوية مخفية حتى يملأها السكربت؛ الوحدة غير المملوءة تختفي مع حاويتها */
+.s24-ad { display: none; clear: both; width: 100%; max-width: 100%; margin: 24px auto; text-align: center; overflow: hidden; }
+.s24-ad.is-on { display: block; }
+.s24-ad:has(ins.adsbygoogle[data-ad-status="unfilled"]) { display: none !important; }
+.s24-ad-label { display: block; margin-bottom: 6px; font-family: var(--font-main); font-size: 11px; line-height: 1; color: var(--text-sec); }
+.item-page .post-body .s24-ad .s24-ad-label { font-size: 11px !important; line-height: 1 !important; } /* يغلب مقاس الخط المختار في أدوات المقال */
+.s24-ad-inner a { display: block; }
+.s24-ad-inner img { display: block; max-width: 100%; height: auto; margin: 0 auto; border: 0; border-radius: 0; }
+.s24-ad ins.adsbygoogle { display: block; max-width: 100%; margin: 0 auto; }
+.blog-posts .s24-ad[data-slot="list-mid"] { margin: 12px 0; }
+@media print { .s24-ad { display: none !important; } }
 
 
 /* تنسيق أداة التواصل الاجتماعي العلوية */
@@ -4829,7 +4837,7 @@ body.most-read-page.sidebar-toggled #main-right-sidebar, body.saved-page-mode.si
 /* إخفاء العناصر عند فتح القائمة */
 body.sidebar-toggled .mini-live__wrapper, body.sidebar-toggled #miniLiveWidget, body.sidebar-toggled .nav-arrow { display: none !important; }
 body.sidebar-toggled .btn-live, body.sidebar-toggled .mobile-search-icon, body.sidebar-toggled #themeToggle { display: none !important; }
-body.sidebar-toggled .main-layout, body.sidebar-toggled .rt-footer, body.sidebar-toggled .ad-banner-wrapper, body.sidebar-toggled .important-sections { z-index: 1; position: relative; }
+body.sidebar-toggled .main-layout, body.sidebar-toggled .rt-footer, body.sidebar-toggled .s24-ad, body.sidebar-toggled .important-sections { z-index: 1; position: relative; }
 
 body.sidebar-toggled .breaking-news-container, body.sidebar-toggled #breakingNewsContainer { opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; z-index: -1 !important; }
 
@@ -4960,9 +4968,6 @@ body #comments .comment-thread .comment-thread { padding-right: 12px !important;
 .live-event-text { font-size: 14px; }
 .live-card-title { font-size: 15px; }
 .live-card-body { max-height: 200px; } /* تصغير ارتفاع الصندوق ليناسب الشاشات الأصغر */
-
-/* تنسيق الإعلانات */
-.ad-banner-wrapper{margin:15px auto 25px auto;border-radius:0!important;width:100%}.ad-banner-wrapper img,.ad-banner-wrapper ins.adsbygoogle,.ad-under-post-wrapper,.ad-under-post-wrapper img,.ad-under-post-wrapper iframe,.ad-under-post-wrapper ins.adsbygoogle,#in-article-ad-wrapper ins.adsbygoogle{border-radius:0!important}
 
 /* شبكة التصنيفات الفرعية المخصصة للمنوعات */
 .news-themes__wrapper { grid-template-columns: 1fr !important; gap: 15px !important; }
