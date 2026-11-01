@@ -25,16 +25,20 @@
    شكل ads.json:
    {
      "v": 1, "updated": "…",
-     "label": "إعلان",          ← نص صغير فوق كل إعلان؛ فارغ = بلا نص
+     "label": "إعلان",          ← نص صغير فوق أدسنس وإعلانات الجهات الأخرى؛ فارغ = بلا نص
      "minWords": 400,           ← حد إعلان وسط المقالة
      "glossary": false,         ← إعلانات الموسوعة (مطفأة)
      "slots": {
        "home-top": { "on": true, "type": "adsense", "adSlot": "1234567890", "format": "auto" },
        "article-mid": { "on": true, "type": "adsense", "adSlot": "…", "format": "in-article" },
        "article-end": { "on": true, "type": "house", "name": "حملة…", "img": "رابط الصورة",
-                        "url": "رابط الصفحة", "alt": "وصف", "from": "2026-11-05", "to": "2026-12-01" }
+                        "url": "رابط الصفحة", "alt": "وصف", "from": "2026-11-05", "to": "2026-12-01" },
+       "list-mid": { "on": true, "type": "house", "own": true, "img": "…", "url": "https://t.me/…" }
      }
    }
+   كلمة «إعلان» تظهر فوق أدسنس وإعلانات الجهات الأخرى، ولا تظهر على ترويج سوريا 24 لنفسه:
+   رابط داخل الموقع، أو own: true (قنواتنا على تيليغرام وفيسبوك…).
+   مقاس صورة الإعلان الخاص المقترح: 1440×366 WebP (يُعرض بعرض العمود، نسبة RT 720×183).
    المكان غير المذكور، أو on=false، أو خارج تاريخيه = لا شيء (تُحذف حاويته).
 
    الاستهلاك: صفر من Firestore وApps Script. طلب واحد لملف ثابت (GitHub Pages)،
@@ -258,7 +262,9 @@
         } else if (s.type === 'house' && s.img) {
             inner.appendChild(houseUnit(s, name));
             el.appendChild(inner);
-            addLabel(el, cfg);
+            // ترويج سوريا 24 لنفسه (رابط داخل الموقع، أو own: true لقنواتنا) بلا كلمة «إعلان» — كما في RT
+            var own = s.own === true || isInternal(String(s.url || ''));
+            if (!own) addLabel(el, cfg);
             el.classList.add('is-on');
         } else {
             el.remove();

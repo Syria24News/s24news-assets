@@ -2033,7 +2033,7 @@ body.item-page .post-body .separator a {
 .s24-ad-label { display: block; margin-bottom: 6px; font-family: var(--font-main); font-size: 11px; line-height: 1; color: var(--text-sec); }
 .item-page .post-body .s24-ad .s24-ad-label { font-size: 11px !important; line-height: 1 !important; } /* يغلب مقاس الخط المختار في أدوات المقال */
 .s24-ad-inner a { display: block; }
-.s24-ad-inner img { display: block; max-width: 100%; height: auto; margin: 0 auto; border: 0; border-radius: 0; }
+.s24-ad-inner img { display: block; width: 100%; max-width: 100%; height: auto; margin: 0 auto; border: 0; border-radius: var(--sy-card-radius, 12px); }
 .s24-ad ins.adsbygoogle { display: block; max-width: 100%; margin: 0 auto; }
 .blog-posts .s24-ad[data-slot="list-mid"] { margin: 12px 0; }
 .s24-ad-preview { padding: 28px 12px; border: 2px dashed #77bd1d; color: var(--text-main); font-family: var(--font-main); font-size: 14px; } /* ?ads=preview */
