@@ -60,7 +60,9 @@ const THEME_COLORS = {
   // فروع الاقتصاد (26 أكتوبر 2026) — متغيرات cat.econXxx في «تخصيص» بلوغر
   '--sy-econ-syria': '#00838F', '--sy-econ-markets': '#1E8449', '--sy-econ-fx': '#16A085',
   '--sy-econ-metals': '#D4AF37', '--sy-econ-crypto': '#5B2C6F', '--sy-econ-world': '#1A5276',
-  '--sy-econ-energy': '#D35400', '--sy-econ-analysis': '#800020', '--sy-econ-opinion': '#5D6D7E'
+  '--sy-econ-energy': '#D35400', '--sy-econ-analysis': '#800020', '--sy-econ-opinion': '#5D6D7E',
+  // فروع الطقس (1 نوفمبر 2026) — متغيرات cat.wxXxx في «تخصيص» بلوغر عند إضافتها
+  '--sy-wx-news': '#1F618D', '--sy-wx-alerts': '#AD1457', '--sy-wx-obs': '#6E5494'
 };
 const varName = (color) => (String(color || '').match(/--[\w-]+/) || [''])[0];
 // لون قابل للعرض في اللوحة: hex كما هو، أو درجة متغيّر القالب، أو اللون الاحتياطي داخل '--x, #hex'
