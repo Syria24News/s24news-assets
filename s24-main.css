@@ -5197,6 +5197,23 @@ body.live-page-mode .main-container { max-width: 720px !important; margin: 0 aut
     body.live-page-mode .live-content-inner { display: contents !important; }
     body.live-page-mode .live-header { background: var(--bg-card); margin-bottom: 0 !important; padding-top: 10px !important; padding-bottom: 10px !important; }
 }
+/* التغطية المباشرة تحت شاشة البث (live-player.js 2.6) — خط زمني مختصر بآخر 5 أخبار */
+.s24-cov-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; padding-left: 10px; }
+.s24-cov-head .sy-related-main-title { display: flex; align-items: center; gap: 8px; }
+.s24-cov-head .pulse-dot { flex-shrink: 0; }
+.s24-cov-all { flex-shrink: 0; font-family: var(--font-main); font-size: 13px; font-weight: 700; color: #77bd1d; text-decoration: none; }
+.s24-cov-all:hover { text-decoration: underline; }
+.s24-cov-list { list-style: none; margin: 0 10px 20px; padding: 0; border-inline-start: 2px solid var(--border-color, #eee); }
+.s24-cov-item { position: relative; padding-inline-start: 18px; }
+.s24-cov-item::before { content: ""; position: absolute; right: -6px; top: 17px; width: 10px; height: 10px; border-radius: 50%; background: #77bd1d; box-shadow: 0 0 0 3px var(--bg-card, #fff); }
+.s24-cov-item.is-urgent::before { background: var(--color-red, #e71414); }
+.s24-cov-link { display: flex; gap: 12px; align-items: baseline; padding: 10px 0; border-bottom: 1px solid var(--border-color, #eee); color: var(--text-main); text-decoration: none; }
+.s24-cov-item:last-child .s24-cov-link { border-bottom: 0; }
+a.s24-cov-link:hover .s24-cov-title { color: #77bd1d; }
+.s24-cov-time { flex-shrink: 0; min-width: 52px; font-family: var(--font-main); font-size: 13px; font-weight: 700; color: var(--text-sec); }
+.s24-cov-title { font-family: var(--font-main); font-size: 15px; font-weight: 600; line-height: 1.6; }
+.s24-cov-item.is-urgent .s24-cov-title { color: var(--color-red, #e71414); }
+@media (max-width: 768px) { .s24-cov-title { font-size: 14px; } .s24-cov-all { font-size: 12px; } }
 /* المشغّل العائم في صفحة البث (live-player.js 2.5) — الكمبيوتر فقط؛ الموضع (left/top) يكتبه السكربت */
 .s24-float-bar { display: none; }
 @media (min-width: 1024px) {

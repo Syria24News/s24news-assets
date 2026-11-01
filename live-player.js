@@ -2,6 +2,7 @@
    S24News — مشغّل البث المباشر (playFast / loadVideoLibs)
    playFast تُستدعى من onclick داخل HTML القالب — يجب أن تبقى دالة عامة
 
+   الإصدار 2.6 — 1 نوفمبر 2026: التغطية المباشرة النشطة (آخر 5 أخبار) تحت الشاشة فوق «أحدث الأخبار»
    الإصدار 2.5 — 1 نوفمبر 2026: المشغّل العائم على الكمبيوتر (يُسحب ويُحفظ موضعه) حين يخرج الصندوق من الصورة
    الإصدار 2.4 — 1 نوفمبر 2026: «أحدث الأخبار» أولاً ثم «شاهد أيضاً» تحتها؛ وتثبيت الشاشة فوق الأخبار على الموبايل
    الإصدار 2.3 — 1 نوفمبر 2026: «شاهد أيضاً» تحت صندوق البث (فيديوهات *V)، و«أحدث الأخبار» احتياطاً
@@ -169,13 +170,118 @@ window.S24Live = (function () {
         box.appendChild(body);
         box.hidden = false;
     }
+    /* ============ التغطية المباشرة تحت الشاشة (2.6) ============
+       إن كانت هناك تغطية ظاهرة (بمنطق صندوق الرئيسية نفسه: مثبّتة، أو نشطة وفيها خبر خلال 24 ساعة)
+       يظهر فوق «أحدث الأخبار» آخر 5 أخبار منها مع رابط التغطية كاملة؛ وإلا لا يظهر شيء.
+       القراءات: مستند coverage_groups/current (عبر S24Feed) + استعلام واحد حتى 8 أخبار، وكلاهما
+       مخبّأ 5 دقائق على جهاز الزائر؛ ويُحدَّث كل 5 دقائق ما دامت الصفحة ظاهرة والتغطية قائمة. */
+    var COV_TTL = 5 * 60 * 1000, COV_SHOW = 5, COV_WINDOW = 24 * 60 * 60 * 1000;
+    var FS_QUERY = 'https://firestore.googleapis.com/v1/projects/s24n-views/databases/(default)/documents:runQuery';
+    function covNum(v) { return Number(v) || 0; }
+    function covShown(id, d, now) {
+        var st = (d.statuses || {})[id] || 'active';
+        if (st === 'pinned') return true;
+        if (st === 'closed' || st === 'inactive') return false;
+        var last = covNum((d.lastAt || {})[id]), start = covNum((d.since || {})[id]);
+        return !!last && last >= start && last >= now - COV_WINDOW;
+    }
+    function covPick(d) {
+        var now = Date.now(), best = null;
+        Object.keys(d.groups || {}).forEach(function (id) {
+            if (!covShown(id, d, now)) return;
+            var pinned = (d.statuses || {})[id] === 'pinned';
+            var last = covNum((d.lastAt || {})[id]);
+            if (!best || (pinned && !best.pinned) || (pinned === best.pinned && last > best.last))
+                best = { id: id, name: d.groups[id], pinned: pinned, last: last, since: covNum((d.since || {})[id]) };
+        });
+        return best;
+    }
+    function covItems(g) {
+        var key = 's24_live_cov_' + g.id;
+        var c = window.S24Cache && window.S24Cache.get(key, COV_TTL);
+        if (c && c.last === g.last) return Promise.resolve(c.items);
+        return fetch(FS_QUERY, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ structuredQuery: {
+                from: [{ collectionId: 'live_coverage' }],
+                where: { fieldFilter: { field: { fieldPath: 'groupId' }, op: 'EQUAL', value: { stringValue: g.id } } },
+                orderBy: [{ field: { fieldPath: 'timestamp' }, direction: 'DESCENDING' }],
+                limit: 8
+            } })
+        }).then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+          .then(function (rows) {
+              var items = (rows || []).filter(function (x) { return x.document; }).map(function (x) {
+                  return window.S24Feed.fsVal({ mapValue: { fields: x.document.fields || {} } }) || {};
+              }).filter(function (n) {
+                  return !n.hidden && n.title && covNum(n.timestamp) >= g.since;   // كما في lbs24n: الأقدم من بداية التغطية لا يُعرض
+              }).slice(0, COV_SHOW).map(function (n) {
+                  return { t: covNum(n.timestamp), title: n.title, url: n.url || '', urgent: !!n.isUrgent };
+              });
+              if (window.S24Cache) window.S24Cache.set(key, { last: g.last, items: items });
+              return items;
+          });
+    }
+    var covFmt = null;
+    function covTime(ms) {
+        try {
+            covFmt = covFmt || new Intl.DateTimeFormat('ar-u-nu-latn', { hour: 'numeric', minute: '2-digit', timeZone: 'Asia/Damascus' });
+            return covFmt.format(new Date(ms));
+        } catch (e) { return ''; }
+    }
+    function renderCoverage(box) {
+        if (!window.S24Feed) return;
+        var draw = function () {
+            if (document.hidden) return;
+            window.S24Feed.get('coverage_groups/current', { key: 's24_live_cov_groups', ttl: COV_TTL }).then(function (d) {
+                var g = d && covPick(d);
+                if (!g) { box.hidden = true; box.innerHTML = ''; return null; }
+                return covItems(g).then(function (items) {
+                    if (!items.length) { box.hidden = true; box.innerHTML = ''; return; }
+                    box.innerHTML = '';
+                    var head = document.createElement('div');
+                    head.className = 's24-cov-head';
+                    head.innerHTML = '<h3 class="sy-related-main-title"><span class="pulse-dot" aria-hidden="true"></span> تغطية مباشرة: <span class="s24-cov-name"></span></h3>' +
+                        '<a class="s24-cov-all">التغطية كاملة &rsaquo;</a>';
+                    head.querySelector('.s24-cov-name').textContent = g.name || '';
+                    head.querySelector('.s24-cov-all').href = '/p/lbs24n.html?tab=' + encodeURIComponent(g.id);
+                    var list = document.createElement('ol');
+                    list.className = 's24-cov-list';
+                    items.forEach(function (n) {
+                        var li = document.createElement('li');
+                        li.className = 's24-cov-item' + (n.urgent ? ' is-urgent' : '');
+                        var el = document.createElement(n.url ? 'a' : 'span');
+                        el.className = 's24-cov-link';
+                        if (n.url) el.href = n.url;
+                        el.innerHTML = '<time class="s24-cov-time"></time><span class="s24-cov-title"></span>';
+                        el.querySelector('time').textContent = covTime(n.t);
+                        el.querySelector('time').setAttribute('datetime', new Date(n.t).toISOString());
+                        el.querySelector('.s24-cov-title').textContent = n.title;
+                        li.appendChild(el);
+                        list.appendChild(li);
+                    });
+                    box.appendChild(head);
+                    box.appendChild(list);
+                    box.hidden = false;
+                });
+            }).catch(function () {});
+        };
+        draw();
+        setInterval(draw, COV_TTL);
+        document.addEventListener('visibilitychange', function () { if (!document.hidden) draw(); });
+    }
+
     function renderMore() {
         var host = document.getElementById('main-video-placeholder');
         var anchor = host && (host.closest('.post.hentry') || host.closest('.live-stream-wrapper'));
         if (!anchor || document.getElementById('s24-live-latest')) return;
-        var latest = section('s24-live-latest'), watch = section('s24-live-watch');
-        anchor.insertAdjacentElement('afterend', latest);
+        var cov = section('s24-live-cov'), latest = section('s24-live-latest'), watch = section('s24-live-watch');
+        anchor.insertAdjacentElement('afterend', cov);
+        cov.insertAdjacentElement('afterend', latest);
         latest.insertAdjacentElement('afterend', watch);
+
+        // 0) التغطية المباشرة النشطة (إن وُجدت) فوق كل شيء — 2.6
+        renderCoverage(cov);
 
         // 1) أحدث الأخبار (بلا مقالات الموسوعة)
         getFeed('/feeds/posts/summary?alt=json&max-results=' + (LATEST_COUNT + 6)).then(function (all) {
