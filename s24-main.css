@@ -5187,6 +5187,16 @@ body.live-page-mode .main-container { max-width: 720px !important; margin: 0 aut
 /* يلتفّ على سطرين في الشاشات الضيقة بدل قطعه بنقاط (كان nowrap + ellipsis) */
 .live-subtitle { margin: 2px 0 0; font-family: var(--font-main); font-size: 13px; font-weight: 400; line-height: 1.5; color: var(--text-sec); }
 @media (max-width: 768px) { .live-subtitle { font-size: 12px; } }
+/* الموبايل والتابلت (حتى 1023px): الشاشة وشريط القنوات يبقيان مثبّتين وأحدث الأخبار تمرّ تحتهما (live-player.js 2.4).
+   التثبيت (sticky) لا يتجاوز حدود الحاوية الأم، فتُلغى صناديق الحاويات الوسيطة (display: contents)
+   لتصير الحاوية الأم .post-outer التي تضم الأخبار أيضاً؛ وتحمل الترويسة لون البطاقة بنفسها */
+@media (max-width: 1023px) {
+    body.live-page-mode .post.hentry,
+    body.live-page-mode .post-body,
+    body.live-page-mode .live-stream-wrapper,
+    body.live-page-mode .live-content-inner { display: contents !important; }
+    body.live-page-mode .live-header { background: var(--bg-card); margin-bottom: 0 !important; padding-top: 10px !important; padding-bottom: 10px !important; }
+}
 /* «شاهد أيضاً» تحت صندوق البث (live-player.js 2.3) — شريط أفقي من فيديوهات الموقع، يُسحب بالإصبع */
 .s24-watch-row { display: flex; gap: 14px; overflow-x: auto; padding: 0 10px 14px; scroll-snap-type: x mandatory; scroll-padding-inline: 10px; -webkit-overflow-scrolling: touch; scrollbar-width: thin; }
 .s24-watch-card { flex: 0 0 calc((100% - 28px) / 3.3); min-width: 160px; display: flex; flex-direction: column; gap: 8px; text-decoration: none; color: var(--text-main); scroll-snap-align: start; }

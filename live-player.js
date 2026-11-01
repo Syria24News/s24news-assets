@@ -2,6 +2,7 @@
    S24News — مشغّل البث المباشر (playFast / loadVideoLibs)
    playFast تُستدعى من onclick داخل HTML القالب — يجب أن تبقى دالة عامة
 
+   الإصدار 2.4 — 1 نوفمبر 2026: «أحدث الأخبار» أولاً ثم «شاهد أيضاً» تحتها؛ وتثبيت الشاشة فوق الأخبار على الموبايل
    الإصدار 2.3 — 1 نوفمبر 2026: «شاهد أيضاً» تحت صندوق البث (فيديوهات *V)، و«أحدث الأخبار» احتياطاً
    الإصدار 2.2 — 1 نوفمبر 2026: على الشاشات العريضة (≥1450px) الشاشة يميناً والقنوات يساراً
                 داخل العمود الأوسط، و«أحدث الأخبار» تحت صندوق البث (خلاصة بلوغر)
@@ -131,9 +132,10 @@ window.S24Live = (function () {
         return split;
     }
 
-    /* تحت صندوق البث، في موضع «إقرأ المزيد» نفسه في المقالات (بعد .post.hentry) — 2.3:
-       «شاهد أيضاً»: شريط أفقي من فيديوهات الموقع (الوسم *V، كسلايدر الرئيسية والشورتس)،
-       كل بطاقة تفتح الفيديو في مشغّل الشورتس. إن لم توجد فيديوهات: «أحدث الأخبار» ببطاقات .sy-related-*.
+    /* تحت صندوق البث، في موضع «إقرأ المزيد» نفسه في المقالات (بعد .post.hentry) — 2.4:
+       أولاً «أحدث الأخبار» (3 بطاقات .sy-related-*)، ثم تحتها «شاهد أيضاً»: شريط أفقي من فيديوهات
+       الموقع (الوسم *V، كسلايدر الرئيسية والشورتس)، كل بطاقة تفتح الفيديو في مشغّل الشورتس.
+       يُحجز موضع القسمين فوراً بالترتيب، فلا يتبدّل ترتيبهما مهما سبق أحد الطلبين الآخر.
        المصدر خلاصة بلوغر في الحالتين: بلا أي كلفة على Firestore. */
     var VIDEO_LABEL = '*V', VIDEO_COUNT = 8, LATEST_COUNT = 3;
     var THUMB_PH = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 9'%3E%3Crect width='16' height='9' fill='%23222'/%3E%3C/svg%3E";
@@ -150,72 +152,73 @@ window.S24Live = (function () {
         return fetch(url).then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
             .then(function (d) { return ((d.feed || {}).entry || []).filter(feedLink); });
     }
-    function moreBox(title) {
+    // قسم فارغ مخفي يُملأ حين تصل بياناته
+    function section(id) {
         var box = document.createElement('div');
-        box.id = 's24-live-more';
+        box.id = id;
         box.className = 'sy-related-posts-container';
+        box.hidden = true;
+        return box;
+    }
+    function fill(box, title, body) {
         var h = document.createElement('h3');
         h.className = 'sy-related-main-title';
         h.textContent = title;
         box.appendChild(h);
-        return box;
+        box.appendChild(body);
+        box.hidden = false;
     }
     function renderMore() {
         var host = document.getElementById('main-video-placeholder');
         var anchor = host && (host.closest('.post.hentry') || host.closest('.live-stream-wrapper'));
-        if (!anchor || document.getElementById('s24-live-more')) return;
-        var place = function (box) {
-            if (!document.getElementById('s24-live-more')) anchor.insertAdjacentElement('afterend', box);
-        };
+        if (!anchor || document.getElementById('s24-live-latest')) return;
+        var latest = section('s24-live-latest'), watch = section('s24-live-watch');
+        anchor.insertAdjacentElement('afterend', latest);
+        latest.insertAdjacentElement('afterend', watch);
 
-        getFeed('/feeds/posts/summary/-/' + encodeURIComponent(VIDEO_LABEL) +
-                '?alt=json&orderby=published&max-results=' + VIDEO_COUNT)
-            .then(function (list) {
-                if (!list.length) throw new Error('no videos');
-                var box = moreBox('شاهد أيضاً');
-                var row = document.createElement('div');
-                row.className = 's24-watch-row';
-                list.forEach(function (e) {
-                    var m = (e.id.$t || '').match(/post-(\d+)/);
-                    var a = document.createElement('a');
-                    a.className = 's24-watch-card';
-                    a.href = m ? '/p/shorts.html?id=' + m[1] : feedLink(e);
-                    a.innerHTML = '<span class="s24-watch-thumb"><img loading="lazy" alt="">' +
-                        '<span class="s24-watch-play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>' +
-                        '<span class="s24-watch-tag">فيديو</span></span>' +
-                        '<span class="s24-watch-title"></span>';
-                    a.querySelector('img').src = feedThumb(e) || THUMB_PH;
-                    a.querySelector('.s24-watch-title').textContent = e.title.$t;
-                    row.appendChild(a);
-                });
-                box.appendChild(row);
-                place(box);
-            })
-            .catch(function () {
-                // احتياط: أحدث الأخبار (بلا مقالات الموسوعة)
-                getFeed('/feeds/posts/summary?alt=json&max-results=' + (LATEST_COUNT + 6)).then(function (all) {
-                    var list = all.filter(function (e) {
-                        return !(e.category || []).some(function (c) { return c.term === 'الموسوعة'; });
-                    }).slice(0, LATEST_COUNT);
-                    if (!list.length) return;
-                    var box = moreBox('أحدث الأخبار');
-                    var grid = document.createElement('div');
-                    grid.className = 'sy-related-grid';
-                    list.forEach(function (e) {
-                        var a = document.createElement('a');
-                        a.className = 'sy-related-card';
-                        a.href = feedLink(e);
-                        a.innerHTML = '<div class="sy-related-thumb"><img loading="lazy" alt=""></div>' +
-                            '<div class="sy-related-info"><h3 class="sy-related-card-title"></h3></div>';
-                        var src = feedThumb(e);
-                        if (src) a.querySelector('img').src = src;
-                        a.querySelector('h3').textContent = e.title.$t;
-                        grid.appendChild(a);
-                    });
-                    box.appendChild(grid);
-                    place(box);
-                }).catch(function () {});
+        // 1) أحدث الأخبار (بلا مقالات الموسوعة)
+        getFeed('/feeds/posts/summary?alt=json&max-results=' + (LATEST_COUNT + 6)).then(function (all) {
+            var list = all.filter(function (e) {
+                return !(e.category || []).some(function (c) { return c.term === 'الموسوعة'; });
+            }).slice(0, LATEST_COUNT);
+            if (!list.length) return;
+            var grid = document.createElement('div');
+            grid.className = 'sy-related-grid';
+            list.forEach(function (e) {
+                var a = document.createElement('a');
+                a.className = 'sy-related-card';
+                a.href = feedLink(e);
+                a.innerHTML = '<div class="sy-related-thumb"><img loading="lazy" alt=""></div>' +
+                    '<div class="sy-related-info"><h3 class="sy-related-card-title"></h3></div>';
+                var src = feedThumb(e);
+                if (src) a.querySelector('img').src = src;
+                a.querySelector('h3').textContent = e.title.$t;
+                grid.appendChild(a);
             });
+            fill(latest, 'أحدث الأخبار', grid);
+        }).catch(function () {});
+
+        // 2) شاهد أيضاً (لا يظهر إن لم توجد فيديوهات)
+        getFeed('/feeds/posts/summary/-/' + encodeURIComponent(VIDEO_LABEL) +
+                '?alt=json&orderby=published&max-results=' + VIDEO_COUNT).then(function (list) {
+            if (!list.length) return;
+            var row = document.createElement('div');
+            row.className = 's24-watch-row';
+            list.forEach(function (e) {
+                var m = (e.id.$t || '').match(/post-(\d+)/);
+                var a = document.createElement('a');
+                a.className = 's24-watch-card';
+                a.href = m ? '/p/shorts.html?id=' + m[1] : feedLink(e);
+                a.innerHTML = '<span class="s24-watch-thumb"><img loading="lazy" alt="">' +
+                    '<span class="s24-watch-play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>' +
+                    '<span class="s24-watch-tag">فيديو</span></span>' +
+                    '<span class="s24-watch-title"></span>';
+                a.querySelector('img').src = feedThumb(e) || THUMB_PH;
+                a.querySelector('.s24-watch-title').textContent = e.title.$t;
+                row.appendChild(a);
+            });
+            fill(watch, 'شاهد أيضاً', row);
+        }).catch(function () {});
     }
 
     function renderStrip(d) {
