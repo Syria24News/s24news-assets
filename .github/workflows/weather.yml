@@ -2,6 +2,8 @@
 # يعمل أربع مرات يومياً، ويمكن تشغيله يدوياً من تبويب Actions ← «حالة الطقس» ← Run workflow.
 # الكود في .github/scripts/weather.mjs — المصدر MET Norway (api.met.no).
 # الاستهلاك: مجاني بالكامل (المستودع عام)، ولا يمس حصص Apps Script ولا Firestore.
+# النشر: بعد الرفع تستدعي المهمة «نشر الموقع» (pages.yml) لأن رفعها بمفتاحها الافتراضي لا يطلق مهام أخرى.
+# لا يُضاف هنا أي طلب بناء آخر: النشر كله يمر بطابور pages.yml الواحد.
 
 name: حالة الطقس
 
@@ -13,7 +15,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write   # حفظ weather.json في المستودع (الرفع يُطلق بناء GitHub Pages تلقائياً)
+  contents: write   # حفظ weather.json في المستودع (النشر بعده عبر مهمة deploy أدناه)
 
 concurrency:
   group: weather
@@ -47,3 +49,12 @@ jobs:
             sleep 5
           done
           exit 1
+
+  # نشر الموقع بعد الرفع — عبر الطابور الواحد في pages.yml
+  deploy:
+    needs: update
+    uses: ./.github/workflows/pages.yml
+    permissions:
+      contents: read
+      pages: write
+      id-token: write

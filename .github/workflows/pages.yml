@@ -1,0 +1,46 @@
+# S24News — نشر الموقع على GitHub Pages (بدل البناء التلقائي «pages build and deployment»)
+# يتطلب: Settings ← Pages ← Source = GitHub Actions.
+# طابور واحد (concurrency: pages): لا يعمل نشران معاً أبداً — التزامن كان سبب حادثة 1 نوفمبر 2026.
+# المتراكم أثناء نشر جارٍ يُنشر أحدثه فقط، وهو يحتوي كل ما قبله (checkout يأخذ main الحالي).
+# المصادر: كل رفع إلى main بمفتاح شخصي (أنت، Rates.gs، HomeGrid.gs، Stories.gs)،
+#          ومهمة «حالة الطقس» تستدعيه بعد رفعها (مفتاحها الافتراضي لا يطلق مهام أخرى)،
+#          والتشغيل اليدوي: Actions ← نشر الموقع ← Run workflow.
+# لا Jekyll: الملفات تُنشر كما هي.
+# الاستهلاك: مجاني (المستودع عام)، نحو دقيقة لكل نشر.
+# طريق العودة: Settings ← Pages ← Source = Deploy from a branch ← main (يبقى هذا الملف بلا أثر).
+
+name: نشر الموقع
+
+on:
+  push:
+    branches: [main]
+  workflow_call:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    concurrency:
+      group: pages              # الطابور الواحد لكل المصادر
+      cancel-in-progress: false # لا يُقطع نشر جارٍ
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          ref: main             # أحدث نسخة دائماً، لا نسخة لحظة الطلب
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: .
+
+      - id: deployment
+        uses: actions/deploy-pages@v4
