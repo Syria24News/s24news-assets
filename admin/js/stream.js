@@ -1,5 +1,6 @@
 /* ============================================================
    S24News — وحدة البث المباشر في لوحة التحكم (admin/js/stream.js)
+   الإصدار 1.3 — 1 نوفمبر 2026: زر «حذف» في «آخر الأرقام المستخدمة» (عدا الرقم الحالي)، يُعتمد بـ«حفظ»
    الإصدار 1.2 — 1 نوفمبر 2026: صندوق «مراقبة المحطات» من live_stream/health
      (يكتبه StreamWatch.gs في اللوحة المركزية كل 3 ساعات عبر YouTube Data API)،
      ونقطة حالة بجانب كل قناة في الشريط
@@ -122,7 +123,7 @@ const MARKUP = `
         <li>معرّف القناة تجده في يوتيوب: الإعدادات ← الإعدادات المتقدمة ← «معرّف القناة»، أو في رابط القناة بعد <code>/channel/</code>.</li>
         <li><b>متوقف:</b> يُخفي المشغّل المصغّر في الرئيسية، وتعرض صفحة البث رسالة «البث متوقف حالياً».</li>
         <li>يصل التغيير إلى صفحة البث خلال دقيقة، وإلى الرئيسية خلال 15 دقيقة على الأكثر (كاش الزوار لتوفير الحصة).</li>
-        <li>«آخر الأرقام المستخدمة» تعيد بثاً سابقاً بضغطة.</li>
+        <li>«آخر الأرقام المستخدمة» تعيد بثاً سابقاً بضغطة، وتحتفظ بآخر 8 أرقام فقط (يُحذف الأقدم تلقائياً). «حذف» يزيل رقماً منتهياً من القائمة بعد «حفظ»، ولا يظهر بجانب الرقم الحالي. القائمة لا تؤثر في الموقع.</li>
         <li><b>مراقبة المحطات:</b> اللوحة المركزية تفحص البث الرئيسي وقنوات الشريط كل 3 ساعات تقريباً، وتعرض النتيجة في صندوق أعلى هذا التبويب: الأحمر يعني أن البث انقطع (انتهى، أو حُذف، أو مُنع عرضه، أو لا بث في القناة)، فضع رقماً جديداً واحفظ. النقطة بجانب كل قناة في الشريط تعرض حالتها. للفحص فوراً: مركز الحصص في اللوحة المركزية ← «مراقبة البث» ← «فحص الآن».</li>
         <li><b>قنوات الشريط:</b> تظهر تحت الشاشة في صفحة البث ويختار منها الزائر. الصق رابط بث القناة (أو معرّفها <code>UC...</code>) واسمها، ثم «إضافة» ثم «حفظ». القناة بمعرّف <code>UC</code> تحتاج رابط شعار، وإلا ظهر الحرف الأول من اسمها. جرّب كل قناة بعد إضافتها، فبعض القنوات تمنع عرض بثها خارج يوتيوب.</li>
       </ol>
@@ -218,6 +219,7 @@ export default {
     let loadedAt = 0;
     let dirty = false;      // تعديلات في النموذج لم تُحفظ (لا يُستبدل النموذج عند التحديث)
     let channels = [];      // قنوات الشريط كما في النموذج (تُحفظ مع «حفظ»)
+    let recentList = [];    // «آخر الأرقام» كما في النموذج (الحذف يُعتمد مع «حفظ»)
 
     const radio = (name) => (root.querySelector('input[name="' + name + '"]:checked') || {}).value;
     const setRadio = (name, v) => { const el = root.querySelector('input[name="' + name + '"][value="' + v + '"]'); if (el) el.checked = true; };
@@ -248,6 +250,7 @@ export default {
       $('stTitle').value = data.title || '';
       $('stPoster').value = data.poster || '';
       channels = Array.isArray(data.channels) ? data.channels.slice(0, CH_MAX) : [];
+      recentList = Array.isArray(data.recent) ? data.recent.slice() : [];
       renderChannels();
       syncMode();
     }
@@ -366,15 +369,18 @@ export default {
         ? 'لم يُحفظ شيء بعد: الموقع يعمل الآن بالرقم المكتوب في القالب.'
         : 'آخر تحميل: ' + fmtDate(loadedAt);
 
-      const rec = Array.isArray(data.recent) ? data.recent : [];
-      $('stRecent').innerHTML = rec.length ? rec.map((r) =>
-        '<div class="card st-rec">' +
+      const rec = recentList;
+      $('stRecent').innerHTML = rec.length ? rec.map((r) => {
+        const isCur = r.id === data.videoId && data.mode !== 'channel';
+        return '<div class="card st-rec">' +
           '<img src="' + thumb(esc(r.id)) + '" alt="" loading="lazy">' +
           '<div class="st-meta"><div>' + esc(r.title || 'بلا عنوان') + '</div>' +
           '<div class="st-sub"><code>' + esc(r.id) + '</code> · ' + esc(fmtDate(r.at)) +
-          (r.id === data.videoId && data.mode !== 'channel' ? ' · <b>الحالي</b>' : '') + '</div></div>' +
+          (isCur ? ' · <b>الحالي</b>' : '') + '</div></div>' +
           '<button class="btn btn-sm" type="button" data-id="' + esc(r.id) + '" data-title="' + esc(r.title || '') + '">استخدام</button>' +
-        '</div>').join('')
+          (isCur ? '' : '<button class="btn btn-sm" type="button" data-del="' + esc(r.id) + '">حذف</button>') +
+        '</div>';
+      }).join('')
         : '<div class="card empty">لا أرقام محفوظة بعد.</div>';
     }
 
@@ -393,7 +399,7 @@ export default {
       if (poster && !isHttps(poster)) { msg.textContent = 'رابط الغلاف يجب أن يبدأ بـ https://'; return; }
 
       // آخر الأرقام: الرقم الحالي في الأعلى بلا تكرار
-      let recent = Array.isArray(data.recent) ? data.recent.slice() : [];
+      let recent = recentList.slice();   // بعد أي حذف من القائمة
       if (mode === 'video') {
         recent = recent.filter((r) => r.id !== videoId);
         recent.unshift({ id: videoId, title, at: Date.now() });
@@ -406,6 +412,7 @@ export default {
       try {
         const r = await commit(setDoc(streamRef(), payload));
         data = Object.assign({}, data, payload, { updatedAt: new Date() });
+        recentList = recent.slice();
         dirty = false;
         render();
         msg.textContent = r.queued ? 'حُفظ على الجهاز، ويُرسل عند عودة الاتصال.' : 'تم الحفظ. يصل إلى صفحة البث خلال دقيقة.';
@@ -443,6 +450,14 @@ export default {
     });
     $('stReload').addEventListener('click', () => { dirty = false; load(true); });
     $('stRecent').addEventListener('click', (e) => {
+      const d = e.target.closest('button[data-del]');
+      if (d) {   // حذف رقم من القائمة محلياً؛ يُعتمد مع «حفظ»
+        recentList = recentList.filter((r) => r.id !== d.dataset.del);
+        dirty = true;
+        render();
+        $('stMsg').textContent = 'حُذف من القائمة. اضغط «حفظ» لاعتماد الحذف.';
+        return;
+      }
       const b = e.target.closest('button[data-id]');
       if (!b) return;
       setRadio('stMode', 'video');
