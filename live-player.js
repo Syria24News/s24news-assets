@@ -2,6 +2,8 @@
    S24News — مشغّل البث المباشر (playFast / loadVideoLibs)
    playFast تُستدعى من onclick داخل HTML القالب — يجب أن تبقى دالة عامة
 
+   الإصدار 2.2 — 1 نوفمبر 2026: على الشاشات العريضة (≥1450px) الشاشة يميناً والقنوات يساراً
+                داخل العمود الأوسط، و«أحدث الأخبار» تحت صندوق البث (خلاصة بلوغر)
    الإصدار 2.1 — 30 أكتوبر 2026: شريط القنوات تحت شاشة صفحة البث (الحقل channels)
    الإصدار 2.0 — 18 أكتوبر 2026: إعدادات البث من لوحة 24 (تبويب «البث»)
    المصدر: مستند Firestore واحد live_stream/current عبر S24Feed (utils.js)
@@ -112,6 +114,71 @@ window.S24Live = (function () {
         return c.kind === 'video' ? 'https://i.ytimg.com/vi/' + c.id + '/mqdefault.jpg' : '';
     }
 
+    /* ============ تخطيط صفحة البث (2.2) ============
+       غلاف .s24-live-split يجمع الشاشة وشريط القنوات: على الشاشات العريضة (≥1450px) صف واحد
+       مثبّت، الشاشة يميناً والقنوات يساراً؛ وتحت ذلك display: contents فيبقى الشريط تحت الشاشة.
+       يُبنى عند تحميل الصفحة قبل تشغيل أي مشغّل، لأن نقل إطار يوتيوب بعد تشغيله يعيد تحميله. */
+    function ensureSplit() {
+        var host = document.getElementById('main-video-placeholder');
+        if (!host) return null;
+        var split = host.parentElement;
+        if (split && split.classList.contains('s24-live-split')) return split;
+        split = document.createElement('div');
+        split.className = 's24-live-split';
+        host.insertAdjacentElement('beforebegin', split);
+        split.appendChild(host);
+        return split;
+    }
+
+    /* «أحدث الأخبار» تحت صندوق البث، في موضع «إقرأ المزيد» نفسه في المقالات (بعد .post.hentry)
+       وبتنسيقه نفسه (.sy-related-*). المصدر خلاصة بلوغر: بلا أي كلفة على Firestore. */
+    var LATEST_COUNT = 3;
+    function renderLatest() {
+        var host = document.getElementById('main-video-placeholder');
+        var anchor = host && (host.closest('.post.hentry') || host.closest('.live-stream-wrapper'));
+        if (!anchor || document.getElementById('s24-live-latest')) return;
+        var linkOf = function (e) {
+            var l = (e.link || []).filter(function (x) { return x.rel === 'alternate'; })[0];
+            return l ? l.href : '';
+        };
+        var imgOf = function (e) {
+            return e.media$thumbnail ? e.media$thumbnail.url
+                .replace(/\/s[0-9]+(-c)?\//, '/w400-h225-c/')
+                .replace(/=s[0-9]+(-c)?$/, '=w400-h225-c') : '';
+        };
+        fetch('/feeds/posts/summary?alt=json&max-results=' + (LATEST_COUNT + 6))
+            .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+            .then(function (data) {
+                var list = ((data.feed || {}).entry || []).filter(function (e) {
+                    return linkOf(e) && !(e.category || []).some(function (c) { return c.term === 'الموسوعة'; });
+                }).slice(0, LATEST_COUNT);
+                if (!list.length || document.getElementById('s24-live-latest')) return;
+                var box = document.createElement('div');
+                box.id = 's24-live-latest';
+                box.className = 'sy-related-posts-container';
+                var h = document.createElement('h3');
+                h.className = 'sy-related-main-title';
+                h.textContent = 'أحدث الأخبار';
+                var grid = document.createElement('div');
+                grid.className = 'sy-related-grid';
+                list.forEach(function (e) {
+                    var a = document.createElement('a');
+                    a.className = 'sy-related-card';
+                    a.href = linkOf(e);
+                    a.innerHTML = '<div class="sy-related-thumb"><img loading="lazy" alt=""></div>' +
+                        '<div class="sy-related-info"><h3 class="sy-related-card-title"></h3></div>';
+                    var src = imgOf(e);
+                    if (src) a.querySelector('img').src = src;
+                    a.querySelector('h3').textContent = e.title.$t;
+                    grid.appendChild(a);
+                });
+                box.appendChild(h);
+                box.appendChild(grid);
+                anchor.insertAdjacentElement('afterend', box);
+            })
+            .catch(function () {});
+    }
+
     function renderStrip(d) {
         var host = document.getElementById('main-video-placeholder');
         if (!host) return;
@@ -137,7 +204,7 @@ window.S24Live = (function () {
             box.className = 's24-ch-strip';
             box.setAttribute('role', 'group');
             box.setAttribute('aria-label', 'القنوات');
-            host.insertAdjacentElement('afterend', box);
+            ensureSplit().appendChild(box);
             // موضع الشريط المثبّت = موضع تثبيت الشاشة + ارتفاعها، يُقاس لحظياً
             // (يتغيّر مع حجم النافذة وظهور شريط العاجل)
             var pending = false;
@@ -182,6 +249,7 @@ window.S24Live = (function () {
     }
 
     function load() {
+        if (isLivePage) { ensureSplit(); renderLatest(); }
         var needed = isLivePage || document.getElementById('miniLiveWidget') || document.querySelector('.live-tv-widget');
         if (!needed || !window.S24Feed) { ready = Promise.resolve(); return; }
         ready = window.S24Feed.get('live_stream/current', {

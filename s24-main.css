@@ -5149,6 +5149,37 @@ body #comments .comment-thread .comment-thread { padding-right: 12px !important;
 /* 4. صفحة البث الرئيسية */
 body.live-page-mode .comments, body.live-page-mode #comments, body.live-page-mode .post-footer, body.live-page-mode .post-header, body.live-page-mode h3.post-title { display: none !important; }
 body.live-page-mode .main-container { max-width: 720px !important; margin: 0 auto !important; width: 100% !important; padding: 0 !important; }
+
+/* صفحة البث — الشاشة والقنوات جنباً إلى جنب (live-player.js 2.2)
+   الغلاف .s24-live-split لا يظهر كصندوق تحت 1450px (display: contents)، فيبقى الشريط تحت الشاشة كما كان.
+   من 1450px يأخذ العمود الأوسط عرضه كاملاً (864px كبقية الصفحات): الشاشة 720px يميناً، والقنوات في الباقي يساراً */
+.s24-live-split { display: contents; }
+@media (min-width: 1450px) {
+    body.live-page-mode .main-container { max-width: 864px !important; }
+    .s24-live-split {
+        display: flex; gap: 12px; padding: 0 12px 12px;
+        position: sticky; z-index: 900;
+        top: calc(var(--sticky-top-offset) + var(--s24-breaking-h, 0px));
+        background: var(--bg-card);
+    }
+    /* التثبيت انتقل إلى الغلاف؛ padding-top صفر لأن نسبته تُحسب من عرض الغلاف لا الشاشة */
+    .s24-live-split #main-video-placeholder {
+        position: relative !important; top: auto !important;
+        flex: 0 0 720px; width: 720px; padding-top: 0;
+        border-radius: 6px !important; box-shadow: none;
+    }
+    /* القائمة بارتفاع الشاشة (contain: size)، وتمرير داخلي إن زادت القنوات */
+    .s24-live-split .s24-ch-strip {
+        position: static !important; top: auto !important;
+        flex: 1 1 auto; contain: size; background: transparent;
+        flex-direction: column; gap: 10px; overflow-x: hidden; overflow-y: auto;
+        padding: 0 !important; scrollbar-width: none;
+    }
+    .s24-live-split .s24-ch-strip::-webkit-scrollbar { display: none; }
+    .s24-live-split .s24-ch { width: 100%; margin: 0 !important; font-size: 12px; }
+    /* بلا قنوات في اللوحة: الشاشة تملأ العرض بدل فراغ على اليسار */
+    .s24-live-split:not(:has(.s24-ch-strip)) #main-video-placeholder { flex: 1 1 auto; width: auto; }
+}
 .live-stream-wrapper { background-color: var(--bg-card) !important; padding: 0 !important; overflow: visible !important; margin-bottom: 20px; position: relative; direction: rtl; width: 100%; }
 .live-content-inner { padding: 10px 0 0 0 !important; color: var(--text-main) !important; }
 /* سطر التعريف تحت عنوان صفحة البث */
