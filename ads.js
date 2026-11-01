@@ -4,7 +4,8 @@
 
    الفكرة (قرار حسان، 1 نوفمبر 2026):
    - «التنسيق» في بلوجر يحدد الأماكن: كل مكان أداة HTML تطبع حاوية
-       <div class="s24-ad" data-slot="اسم المكان"> … </div>
+       <div class="s24-ad" data-slot="معرّف الأداة"> … </div>
+     (المعرّف يُترجم إلى اسم المكان في WIDGET_SLOTS أدناه)
      والأداة المخفية أو المحذوفة في «التنسيق» = لا مكان.
    - اللوحة المركزية تحدد المحتوى: ملف ads.json في هذا المستودع
      (تكتبه اللوحة، ويقرؤه هذا السكربت من GitHub Pages).
@@ -14,10 +15,10 @@
    الأماكن الستة المعتمدة:
      home-top       الرئيسية، تحت الشبكة المميزة            (HTML101)
      home-bottom    الرئيسية، قبل قسم الفيديو              (HTML102)
-     article-mid    وسط نص المقالة — فقط إن بلغت minWords كلمة (400)
+     article-mid    وسط نص المقالة — فقط إن بلغت minWords كلمة (400)   (HTML198)
      article-end    آخر نص المقالة                          (HTML199)
      article-under  تحت المقال، قبل «إقرأ المزيد»           (HTML888)
-     list-mid       صفحات الأقسام والبحث، بعد البطاقة الخامسة
+     list-mid       صفحات الأقسام والبحث، بعد البطاقة الخامسة (HTML197)
    أماكن المقالة الثلاثة لا تظهر في مقالات الموسوعة ما دام glossary = false.
    أي صفحة تظهر فيها الحاوية يحدده شرط الأداة في القالب (isPost / isHomepage / isSearch).
 
@@ -47,8 +48,23 @@
     var CLIENT = 'ca-pub-7116158255667846';
     var ARTICLE_SLOTS = ['article-mid', 'article-end', 'article-under'];
 
+    // أدوات بلوجر تطبع data-slot = معرّف الأداة (data:widget.instanceId) فيبقى كودها واحداً؛
+    // هنا يُترجم المعرّف إلى اسم المكان. أداة جديدة لمكان جديد = سطر هنا.
+    var WIDGET_SLOTS = {
+        HTML101: 'home-top',
+        HTML102: 'home-bottom',
+        HTML198: 'article-mid',
+        HTML199: 'article-end',
+        HTML888: 'article-under',
+        HTML197: 'list-mid'
+    };
+
     var slots = document.querySelectorAll('.s24-ad[data-slot]');
     if (!slots.length) return; // لا مكان إعلان في هذه الصفحة: لا طلب ولا عمل
+    Array.prototype.forEach.call(slots, function (el) {
+        var mapped = WIDGET_SLOTS[el.getAttribute('data-slot')];
+        if (mapped) el.setAttribute('data-slot', mapped);
+    });
 
     function slotEl(name) { return document.querySelector('.s24-ad[data-slot="' + name + '"]'); }
 
