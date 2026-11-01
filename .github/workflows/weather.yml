@@ -26,6 +26,10 @@ jobs:
     timeout-minutes: 10
     steps:
       - uses: actions/checkout@v5
+        with:
+          # الرفع بمفتاح المهمة الافتراضي لا يُطلق بناء GitHub Pages، فيبقى الملف الجديد في المستودع
+          # ولا يصل إلى الموقع. المفتاح الشخصي S24_BOT_TOKEN (سرّ في إعدادات المستودع) يُطلق البناء.
+          token: ${{ secrets.S24_BOT_TOKEN || github.token }}
 
       - uses: actions/setup-node@v5
         with:
