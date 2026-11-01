@@ -2,6 +2,7 @@
    S24News — مشغّل البث المباشر (playFast / loadVideoLibs)
    playFast تُستدعى من onclick داخل HTML القالب — يجب أن تبقى دالة عامة
 
+   الإصدار 2.3 — 1 نوفمبر 2026: «شاهد أيضاً» تحت صندوق البث (فيديوهات *V)، و«أحدث الأخبار» احتياطاً
    الإصدار 2.2 — 1 نوفمبر 2026: على الشاشات العريضة (≥1450px) الشاشة يميناً والقنوات يساراً
                 داخل العمود الأوسط، و«أحدث الأخبار» تحت صندوق البث (خلاصة بلوغر)
    الإصدار 2.1 — 30 أكتوبر 2026: شريط القنوات تحت شاشة صفحة البث (الحقل channels)
@@ -130,53 +131,91 @@ window.S24Live = (function () {
         return split;
     }
 
-    /* «أحدث الأخبار» تحت صندوق البث، في موضع «إقرأ المزيد» نفسه في المقالات (بعد .post.hentry)
-       وبتنسيقه نفسه (.sy-related-*). المصدر خلاصة بلوغر: بلا أي كلفة على Firestore. */
-    var LATEST_COUNT = 3;
-    function renderLatest() {
+    /* تحت صندوق البث، في موضع «إقرأ المزيد» نفسه في المقالات (بعد .post.hentry) — 2.3:
+       «شاهد أيضاً»: شريط أفقي من فيديوهات الموقع (الوسم *V، كسلايدر الرئيسية والشورتس)،
+       كل بطاقة تفتح الفيديو في مشغّل الشورتس. إن لم توجد فيديوهات: «أحدث الأخبار» ببطاقات .sy-related-*.
+       المصدر خلاصة بلوغر في الحالتين: بلا أي كلفة على Firestore. */
+    var VIDEO_LABEL = '*V', VIDEO_COUNT = 8, LATEST_COUNT = 3;
+    var THUMB_PH = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 9'%3E%3Crect width='16' height='9' fill='%23222'/%3E%3C/svg%3E";
+    function feedLink(e) {
+        var l = (e.link || []).filter(function (x) { return x.rel === 'alternate'; })[0];
+        return l ? l.href : '';
+    }
+    function feedThumb(e) {
+        return e.media$thumbnail ? e.media$thumbnail.url
+            .replace(/\/s[0-9]+(-c)?\//, '/w400-h225-c/')
+            .replace(/=s[0-9]+(-c)?$/, '=w400-h225-c') : '';
+    }
+    function getFeed(url) {
+        return fetch(url).then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
+            .then(function (d) { return ((d.feed || {}).entry || []).filter(feedLink); });
+    }
+    function moreBox(title) {
+        var box = document.createElement('div');
+        box.id = 's24-live-more';
+        box.className = 'sy-related-posts-container';
+        var h = document.createElement('h3');
+        h.className = 'sy-related-main-title';
+        h.textContent = title;
+        box.appendChild(h);
+        return box;
+    }
+    function renderMore() {
         var host = document.getElementById('main-video-placeholder');
         var anchor = host && (host.closest('.post.hentry') || host.closest('.live-stream-wrapper'));
-        if (!anchor || document.getElementById('s24-live-latest')) return;
-        var linkOf = function (e) {
-            var l = (e.link || []).filter(function (x) { return x.rel === 'alternate'; })[0];
-            return l ? l.href : '';
+        if (!anchor || document.getElementById('s24-live-more')) return;
+        var place = function (box) {
+            if (!document.getElementById('s24-live-more')) anchor.insertAdjacentElement('afterend', box);
         };
-        var imgOf = function (e) {
-            return e.media$thumbnail ? e.media$thumbnail.url
-                .replace(/\/s[0-9]+(-c)?\//, '/w400-h225-c/')
-                .replace(/=s[0-9]+(-c)?$/, '=w400-h225-c') : '';
-        };
-        fetch('/feeds/posts/summary?alt=json&max-results=' + (LATEST_COUNT + 6))
-            .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.json(); })
-            .then(function (data) {
-                var list = ((data.feed || {}).entry || []).filter(function (e) {
-                    return linkOf(e) && !(e.category || []).some(function (c) { return c.term === 'الموسوعة'; });
-                }).slice(0, LATEST_COUNT);
-                if (!list.length || document.getElementById('s24-live-latest')) return;
-                var box = document.createElement('div');
-                box.id = 's24-live-latest';
-                box.className = 'sy-related-posts-container';
-                var h = document.createElement('h3');
-                h.className = 'sy-related-main-title';
-                h.textContent = 'أحدث الأخبار';
-                var grid = document.createElement('div');
-                grid.className = 'sy-related-grid';
+
+        getFeed('/feeds/posts/summary/-/' + encodeURIComponent(VIDEO_LABEL) +
+                '?alt=json&orderby=published&max-results=' + VIDEO_COUNT)
+            .then(function (list) {
+                if (!list.length) throw new Error('no videos');
+                var box = moreBox('شاهد أيضاً');
+                var row = document.createElement('div');
+                row.className = 's24-watch-row';
                 list.forEach(function (e) {
+                    var m = (e.id.$t || '').match(/post-(\d+)/);
                     var a = document.createElement('a');
-                    a.className = 'sy-related-card';
-                    a.href = linkOf(e);
-                    a.innerHTML = '<div class="sy-related-thumb"><img loading="lazy" alt=""></div>' +
-                        '<div class="sy-related-info"><h3 class="sy-related-card-title"></h3></div>';
-                    var src = imgOf(e);
-                    if (src) a.querySelector('img').src = src;
-                    a.querySelector('h3').textContent = e.title.$t;
-                    grid.appendChild(a);
+                    a.className = 's24-watch-card';
+                    a.href = m ? '/p/shorts.html?id=' + m[1] : feedLink(e);
+                    a.innerHTML = '<span class="s24-watch-thumb"><img loading="lazy" alt="">' +
+                        '<span class="s24-watch-play" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"/></svg></span>' +
+                        '<span class="s24-watch-tag">فيديو</span></span>' +
+                        '<span class="s24-watch-title"></span>';
+                    a.querySelector('img').src = feedThumb(e) || THUMB_PH;
+                    a.querySelector('.s24-watch-title').textContent = e.title.$t;
+                    row.appendChild(a);
                 });
-                box.appendChild(h);
-                box.appendChild(grid);
-                anchor.insertAdjacentElement('afterend', box);
+                box.appendChild(row);
+                place(box);
             })
-            .catch(function () {});
+            .catch(function () {
+                // احتياط: أحدث الأخبار (بلا مقالات الموسوعة)
+                getFeed('/feeds/posts/summary?alt=json&max-results=' + (LATEST_COUNT + 6)).then(function (all) {
+                    var list = all.filter(function (e) {
+                        return !(e.category || []).some(function (c) { return c.term === 'الموسوعة'; });
+                    }).slice(0, LATEST_COUNT);
+                    if (!list.length) return;
+                    var box = moreBox('أحدث الأخبار');
+                    var grid = document.createElement('div');
+                    grid.className = 'sy-related-grid';
+                    list.forEach(function (e) {
+                        var a = document.createElement('a');
+                        a.className = 'sy-related-card';
+                        a.href = feedLink(e);
+                        a.innerHTML = '<div class="sy-related-thumb"><img loading="lazy" alt=""></div>' +
+                            '<div class="sy-related-info"><h3 class="sy-related-card-title"></h3></div>';
+                        var src = feedThumb(e);
+                        if (src) a.querySelector('img').src = src;
+                        a.querySelector('h3').textContent = e.title.$t;
+                        grid.appendChild(a);
+                    });
+                    box.appendChild(grid);
+                    place(box);
+                }).catch(function () {});
+            });
     }
 
     function renderStrip(d) {
@@ -249,7 +288,7 @@ window.S24Live = (function () {
     }
 
     function load() {
-        if (isLivePage) { ensureSplit(); renderLatest(); }
+        if (isLivePage) { ensureSplit(); renderMore(); }
         var needed = isLivePage || document.getElementById('miniLiveWidget') || document.querySelector('.live-tv-widget');
         if (!needed || !window.S24Feed) { ready = Promise.resolve(); return; }
         ready = window.S24Feed.get('live_stream/current', {

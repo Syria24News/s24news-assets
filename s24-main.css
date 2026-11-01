@@ -5187,6 +5187,20 @@ body.live-page-mode .main-container { max-width: 720px !important; margin: 0 aut
 /* يلتفّ على سطرين في الشاشات الضيقة بدل قطعه بنقاط (كان nowrap + ellipsis) */
 .live-subtitle { margin: 2px 0 0; font-family: var(--font-main); font-size: 13px; font-weight: 400; line-height: 1.5; color: var(--text-sec); }
 @media (max-width: 768px) { .live-subtitle { font-size: 12px; } }
+/* «شاهد أيضاً» تحت صندوق البث (live-player.js 2.3) — شريط أفقي من فيديوهات الموقع، يُسحب بالإصبع */
+.s24-watch-row { display: flex; gap: 14px; overflow-x: auto; padding: 0 10px 14px; scroll-snap-type: x mandatory; scroll-padding-inline: 10px; -webkit-overflow-scrolling: touch; scrollbar-width: thin; }
+.s24-watch-card { flex: 0 0 calc((100% - 28px) / 3.3); min-width: 160px; display: flex; flex-direction: column; gap: 8px; text-decoration: none; color: var(--text-main); scroll-snap-align: start; }
+.s24-watch-thumb { position: relative; display: block; aspect-ratio: 16 / 9; border-radius: 8px; overflow: hidden; background: #111; }
+.s24-watch-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; transition: transform .35s ease; }
+.s24-watch-thumb::after { content: ""; position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,.55), rgba(0,0,0,0) 55%); }
+.s24-watch-play { position: absolute; top: 50%; left: 50%; z-index: 1; width: 44px; height: 44px; margin: -22px 0 0 -22px; border-radius: 50%; background: rgba(0,0,0,.55); border: 2px solid #fff; display: flex; align-items: center; justify-content: center; transition: background .25s, transform .25s; }
+.s24-watch-play svg { width: 20px; height: 20px; fill: #fff; margin-left: 2px; }
+.s24-watch-tag { position: absolute; bottom: 8px; right: 8px; z-index: 1; background: #77bd1d; color: #fff; font-family: var(--font-main); font-size: 11px; font-weight: 700; line-height: 1; padding: 4px 8px; border-radius: 4px; }
+.s24-watch-title { font-family: var(--font-main); font-size: 14px; font-weight: 700; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.s24-watch-card:hover .s24-watch-thumb img { transform: scale(1.05); }
+.s24-watch-card:hover .s24-watch-play { background: #77bd1d; transform: scale(1.08); }
+.s24-watch-card:focus-visible .s24-watch-thumb { outline: 2px solid #77bd1d; outline-offset: 2px; }
+@media (max-width: 768px) { .s24-watch-card { flex-basis: 62%; } .s24-watch-title { font-size: 13px; } }
 /* ضغط ترويسة صفحة البث، والشارة في سطر واحد دائماً، وإزالة الفراغ الأبيض أسفل الشريط */
 .live-header { margin-bottom: 10px !important; padding: 0 15px 0 15px !important; gap: 12px; }
 .live-header .status-badge { flex-shrink: 0; white-space: nowrap; }
