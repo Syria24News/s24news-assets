@@ -39,6 +39,7 @@
 
    الاستهلاك: صفر من Firestore وApps Script. طلب واحد لملف ثابت (GitHub Pages)،
    ويتجدد كل دقيقة. الصفحة التي لا حاوية إعلان فيها لا تطلب الملف أصلاً.
+   المعاينة: أضف ?ads=preview إلى رابط أي صفحة فتظهر الأماكن مربعات مسمّاة (لك وحدك).
    الإحصاء: نقرة الإعلان الخاص تُرسل حدث s24_ad_click إلى Google Analytics (مجاناً).
    ============================================================ */
 (function () {
@@ -211,9 +212,28 @@
         return a;
     }
 
+    // وضع المعاينة: أضف ?ads=preview إلى رابط أي صفحة لترى كل الأماكن مربعات مسمّاة —
+    // لك وحدك، ولا يتأثر به الزوار ولا ads.json
+    var PREVIEW = /[?&]ads=preview\b/.test(location.search);
+    var SLOT_NAMES = {
+        'home-top': 'الرئيسية: تحت الشبكة المميزة', 'home-bottom': 'الرئيسية: قبل الفيديو',
+        'article-mid': 'وسط نص المقالة', 'article-end': 'آخر نص المقالة',
+        'article-under': 'تحت المقال', 'list-mid': 'صفحات الأقسام: بعد البطاقة الخامسة'
+    };
+
     function fill(el, cfg) {
         if (!el.isConnected) return; // حُذفت عند الوضع
         var name = el.getAttribute('data-slot');
+
+        if (PREVIEW) {
+            var box = document.createElement('div');
+            box.className = 's24-ad-inner s24-ad-preview';
+            box.textContent = 'مكان إعلان: ' + (SLOT_NAMES[name] || name) + ' (' + name + ')';
+            el.appendChild(box);
+            addLabel(el, cfg);
+            el.classList.add('is-on');
+            return;
+        }
 
         // كود يدوي في أداة بلوجر يغلب اللوحة
         var manual = el.querySelector('.s24-ad-manual');
