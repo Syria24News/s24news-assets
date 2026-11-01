@@ -8,7 +8,8 @@
      وإلا حُجب. لهذا يعمل الجلب من GitHub لا من Apps Script (Apps Script لا يسمح بتغيير User-Agent).
    - الإحداثيات بأربع خانات عشرية على الأكثر (شرط الخدمة).
 
-   المخرجات: weather.json في جذر المستودع، يقرؤه weather.js في صفحة /p/weather.html.
+   المخرجات: weather.json في جذر المستودع، يقرؤه weather.js في صفحة /p/weather.html،
+   وweather-bar.json (دمشق وحدها، نحو 2 كيلوبايت) لخانة الطقس في الشريط العلوي (exchange-rates.js).
    - إن فشل جلب محافظة تبقى بياناتها السابقة من الملف القديم (لا تُمحى بسبب خطأ عابر).
    - إن فشلت كل المحافظات لا يُكتب الملف، وتفشل المهمة فتظهر حمراء في تبويب Actions.
 
@@ -18,6 +19,8 @@
 import { readFile, writeFile } from 'node:fs/promises';
 
 const OUT = 'weather.json';
+const OUT_BAR = 'weather-bar.json';
+const BAR_CITY = 'damascus';
 const API = 'https://api.met.no/weatherapi/locationforecast/2.0/compact';
 const UA  = 'Syria24News/1.0 (+https://www.syria24.news/p/contact.html)';
 
@@ -148,6 +151,14 @@ async function main() {
     cities
   };
   await writeFile(OUT, JSON.stringify(out) + '\n');
+
+  // ملف الشريط العلوي: دمشق فقط (الحرارة لكل ساعة) — يُكتب فقط إن وصلت دمشق سليمة في هذا التشغيل
+  const dam = cities.find((c) => c.id === BAR_CITY && !c.stale);
+  if (dam) {
+    const bar = { v: 1, updated: out.updated, city: BAR_CITY, name: dam.name,
+                  hours: dam.hours.map((x) => ({ t: x.t, c: x.c, s: x.s })) };
+    await writeFile(OUT_BAR, JSON.stringify(bar) + '\n');
+  }
   console.log(`✅ ${ok}/${CITIES.length} محافظة — ${OUT}`);
 }
 

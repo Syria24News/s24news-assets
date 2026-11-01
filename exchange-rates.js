@@ -1,8 +1,10 @@
 /* S24News — أسعار صرف العملات والذهب
    وظيفتان في ملف واحد (على نمط prayer-times.js):
-   1) سعر الدولار في الشريط العلوي (.top-date-bar) يتناوب مع سطر الصلاة — الشاشات الكبيرة فقط.
+   1) خانة بجانب سطر الصلاة في الشريط العلوي (.top-date-bar) تتناوب بين الدولار وطقس دمشق،
+      وسطر الصلاة ثابت لا يختفي (1 نوفمبر 2026) — الشاشات الكبيرة فقط.
    2) صفحة الأسعار الكاملة (العملات + الذهب) — عند وجود العنصر #s24-fx-page.
-   المصدر: rates.json في المستودع نفسه، يكتبه Rates.gs في لوحة التحكم (آلياً أو يدوياً).
+   المصدر: rates.json في المستودع نفسه، يكتبه Rates.gs في لوحة التحكم (آلياً أو يدوياً)،
+   وweather-bar.json تكتبه مهمة «حالة الطقس» في GitHub Actions.
    لا يعدّل هذا الملف prayer-times.js ولا ui-core.js، ولا يلمس أصنافهما. */
 
 (function () {
@@ -12,9 +14,9 @@
 
   var DATA_URL  = 'https://syria24news.github.io/s24news-assets/rates.json';
   var PAGE      = '/p/exchange.html';
-  var ROTATE_MS = 6000;               // مدة ظهور كل عنصر في التناوب
+  var ROTATE_MS = 6000;               // مدة ظهور الدولار أو الطقس قبل التبديل
   var CACHE_MIN = 30;                 // مدة الاحتفاظ بالنسخة المحلية بالدقائق
-  var STALE_H   = 72;                 // بعدها يُخفى السعر من الشريط (أسعار قديمة جداً)
+  var STALE_H   = 72;                 // بعدها يُخفى السعر من الشريط وتظهر ملاحظة في الصفحة (أسعار قديمة جداً)
   var BAR_UNIT  = 'new';              // 'new' = الليرة الجديدة (142.50) | 'old' = القديمة (14,250)
 
   /* ترتيب العملات وأسماؤها — الرمز يظهر شارةً بدل الأعلام (ويندوز لا يرسم أعلام الإيموجي) */
@@ -120,53 +122,73 @@
 
   /* ======================= 1) الشريط العلوي ======================= */
 
-  /* data-s24fx على الشريط الأب (.top-date-bar) لا على رابط الصلاة:
-     prayer-times.js يستبدل className الرابط كل دقيقة فيمحو أي صنف نضيفه،
-     أما الشريط الأب فلا يُعاد بناؤه.
-       pr   = الصلاة ظاهرة (الافتراضي)
-       fx   = الدولار ظاهر والصلاة مخفية
-       both = الاثنان معاً (لمن فعّل «تقليل الحركة») */
+  /* 1 نوفمبر 2026: سطر الصلاة ثابت لا يختفي، وبجانبه خانة واحدة تتناوب كل ROTATE_MS
+     بين الدولار وطقس دمشق. أي عنصر غير متاح (فشل الجلب أو بيانات قديمة) يغيب وحده،
+     والآخر يبقى ثابتاً بلا تناوب. طقس دمشق من weather-bar.json (نحو 2 كيلوبايت) الذي
+     تكتبه مهمة «حالة الطقس» في GitHub مع weather.json. */
+  var WX_BAR_URL = 'https://syria24news.github.io/s24news-assets/weather-bar.json';
+  var WX_PAGE    = '/p/weather.html#damascus';
+  var WX_STALE_H = 12;   // بعدها لا يظهر الطقس في الشريط
+  var WX_KEY     = 's24wxbar:v1';
+
   var BAR_CSS =
-    '.s24-fx-bar{display:none;text-decoration:none;white-space:nowrap;cursor:pointer;transition:opacity .15s ease}' +
+    '.s24-fx-bar{display:inline;text-decoration:none;white-space:nowrap;cursor:pointer}' +
     '.s24-fx-bar::before{content:"|";opacity:.45;margin:0 8px}' +
     '.s24-fx-bar:hover{text-decoration:none;opacity:.7}' +
     '.s24-fx-bar i{font-style:normal;margin-inline-start:6px;font-variant-numeric:tabular-nums}' +
     '.s24-fx-bar b{font-weight:inherit;font-size:.85em;margin-inline-start:6px}' +
     '.s24-fx-bar b.up{color:#2e9e3f}.s24-fx-bar b.down{color:#d93025}' +
-    '.top-date-bar[data-s24fx="fx"] .s24-fx-bar,.top-date-bar[data-s24fx="both"] .s24-fx-bar{display:inline}' +
-    '.top-date-bar[data-s24fx="fx"] #s24-next-prayer{display:none}' +
-    '.top-date-bar[data-s24fx="fx"] .s24-fx-bar,.top-date-bar[data-s24fx="pr"] #s24-next-prayer{animation:s24fxIn .35s ease}' +
+    /* تبديل المحتوى بتلاشٍ لوني فقط، بلا حركة */
+    '.s24-fx-bar.is-in{animation:s24fxIn .35s ease}' +
     '@keyframes s24fxIn{from{opacity:0}to{opacity:1}}' +
-    '@media(prefers-reduced-motion:reduce){.s24-fx-bar,#s24-next-prayer{animation:none!important}}';
+    '@media(prefers-reduced-motion:reduce){.s24-fx-bar.is-in{animation:none}}';
 
-  /* الصلاة «مشغولة» = داخل نافذة الأذان (5 دقائق قبله أو بعده):
-     is-soon قبل الأذان، is-now لحظته، ونص يبدأ بـ«مضى» بعده (هذه الحالة بلا صنف في prayer-times.js) */
-  function prayerBusy(link) {
-    if (!link) return false;
-    if (/\bis-(soon|now)\b/.test(link.className)) return true;
-    return /^\s*مضى/.test(link.textContent || '');
+  /* طقس دمشق: نسخة محلية لنصف ساعة ثم طلب واحد (مثل loadRates) */
+  function loadWxBar() {
+    var hit = null;
+    try { var raw = localStorage.getItem(WX_KEY); hit = raw ? JSON.parse(raw) : null; } catch (e) {}
+    if (hit && hit.at && (Date.now() - hit.at) < CACHE_MIN * 60000 && hit.data) return Promise.resolve(hit.data);
+    var bucket = Math.floor(Date.now() / (CACHE_MIN * 60000));
+    return fetch(WX_BAR_URL + '?t=' + bucket).then(function (r) {
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return r.json();
+    }).then(function (j) {
+      if (!j || j.v !== 1 || !j.hours || !j.hours.length) throw new Error('bad payload');
+      try { localStorage.setItem(WX_KEY, JSON.stringify({ at: Date.now(), data: j })); } catch (e) {}
+      return j;
+    }).catch(function (e) {
+      if (hit && hit.data) return hit.data;
+      throw e;
+    });
+  }
+
+  /* حرارة الساعة الأقرب إلى وقت الزائر (القيمة تبقى صحيحة بين تحديث وآخر) */
+  function wxNow(j) {
+    if (!j || ageHours(j.updated) > WX_STALE_H) return null;
+    var now = Date.now(), best = null;
+    for (var i = 0; i < j.hours.length; i++) {
+      if (new Date(j.hours[i].t).getTime() <= now + 30 * 60000) best = j.hours[i]; else break;
+    }
+    return best && typeof best.c === 'number' ? best : null;
   }
 
   function initTopBar() {
     var bar = document.querySelector('.top-date-bar');
     if (!bar) return;
 
-    var data = null;           // بيانات الأسعار بعد التحميل
-    var showing = 'pr';
+    var items = [];          // [{ key:'fx'|'wx', href, title, html }]
+    var idx = 0;
     var hovered = false;
-    var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
     var style = el('style');
     style.textContent = BAR_CSS;
     document.head.appendChild(style);
 
-    var fx = document.createElement('a');
-    fx.id = 's24-fx-bar';
-    fx.className = 's24-fx-bar';
-    fx.href = PAGE;
-    fx.title = 'أسعار صرف العملات والذهب';
+    var slot = document.createElement('a');
+    slot.id = 's24-fx-bar';
+    slot.className = 's24-fx-bar';
 
-    /* الشريط مخفي بـ CSS على الموبايل (s24-main.css) — لا تناوب عندها، ولا تغيير هناك */
+    /* الشريط مخفي بـ CSS على الموبايل (s24-main.css) — لا تناوب عندها */
     function barVisible() {
       return window.getComputedStyle(bar).display !== 'none';
     }
@@ -176,17 +198,21 @@
       return l && bar.contains(l) ? l : null;
     }
 
-    /* نص العنصر: «الدولار 142.50 ▲» — بلا أي وقت بصيغة ساعة */
-    function fill() {
+    /* نص الدولار: «الدولار 142.50 ▲» — بلا أي وقت بصيغة ساعة
+       (prayer-times.js يبحث في الشريط عن أي نص بصيغة ساعة ليلتصق به) */
+    function fxHtml(data) {
       var m = usd(data);
-      if (!m) return;
       var v = BAR_UNIT === 'old' ? fmtOld(m.sell) : fmtNew(m.sell);
-      var chg = parseFloat(m.chg);
-      var arrow = '';
+      var chg = parseFloat(m.chg), arrow = '';
       if (isFinite(chg) && chg > 0) arrow = '<b class="up">▲</b>';
       else if (isFinite(chg) && chg < 0) arrow = '<b class="down">▼</b>';
       /* ارتفاع الدولار = تراجع الليرة؛ اللون يصف حركة الدولار كما في جداول الصرف المعتادة */
-      fx.innerHTML = 'الدولار<i>' + v + '</i>' + arrow;
+      return 'الدولار<i>' + v + '</i>' + arrow;
+    }
+
+    /* نص الطقس: «طقس دمشق 21°» — الدرجة باتجاه يسار←يمين حتى لا تنقلب إلى «°21» */
+    function wxHtml(h) {
+      return 'طقس دمشق<i dir="ltr">' + Math.round(h.c) + '°</i>';
     }
 
     /* نسخ الخط واللون من رابط الصلاة نفسه، فيتطابق الشكل تماماً */
@@ -195,91 +221,76 @@
       var src = l || document.getElementById('hijri-gregorian-date');
       if (!src) return;
       var cs = window.getComputedStyle(src);
-      fx.style.fontFamily    = cs.fontFamily;
-      fx.style.fontSize      = cs.fontSize;
-      fx.style.letterSpacing = cs.letterSpacing;
-      fx.style.color         = cs.color;
-      fx.style.fontWeight    = l ? (l.style.fontWeight || cs.fontWeight) : cs.fontWeight;
+      slot.style.fontFamily    = cs.fontFamily;
+      slot.style.fontSize      = cs.fontSize;
+      slot.style.letterSpacing = cs.letterSpacing;
+      slot.style.color         = cs.color;
+      slot.style.fontWeight    = l ? (l.style.fontWeight || cs.fontWeight) : cs.fontWeight;
     }
 
-    /* ui-core.js يعيد كتابة #hijri-gregorian-date كل دقيقة فيمحو العنصرين معاً؛
-       prayer-times.js يعيد رابط الصلاة، وهذه الدالة تعيد عنصر الدولار بعده مباشرة.
+    function show(i, animate) {
+      var it = items[i];
+      if (!it) return;
+      slot.href = it.href;
+      slot.title = it.title;
+      slot.innerHTML = it.html;
+      if (animate) { slot.classList.remove('is-in'); void slot.offsetWidth; slot.classList.add('is-in'); }
+    }
+
+    /* ui-core.js يعيد كتابة #hijri-gregorian-date كل دقيقة فيمحو العنصر؛
+       prayer-times.js يعيد رابط الصلاة، وهذه الدالة تعيد الخانة بعده مباشرة.
        لا تحريك إلا إذا كان الموضع خاطئاً — تجنّباً لحلقة بين المراقبَين */
     var restoring = false;
     function ensure() {
-      if (restoring || !usd(data)) return;
+      if (restoring || !items.length) return;
       var l = prayerLink();
       var anchorParent, anchorNext;
       if (l) {
-        if (l.nextSibling === fx) return;
+        if (l.nextSibling === slot) return;
         anchorParent = l.parentNode; anchorNext = l.nextSibling;
       } else {
         var d = document.getElementById('hijri-gregorian-date');
         if (!d) return;
-        if (fx.parentNode === d && !fx.nextSibling) return;
+        if (slot.parentNode === d && !slot.nextSibling) return;
         anchorParent = d; anchorNext = null;
       }
       restoring = true;
-      anchorParent.insertBefore(fx, anchorNext);
+      anchorParent.insertBefore(slot, anchorNext);
       copyLook();
       restoring = false;
-      sync();
-    }
-
-    function setMode(mode) {
-      showing = mode;
-      bar.setAttribute('data-s24fx', mode);
-    }
-
-    /* القاعدة: الصلاة لها الأولوية دائماً */
-    function sync() {
-      if (!usd(data) || !barVisible()) { setMode('pr'); return; }
-      var l = prayerLink();
-      if (!l) { setMode('fx'); return; }               // لا سطر صلاة (فشل جلب المواقيت): الدولار وحده
-      if (prayerBusy(l)) { setMode('pr'); return; }    // نافذة الأذان: الصلاة وحدها فوراً
-      if (reduce) { setMode('both'); return; }         // بلا حركة: الاثنان معاً
-      if (showing === 'both') setMode('pr');
     }
 
     function rotate() {
-      if (hovered || document.hidden || reduce) return;
-      if (!usd(data) || !barVisible()) { setMode('pr'); return; }
-      var l = prayerLink();
-      if (!l) { setMode('fx'); return; }
-      if (prayerBusy(l)) { setMode('pr'); return; }
-      if (showing === 'fx') { setMode('pr'); }
-      else { copyLook(); setMode('fx'); }
+      if (items.length < 2 || hovered || document.hidden || !barVisible()) return;
+      idx = (idx + 1) % items.length;
+      copyLook();
+      show(idx, true);
     }
 
-    /* الإيقاف عند مرور الفأرة فوق أيٍّ من العنصرين */
-    function hoverOn(e) {
-      var t = e.target;
-      if (t && t.closest && t.closest('#s24-next-prayer, #s24-fx-bar')) hovered = true;
-    }
-    function hoverOff(e) {
-      var t = e.target;
-      if (t && t.closest && t.closest('#s24-next-prayer, #s24-fx-bar')) hovered = false;
-    }
-    bar.addEventListener('mouseover', hoverOn);
-    bar.addEventListener('mouseout', hoverOff);
+    /* الإيقاف عند مرور الفأرة فوق الخانة */
+    slot.addEventListener('mouseenter', function () { hovered = true; });
+    slot.addEventListener('mouseleave', function () { hovered = false; });
 
-    setMode('pr');
+    /* العنصران يُجلبان معاً؛ فشل أحدهما لا يمنع الآخر */
+    function settle(p) { return p.then(function (v) { return v; }, function () { return null; }); }
+    Promise.all([settle(loadRates()), settle(loadWxBar())]).then(function (res) {
+      var fx = res[0], wx = res[1];
+      if (fx && usd(fx) && ageHours(fx.updated) <= STALE_H)
+        items.push({ key: 'fx', href: PAGE, title: 'أسعار صرف العملات والذهب', html: fxHtml(fx) });
+      var h = wxNow(wx);
+      if (h) items.push({ key: 'wx', href: WX_PAGE, title: 'حالة الطقس في سوريا', html: wxHtml(h) });
+      if (!items.length) return;   // لا شيء صالح للعرض: الشريط كما هو
 
-    loadRates().then(function (j) {
-      var m = usd(j);
-      if (!m || ageHours(j.updated) > STALE_H) return;   // لا سعر أو سعر قديم جداً: الشريط كما هو
-      data = j;
-      fill();
+      show(0, false);
       ensure();
 
       if (window.MutationObserver) {
-        /* أي تغيير في الشريط (إعادة كتابة التاريخ أو تبدّل حالة الصلاة) يُفحص فوراً */
-        new MutationObserver(function () { ensure(); sync(); })
-          .observe(bar, { childList: true, subtree: true, characterData: true, attributes: true, attributeFilter: ['class'] });
+        /* أي تغيير في الشريط (إعادة كتابة التاريخ أو سطر الصلاة) يُفحص فوراً */
+        new MutationObserver(function () { ensure(); })
+          .observe(bar, { childList: true, subtree: true });
       }
       setInterval(function () { ensure(); rotate(); }, ROTATE_MS);
-      window.addEventListener('resize', sync);
-    }).catch(function () { /* لا نعرض شيئاً بدل عرض سعر خاطئ */ });
+    });
   }
 
   /* ======================= 2) صفحة الأسعار ======================= */

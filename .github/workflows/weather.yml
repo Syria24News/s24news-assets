@@ -31,7 +31,7 @@ jobs:
         with:
           node-version: '22'
 
-      - name: جلب التوقعات وكتابة weather.json
+      - name: جلب التوقعات وكتابة weather.json وweather-bar.json
         run: node .github/scripts/weather.mjs
 
       - name: حفظ الملف في المستودع
@@ -39,6 +39,7 @@ jobs:
           git config user.name  "s24-weather-bot"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add weather.json
+          if [ -f weather-bar.json ]; then git add weather-bar.json; fi
           if git diff --cached --quiet; then echo "لا تغيير"; exit 0; fi
           git commit -m "حالة الطقس: تحديث آلي"
           # Rates.gs ولوحة التحكم يكتبان في المستودع نفسه: دمج آخر نسخة قبل الرفع، مع إعادة المحاولة
