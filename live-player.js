@@ -2,6 +2,8 @@
    S24News — مشغّل البث المباشر (playFast / loadVideoLibs)
    playFast تُستدعى من onclick داخل HTML القالب — يجب أن تبقى دالة عامة
 
+   الإصدار 2.7 — 2 نوفمبر 2026: المشغّل المرافق يتبع القارئ بين الصفحات (الكمبيوتر)، وسطر القنوات الأخرى
+                تحت المشغّل الجانبي في الرئيسية، و?ch= لفتح صفحة البث على قناة
    الإصدار 2.6 — 1 نوفمبر 2026: التغطية المباشرة النشطة (آخر 5 أخبار) تحت الشاشة فوق «أحدث الأخبار»
    الإصدار 2.5 — 1 نوفمبر 2026: المشغّل العائم على الكمبيوتر (يُسحب ويُحفظ موضعه) حين يخرج الصندوق من الصورة
    الإصدار 2.4 — 1 نوفمبر 2026: «أحدث الأخبار» أولاً ثم «شاهد أيضاً» تحتها؛ وتثبيت الشاشة فوق الأخبار على الموبايل
@@ -52,6 +54,7 @@ window.S24Live = (function () {
 
     function apply(d) {
         if (!d || !d.mode) return;                       // لا مستند أو فشل = يبقى LIVE_CONFIG كما هو
+        lastDoc = d;
         state.mode = d.mode === 'channel' && d.channelId ? 'channel' : 'video';
         state.onAir = d.onAir !== false;
         state.channelId = d.channelId || '';
@@ -69,6 +72,7 @@ window.S24Live = (function () {
             if (!state.onAir) side.style.display = 'none';
             var sp = document.getElementById('fake-poster-img');
             if (sp && !sidebarPlayerActive && window.LIVE_CONFIG.posterImage) sp.src = window.LIVE_CONFIG.posterImage;
+            if (state.onAir) renderHomeRow(d);           // سطر القنوات الأخرى (2.7)
         }
 
         // المشغّل المصغّر في الرئيسية
@@ -344,8 +348,20 @@ window.S24Live = (function () {
             logo: window.LIVE_CONFIG.posterImage
         };
         strip.items = state.onAir ? [main] : [];
+        strip.hasMain = state.onAir;
         list.forEach(function (c) { if (!(c.kind === main.kind && c.id === main.id)) strip.items.push(c); });
         strip.active = state.onAir ? 0 : -1;
+
+        // القناة المطلوبة (2.7): ?ch= من سطر الرئيسية، أو القناة التي يتبعها المشغّل المرافق — تُختار دون تشغيل
+        if (!strip.picked) {
+            strip.picked = true;
+            var want = '';
+            try { want = new URLSearchParams(location.search).get('ch') || ''; } catch (e) {}
+            if (!want) { var f = followGet(); if (f && !f.main) want = f.id; }
+            for (var w = 0; want && w < strip.items.length; w++) {
+                if (strip.items[w].id === want) { if (w !== strip.active) select(w); break; }
+            }
+        }
 
         if (!box) {
             box = document.createElement('div');
@@ -383,6 +399,14 @@ window.S24Live = (function () {
     function switchTo(i) {
         var c = strip.items[i];
         if (!c || i === strip.active) return;
+        ss(FOLLOW_OFF, null);                     // اختيار قناة = عودة للمتابعة إن كان القارئ قد أغلق المرافق
+        select(i);
+        restartMain();
+    }
+
+    // اختيار قناة في الشريط دون تشغيل (2.7)
+    function select(i) {
+        var c = strip.items[i];
         strip.active = i;
         state.mode = c.kind;
         state.onAir = true;                       // اختيار الزائر لقناة = تشغيلها حتى لو كان الرئيسي متوقفاً
@@ -394,7 +418,8 @@ window.S24Live = (function () {
             bs[k].classList.toggle('is-active', k === i);
             bs[k].setAttribute('aria-pressed', String(k === i));
         }
-        restartMain();
+        var poster = document.getElementById('main-fake-poster');
+        if (poster && !window.isPlayerActive && c.kind === 'video') poster.src = 'https://i.ytimg.com/vi/' + c.id + '/hqdefault.jpg';
     }
 
     /* ============ المشغّل العائم (2.5) — الكمبيوتر فقط (≥1024px) ============
@@ -481,14 +506,327 @@ window.S24Live = (function () {
         bar.addEventListener('click', function (e) {
             var b = e.target.closest('button');
             if (!b) return;
-            if (b.getAttribute('data-a') === 'x') { dismissed = true; setFloat(false); }
+            if (b.getAttribute('data-a') === 'x') { dismissed = true; setFloat(false); ss(FOLLOW_OFF, '1'); ss(FOLLOW, null); }
             else box.scrollIntoView({ behavior: 'smooth', block: 'start' });
         });
     }
 
+    /* ============ المشغّل المرافق (2.7) — يتبع القارئ بين الصفحات، الكمبيوتر فقط (≥1024px) ============
+       يبدأ حين يغادر القارئ صفحة البث والبث يعمل: تُحفظ القناة التي يشاهدها في هذا التبويب (sessionStorage)،
+       وفي كل صفحة بعدها يظهر مشغّل يوتيوب عائم بالقناة نفسها بعد اكتمال تحميل الصفحة، إلى أن يضغط ✕.
+       - مكتوم في البداية (شرط المتصفحات ويوتيوب)؛ إن شغّل القارئ الصوت مرة يعود وحده مع أول نقرة في الصفحة.
+       - الموضع والحجم يُحفظان؛ يلتصق بأقرب زاوية، وينزاح عن أماكن الإعلانات (سياسة أدسنس).
+       - الحجم بين 360 بكسل (أصغر ما يسمح به يوتيوب: ارتفاع 200) و640 أو ثلث الشاشة؛ زر «–» يصغّره إلى الحد الأدنى.
+       - مشغّل واحد يعمل: إن شغّل القارئ فيديو آخر يتوقف المرافق، ويعود بزر «متابعة البث».
+       - القناة المحذوفة من الشريط تعود إلى البث الرئيسي، والبث الرئيسي المتوقف من اللوحة يخفي المرافق.
+       - Google Analytics: الحدث s24_live_follow (show / close / unmute / minimize / resume). */
+    var FOLLOW = 's24_follow', FOLLOW_OFF = 's24_follow_off', FOLLOW_SND = 's24_follow_snd',
+        FOLLOW_MIN = 's24_follow_min', FPOS = 's24_float_pos', FSIZE = 's24_follow_w';
+    var desk = window.matchMedia('(min-width: 1024px)');
+    var lastDoc = null, follow = null;
+
+    function ss(k, v) {
+        try {
+            if (v === undefined) return sessionStorage.getItem(k);
+            if (v === null) sessionStorage.removeItem(k); else sessionStorage.setItem(k, v);
+        } catch (e) {}
+        return null;
+    }
+    function followGet() { try { return JSON.parse(ss(FOLLOW) || 'null'); } catch (e) { return null; } }
+    function track(action, name) {
+        try { if (window.gtag) window.gtag('event', 's24_live_follow', { follow_action: action, channel: name || '' }); } catch (e) {}
+    }
+
+    // صفحة البث: ما يشاهده القارئ الآن { kind, id, name, main }
+    function currentSource() {
+        var c = strip.active >= 0 ? strip.items[strip.active] : null;
+        if (c) return { kind: c.kind, id: c.id, name: c.name || '', main: !!(strip.hasMain && strip.active === 0) };
+        return { kind: state.mode, id: state.mode === 'channel' ? state.channelId : window.LIVE_CONFIG.videoId,
+                 name: state.title || '', main: true };
+    }
+
+    // صفحة البث: عند المغادرة والبث يعمل (لا متوقفاً مؤقتاً) تُحفظ القناة ليتبع المرافق القارئ
+    function recordOnLeave() {
+        window.addEventListener('pagehide', function () {
+            if (!window.isPlayerActive || !desk.matches || ss(FOLLOW_OFF)) return;
+            var p = window.videojs && videojs.getPlayer && videojs.getPlayer('rt-live-page-player');
+            if (p && p.paused && p.paused()) { ss(FOLLOW, null); return; }   // أوقفه القارئ بنفسه
+            var s = currentSource();
+            if (s.id && ID_RE[s.kind] && ID_RE[s.kind].test(s.id)) ss(FOLLOW, JSON.stringify(s));
+        });
+    }
+
+    // المصدر الذي يُعرض فعلاً بعد مطابقته بإعدادات اللوحة؛ null = لا يُعرض
+    function resolveSource(src) {
+        var d = lastDoc;
+        var main = { kind: state.mode, id: state.mode === 'channel' ? state.channelId : window.LIVE_CONFIG.videoId,
+                     name: state.title || src.name || 'البث المباشر', main: true };
+        if (!src.main && d) {
+            var still = (Array.isArray(d.channels) ? d.channels : []).some(function (c) {
+                return c && c.kind === src.kind && c.id === src.id;
+            });
+            if (!still) src = main;                       // حُذفت القناة من الشريط ← البث الرئيسي
+        }
+        if (src.main) {
+            if (d && d.onAir === false) return null;     // البث الرئيسي متوقف من اللوحة
+            src = main;
+        }
+        return src.id && ID_RE[src.kind] && ID_RE[src.kind].test(src.id) ? src : null;
+    }
+
+    function initFollow() {
+        if (isLivePage || !desk.matches || ss(FOLLOW_OFF) || /^\/p\/shorts\.html/.test(location.pathname)) return;
+        var saved = followGet();
+        if (!saved || !saved.id) return;
+        // بعد اكتمال الصفحة كلها، فلا يبطئ إطار يوتيوب فتح المقالة
+        var go = function () { setTimeout(function () { whenReady(function () { showFollow(saved); }); }, 400); };
+        if (document.readyState === 'complete') go(); else window.addEventListener('load', go);
+    }
+
+    function showFollow(saved) {
+        if (follow || !desk.matches || document.getElementById('s24-follow')) return;
+        var src = resolveSource(saved);
+        if (!src) { ss(FOLLOW, null); return; }
+        if (!src.main || saved.main !== src.main) ss(FOLLOW, JSON.stringify(src));
+
+        var base = src.kind === 'channel'
+            ? 'https://www.youtube.com/embed/live_stream?channel=' + encodeURIComponent(src.id) + '&'
+            : 'https://www.youtube.com/embed/' + encodeURIComponent(src.id) + '?';
+        var url = base + 'autoplay=1&mute=1&playsinline=1&rel=0&modestbranding=1&enablejsapi=1&origin=' +
+            encodeURIComponent(location.origin);
+
+        var BAR = 30, MIN = 360, GAP = 16;
+        function maxW() { return Math.max(MIN, Math.min(640, Math.round(window.innerWidth / 3))); }
+        var W = Number(localStorage.getItem(FSIZE)) || 480, H = 0, mini = ss(FOLLOW_MIN) === '1';
+        var pos = null;
+        try { pos = JSON.parse(localStorage.getItem(FPOS)); } catch (e) {}
+
+        var box = document.createElement('div');
+        box.id = 's24-follow';
+        box.className = 's24-follow';
+        box.setAttribute('role', 'region');
+        box.setAttribute('aria-label', 'البث المباشر');
+        box.innerHTML =
+            '<div class="s24-follow-bar">' +
+              '<span class="s24-follow-ttl"><span class="s24-float-dot">●</span> مباشر' +
+                (src.name ? ' · <b>' + escTxt(src.name) + '</b>' : '') + '</span>' +
+              '<span class="s24-follow-btns">' +
+                '<button type="button" data-a="snd" class="s24-follow-snd" title="تشغيل الصوت">🔊 الصوت</button>' +
+                '<button type="button" data-a="min" title="تصغير" aria-label="تصغير">–</button>' +
+                '<button type="button" data-a="live" title="صفحة البث" aria-label="صفحة البث">⤢</button>' +
+                '<button type="button" data-a="x" title="إغلاق" aria-label="إغلاق">✕</button>' +
+              '</span></div>' +
+            '<div class="s24-follow-video"><iframe src="' + escTxt(url) + '" title="البث المباشر" ' +
+              'allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>' +
+              '<button type="button" class="s24-follow-resume" data-a="resume" hidden>▶ متابعة البث</button></div>' +
+            '<span class="s24-follow-rs" title="اسحب لتكبير المشغّل أو تصغيره"><svg viewBox="0 0 16 16" width="16" height="16">' +
+              '<path d="M2 6 L10 14 M2 10 L6 14"/></svg></span>';
+        document.body.appendChild(box);
+        follow = box;
+        var bar = box.querySelector('.s24-follow-bar'), ifr = box.querySelector('iframe');
+        var resumeBtn = box.querySelector('.s24-follow-resume'), minBtn = box.querySelector('[data-a="min"]');
+
+        function cmd(fn) {
+            try { ifr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: fn, args: [] }), '*'); } catch (e) {}
+        }
+        function topEdge() {
+            var t = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--sticky-top-offset')) || 0;
+            return t + 10;
+        }
+        function size() {
+            var w = mini ? MIN : Math.min(Math.max(W, MIN), maxW());
+            H = Math.round(w * 9 / 16);
+            box.style.width = w + 'px';
+            ifr.style.height = H + 'px';
+            minBtn.textContent = mini ? '▢' : '–';
+            minBtn.title = mini ? 'الحجم السابق' : 'تصغير';
+            return w;
+        }
+        // الزوايا الأربع: 0 أعلى يسار، 1 أعلى يمين، 2 أسفل يسار، 3 أسفل يمين
+        function corners(w) {
+            var iw = document.documentElement.clientWidth, ih = window.innerHeight, h = H + BAR;
+            var top = topEdge(), bottom = ih - h - GAP;
+            return [{ x: GAP, y: top }, { x: iw - w - GAP, y: top }, { x: GAP, y: bottom }, { x: iw - w - GAP, y: bottom }];
+        }
+        function nearest(w, x, y) {
+            var cs = corners(w), best = 0, bd = Infinity;
+            cs.forEach(function (c, i) { var dd = Math.pow(c.x - x, 2) + Math.pow(c.y - y, 2); if (dd < bd) { bd = dd; best = i; } });
+            return best;
+        }
+        var home = 2;   // الزاوية التي اختارها القارئ (افتراضياً أسفل يسار)
+        function setXY(x, y) { box.style.left = Math.round(x) + 'px'; box.style.top = Math.round(y) + 'px'; }
+
+        // هل يتقاطع المشغّل في زاوية ما مع إعلان ظاهر؟
+        function hitsAd(c, w) {
+            var ads = document.querySelectorAll('.s24-ad, ins.adsbygoogle');
+            for (var i = 0; i < ads.length; i++) {
+                var r = ads[i].getBoundingClientRect();
+                if (r.height < 20 || r.width < 20) continue;
+                if (r.left < c.x + w && r.right > c.x && r.top < c.y + H + BAR && r.bottom > c.y) return true;
+            }
+            return false;
+        }
+        var ORDER = { 0: [0, 2, 1, 3], 1: [1, 3, 0, 2], 2: [2, 0, 3, 1], 3: [3, 1, 2, 0] };
+        function place() {
+            if (drag || rz) return;
+            var w = size(), cs = corners(w), pick = home;
+            for (var k = 0; k < 4; k++) { var i = ORDER[home][k]; if (!hitsAd(cs[i], w)) { pick = i; break; } }
+            setXY(cs[pick].x, cs[pick].y);
+        }
+
+        if (pos && typeof pos.x === 'number') home = nearest(size(), pos.x, pos.y);
+        place();
+        requestAnimationFrame(function () { box.classList.add('is-ready'); });   // الحركة بعد أول وضع فقط
+
+        var queued = false;
+        function queue() { if (queued) return; queued = true; requestAnimationFrame(function () { queued = false; place(); }); }
+        window.addEventListener('scroll', queue, { passive: true });
+        window.addEventListener('resize', queue);
+
+        // السحب من الشريط، ثم الالتصاق بأقرب زاوية
+        var drag = null;
+        bar.addEventListener('pointerdown', function (e) {
+            if (e.target.closest('button')) return;
+            var r = box.getBoundingClientRect();
+            drag = { dx: e.clientX - r.left, dy: e.clientY - r.top };
+            bar.setPointerCapture(e.pointerId);
+            box.classList.add('is-drag');
+            document.body.classList.add('s24-dragging');
+        });
+        bar.addEventListener('pointermove', function (e) { if (drag) setXY(e.clientX - drag.dx, e.clientY - drag.dy); });
+        function endDrag() {
+            if (!drag) return;
+            drag = null;
+            box.classList.remove('is-drag');
+            document.body.classList.remove('s24-dragging');
+            var r = box.getBoundingClientRect();
+            home = nearest(r.width, r.left, r.top);
+            place();
+            var c = corners(r.width)[home];
+            try { localStorage.setItem(FPOS, JSON.stringify({ x: c.x, y: c.y })); } catch (e) {}
+        }
+        bar.addEventListener('pointerup', endDrag);
+        bar.addEventListener('pointercancel', endDrag);
+
+        // تغيير الحجم من الزاوية السفلية اليسرى (الحافة اليمنى ثابتة أثناء السحب)
+        var rs = box.querySelector('.s24-follow-rs'), rz = null;
+        rs.addEventListener('pointerdown', function (e) {
+            var r = box.getBoundingClientRect();
+            rz = { x: e.clientX, w: r.width, right: r.right, top: r.top };
+            rs.setPointerCapture(e.pointerId);
+            box.classList.add('is-drag');
+            document.body.classList.add('s24-dragging');
+            e.preventDefault();
+        });
+        rs.addEventListener('pointermove', function (e) {
+            if (!rz) return;
+            mini = false; ss(FOLLOW_MIN, null);
+            W = Math.min(Math.max(rz.w + (rz.x - e.clientX), MIN), maxW());
+            var w = size();
+            setXY(rz.right - w, rz.top);
+        });
+        function endResize() {
+            if (!rz) return;
+            rz = null;
+            box.classList.remove('is-drag');
+            document.body.classList.remove('s24-dragging');
+            try { localStorage.setItem(FSIZE, String(Math.round(W))); } catch (e) {}
+            var r = box.getBoundingClientRect();
+            home = nearest(r.width, r.left, r.top);
+            place();
+        }
+        rs.addEventListener('pointerup', endResize);
+        rs.addEventListener('pointercancel', endResize);
+
+        // الصوت
+        function unmute() {
+            cmd('unMute'); cmd('playVideo');
+            var b = box.querySelector('.s24-follow-snd');
+            if (b) b.hidden = true;
+            ss(FOLLOW_SND, '1');
+        }
+        if (ss(FOLLOW_SND)) {
+            var once = function (e) {
+                window.removeEventListener('pointerdown', once, true);
+                window.removeEventListener('keydown', once, true);
+                if (follow && !box.contains(e.target)) unmute();
+            };
+            window.addEventListener('pointerdown', once, true);
+            window.addEventListener('keydown', once, true);
+        }
+
+        // مشغّل واحد يعمل: فيديو آخر في الصفحة يوقف المرافق
+        function pause() {
+            if (!follow) return;
+            cmd('pauseVideo');
+            resumeBtn.hidden = false;
+        }
+        api.followPause = pause;
+        document.addEventListener('play', function (e) {
+            if (e.target && e.target.tagName === 'VIDEO' && !box.contains(e.target)) pause();
+        }, true);
+        window.addEventListener('blur', function () {
+            setTimeout(function () {
+                var a = document.activeElement;
+                if (a && a.tagName === 'IFRAME' && a !== ifr && !box.contains(a)) pause();
+            }, 0);
+        });
+
+        box.addEventListener('click', function (e) {
+            var b = e.target.closest('button');
+            if (!b) return;
+            var a = b.getAttribute('data-a');
+            if (a === 'snd') { unmute(); track('unmute', src.name); }
+            else if (a === 'resume') { cmd('playVideo'); resumeBtn.hidden = true; track('resume', src.name); }
+            else if (a === 'min') {
+                mini = !mini;
+                ss(FOLLOW_MIN, mini ? '1' : null);
+                place();
+                if (mini) track('minimize', src.name);
+            }
+            else if (a === 'live') { location.href = '/p/live.html'; }
+            else if (a === 'x') {
+                ss(FOLLOW, null); ss(FOLLOW_SND, null); ss(FOLLOW_MIN, null); ss(FOLLOW_OFF, '1');
+                track('close', src.name);
+                window.removeEventListener('scroll', queue);
+                window.removeEventListener('resize', queue);
+                box.remove();
+                follow = null;
+                api.followPause = null;
+            }
+        });
+        track('show', src.name);
+    }
+
+    /* ============ سطر القنوات تحت المشغّل الجانبي في الرئيسية (2.7) ============
+       شعارات قنوات الشريط (بلا البث الرئيسي)؛ الضغط يفتح صفحة البث على تلك القناة (?ch=رقمها). */
+    function renderHomeRow(d) {
+        var side = document.querySelector('.live-tv-widget');
+        if (!side || document.getElementById('s24-home-ch')) return;
+        var mainId = state.mode === 'channel' ? state.channelId : window.LIVE_CONFIG.videoId;
+        var list = (Array.isArray(d.channels) ? d.channels : []).filter(function (c) {
+            return c && ID_RE[c.kind] && ID_RE[c.kind].test(c.id || '') && c.id !== mainId;
+        }).slice(0, 6);
+        if (!list.length) return;
+        var row = document.createElement('div');
+        row.id = 's24-home-ch';
+        row.className = 's24-home-ch';
+        row.innerHTML = '<span class="s24-home-ch-lbl">قنوات أخرى</span><span class="s24-home-ch-list">' +
+            list.map(function (c) {
+                var t = thumbOf(c);
+                return '<a class="s24-home-ch-i" href="/p/live.html?ch=' + encodeURIComponent(c.id) + '" title="' + escTxt(c.name || 'قناة') + '">' +
+                    (t ? '<img src="' + escTxt(t) + '" alt="' + escTxt(c.name || '') + '" loading="lazy">' : '<b>' + escTxt((c.name || '؟').charAt(0)) + '</b>') + '</a>';
+            }).join('') + '</span><a class="s24-home-ch-all" href="/p/live.html">كل القنوات ←</a>';
+        side.insertAdjacentElement('afterend', row);
+    }
+
+    var api = { state: state, whenReady: whenReady, embedUrl: embedUrl, MINI_PARAMS: MINI_PARAMS, switchTo: switchTo, followPause: null };
+
     function load() {
-        if (isLivePage) { ensureSplit(); renderMore(); initFloat(); }
-        var needed = isLivePage || document.getElementById('miniLiveWidget') || document.querySelector('.live-tv-widget');
+        if (isLivePage) { ensureSplit(); renderMore(); initFloat(); recordOnLeave(); }
+        initFollow();
+        var wantsFollow = !isLivePage && desk.matches && !!ss(FOLLOW) && !ss(FOLLOW_OFF);
+        var needed = isLivePage || wantsFollow || document.getElementById('miniLiveWidget') || document.querySelector('.live-tv-widget');
         if (!needed || !window.S24Feed) { ready = Promise.resolve(); return; }
         ready = window.S24Feed.get('live_stream/current', {
             key: 's24_live_v1',
@@ -505,7 +843,7 @@ window.S24Live = (function () {
     }
 
     document.addEventListener("DOMContentLoaded", load);
-    return { state: state, whenReady: whenReady, embedUrl: embedUrl, MINI_PARAMS: MINI_PARAMS, switchTo: switchTo };
+    return api;
 })();
 
 document.addEventListener("DOMContentLoaded", function() {
@@ -595,6 +933,7 @@ function playFast() {
     if(isPlayerActive) return;
     if (!S24Live.state.onAir) return;   // البث متوقف من اللوحة
     isPlayerActive = true;
+    try { sessionStorage.removeItem('s24_follow_off'); } catch (e) {}   // تشغيل البث = المرافق يتبع القارئ من جديد (2.7)
     var oldError = document.getElementById('main-load-error');
     if (oldError) oldError.remove();
     document.getElementById('btn-overlay').style.display = 'none';
@@ -722,6 +1061,7 @@ function playSidebarFast() {
     if (sidebarPlayerActive) return;
     if (!S24Live.state.onAir) return;   // البث متوقف من اللوحة
     sidebarPlayerActive = true;
+    if (S24Live.followPause) S24Live.followPause();   // مشغّل واحد يعمل (2.7)
     var oldError = document.getElementById('sidebar-load-error');
     if (oldError) oldError.remove();
     document.getElementById('sidebar-play-btn').style.display = 'none';
