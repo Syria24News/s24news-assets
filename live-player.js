@@ -72,7 +72,7 @@ window.S24Live = (function () {
             if (!state.onAir) side.style.display = 'none';
             var sp = document.getElementById('fake-poster-img');
             if (sp && !sidebarPlayerActive && window.LIVE_CONFIG.posterImage) sp.src = window.LIVE_CONFIG.posterImage;
-            if (state.onAir) renderHomeRow(d);           // سطر القنوات الأخرى (2.7)
+            // سطر «قنوات أخرى» (2.7) أُوقف بقرار حسان (2 نوفمبر 2026): renderHomeRow باقية بلا استدعاء
         }
 
         // المشغّل المصغّر في الرئيسية
