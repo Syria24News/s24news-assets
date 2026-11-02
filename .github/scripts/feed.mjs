@@ -77,12 +77,17 @@ async function get(url, type) {
 /* وصف البحث وog:image من صفحة المقالة */
 async function pageMeta(url) {
   const html = await get(url, 'text');
-  const pick = (re) => { const m = html.match(re); return m ? unent(m[1]).trim() : ''; };
+  // بلوجر يكتب السمات بعلامات مفردة ' وبترتيب متغيّر — نقرأ كل وسم meta وسماته أياً كان شكلها
+  const metas = {};
+  for (const tag of html.match(/<meta\b[^>]*>/gi) || []) {
+    const attrs = {};
+    for (const m of tag.matchAll(/([\w:-]+)\s*=\s*("([^"]*)"|'([^']*)')/g)) attrs[m[1].toLowerCase()] = m[3] ?? m[4];
+    const key = (attrs.name || attrs.property || '').toLowerCase();
+    if (key && attrs.content != null && !(key in metas)) metas[key] = unent(attrs.content).trim();
+  }
   return {
-    desc: pick(/<meta[^>]+content="([^"]*)"[^>]+name="description"/i)
-       || pick(/<meta[^>]+name="description"[^>]+content="([^"]*)"/i),
-    image: pick(/<meta[^>]+content="([^"]*)"[^>]+name="twitter:image"/i)
-       || pick(/<meta[^>]+content="([^"]*)"[^>]+property="og:image"/i)
+    desc: metas['description'] || metas['og:description'] || '',
+    image: metas['twitter:image'] || metas['og:image'] || ''
   };
 }
 
@@ -103,7 +108,8 @@ for (const e of entries) {
   if (!link) continue;                         // مسودة/صفحة بلا رابط
 
   // الوصف والصورة من الذاكرة إن لم تُعدَّل المقالة، وإلا من صفحتها
-  let meta = cache[id] && cache[id].updated === updated ? cache[id] : null;
+  // (ذاكرة بلا وصف ولا صورة تُعدّ فاشلة ويُعاد الجلب)
+  let meta = cache[id] && cache[id].updated === updated && (cache[id].desc || cache[id].image) ? cache[id] : null;
   if (!meta) {
     try {
       const m = await pageMeta(link);
