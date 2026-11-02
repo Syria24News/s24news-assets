@@ -5263,23 +5263,21 @@ a.s24-cov-link:hover .s24-cov-title { color: #77bd1d; }
     .s24-follow-btns button[hidden] { display: none; }
     .s24-follow-video { position: relative; }
     .s24-follow-video iframe { display: block; width: 100%; border: 0; }
-    .s24-follow-resume { position: absolute; inset: 0; margin: auto; width: max-content; height: max-content;
-        background: rgba(0,0,0,.75); color: #fff; border: 1px solid #77bd1d; border-radius: 30px;
-        font: 700 14px var(--font-main); padding: 8px 18px; cursor: pointer; }
-    .s24-follow-resume[hidden] { display: none; }
-    /* مقبض تغيير الحجم: خطّان رفيعان في الزاوية السفلية اليسرى */
-    .s24-follow-rs { position: absolute; left: 0; bottom: 0; width: 26px; height: 26px; display: flex;
-        align-items: flex-end; justify-content: flex-start; padding: 0 0 3px 3px; box-sizing: border-box;
-        cursor: nesw-resize; opacity: .6; transition: opacity .25s; touch-action: none;
-        background: radial-gradient(circle at 0 100%, rgba(0,0,0,.55), transparent 70%); border-bottom-left-radius: 10px; }
+    /* «▶ متابعة» بعد إيقافه لصالح فيديو آخر — في الشريط لا فوق الفيديو */
+    .s24-follow-btns .s24-follow-resume { background: #77bd1d; color: #fff; font-size: 12px; padding: 3px 9px; margin-inline-end: 4px; }
+    .s24-follow-btns .s24-follow-resume:hover { color: #fff; filter: brightness(1.08); }
+    /* مقبض تغيير الحجم: خطّان رفيعان في الزاوية العليا اليسرى من الشريط (لا شيء فوق إطار يوتيوب) */
+    .s24-follow-bar { padding-left: 28px; }
+    .s24-follow-rs { position: absolute; left: 0; top: 0; width: 24px; height: 30px; display: flex;
+        align-items: center; justify-content: center; cursor: nwse-resize; opacity: .6; transition: opacity .25s;
+        touch-action: none; z-index: 1; }
     .s24-follow-rs path { stroke: #fff; stroke-width: 1.6; stroke-linecap: round; fill: none; transition: stroke .2s; }
     .s24-follow:hover .s24-follow-rs { opacity: .9; }
     .s24-follow-rs:hover { opacity: 1; }
     .s24-follow-rs:hover path { stroke: #77bd1d; }
-    /* المقبض يميناً حين يلتصق المشغّل بيسار الشاشة (2.7.1) */
-    .s24-follow.grip-r .s24-follow-rs { left: auto; right: 0; justify-content: flex-end; padding: 0 3px 3px 0;
-        cursor: nwse-resize; border-bottom-left-radius: 0; border-bottom-right-radius: 10px;
-        background: radial-gradient(circle at 100% 100%, rgba(0,0,0,.55), transparent 70%); }
+    /* المقبض يميناً حين يلتصق المشغّل بيسار الشاشة */
+    .s24-follow.grip-r .s24-follow-bar { padding-left: 8px; padding-right: 28px; }
+    .s24-follow.grip-r .s24-follow-rs { left: auto; right: 0; cursor: nesw-resize; }
     .s24-follow.grip-r .s24-follow-rs svg { transform: scaleX(-1); }
     /* المشغّل المطويّ: شريط صغير فقط */
     .s24-follow-open { display: none; }
@@ -5288,7 +5286,7 @@ a.s24-cov-link:hover .s24-cov-title { color: #77bd1d; }
     .s24-follow.is-collapsed .s24-follow-rs,
     .s24-follow.is-collapsed [data-a="snd"],
     .s24-follow.is-collapsed [data-a="min"] { display: none; }
-    .s24-follow.is-collapsed .s24-follow-bar { height: 36px; padding: 0 14px; gap: 12px; }
+    .s24-follow.is-collapsed .s24-follow-bar { height: 36px; padding: 0 14px !important; gap: 12px; }
     .s24-follow.is-collapsed .s24-follow-btns .s24-follow-open { display: inline-block; background: #77bd1d; color: #fff;
         font-size: 12px; padding: 4px 12px; border-radius: 20px; }
     .s24-follow.is-collapsed .s24-follow-btns .s24-follow-open:hover { color: #fff; filter: brightness(1.08); }

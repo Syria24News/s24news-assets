@@ -517,7 +517,8 @@ window.S24Live = (function () {
        - الموضع والحجم يُحفظان؛ يلتصق بأقرب زاوية، وينزاح عن أماكن الإعلانات (سياسة أدسنس).
        - الحجم بين 360 بكسل (أصغر ما يسمح به يوتيوب: ارتفاع 200) و640 أو ثلث الشاشة، بمقبض في الزاوية المقابلة لجهة الالتصاق.
        - زر «–» يوقف البث ويطوي المشغّل إلى شريط «● مباشر · القناة ▶ مشاهدة» (2.7.1).
-       - مشغّل واحد يعمل: إن شغّل القارئ فيديو آخر يتوقف المرافق، ويعود بزر «متابعة البث».
+       - مشغّل واحد يعمل: إن شغّل القارئ فيديو آخر يتوقف المرافق، ويعود بزر «▶ متابعة» في الشريط.
+       - لا شيء فوق إطار يوتيوب (شرط يوتيوب): المقبض والأزرار كلها في الشريط الأسود (2.7.2).
        - القناة المحذوفة من الشريط تعود إلى البث الرئيسي، والبث الرئيسي المتوقف من اللوحة يخفي المرافق.
        - Google Analytics: الحدث s24_live_follow (show / close / unmute / minimize / resume). */
     var FOLLOW = 's24_follow', FOLLOW_OFF = 's24_follow_off', FOLLOW_SND = 's24_follow_snd',
@@ -611,6 +612,7 @@ window.S24Live = (function () {
               '<span class="s24-follow-ttl"><span class="s24-float-dot">●</span> مباشر' +
                 (src.name ? ' · <b>' + escTxt(src.name) + '</b>' : '') + '</span>' +
               '<span class="s24-follow-btns">' +
+                '<button type="button" data-a="resume" class="s24-follow-resume" title="متابعة البث" hidden>▶ متابعة</button>' +
                 '<button type="button" data-a="snd" class="s24-follow-snd" title="تشغيل الصوت">🔊 الصوت</button>' +
                 '<button type="button" data-a="min" title="طيّ المشغّل" aria-label="طيّ المشغّل">–</button>' +
                 '<button type="button" data-a="open" class="s24-follow-open" title="مشاهدة البث">▶ مشاهدة</button>' +
@@ -618,10 +620,10 @@ window.S24Live = (function () {
                 '<button type="button" data-a="x" title="إغلاق" aria-label="إغلاق">✕</button>' +
               '</span></div>' +
             '<div class="s24-follow-video"><iframe src="' + (mini ? 'about:blank' : escTxt(url)) + '" title="البث المباشر" ' +
-              'allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>' +
-              '<button type="button" class="s24-follow-resume" data-a="resume" hidden>▶ متابعة البث</button></div>' +
+              'allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe></div>' +
+            // المقبض داخل الشريط الأسود لا فوق الفيديو: يوتيوب يمنع أي عنصر فوق المشغّل، وكان يحجب زر الصوت (2.7.2)
             '<span class="s24-follow-rs" title="اسحب لتكبير المشغّل أو تصغيره"><svg viewBox="0 0 16 16" width="16" height="16">' +
-              '<path d="M2 6 L10 14 M2 10 L6 14"/></svg></span>';
+              '<path d="M2 10 L10 2 M2 14 L14 2"/></svg></span>';
         document.body.appendChild(box);
         follow = box;
         var bar = box.querySelector('.s24-follow-bar'), ifr = box.querySelector('iframe');
@@ -649,7 +651,7 @@ window.S24Live = (function () {
             ifr.style.height = H + 'px';
             return w;
         }
-        // مقبض الحجم في الزاوية السفلية المقابلة لجهة الالتصاق: المشغّل في اليسار ← المقبض يميناً، والعكس
+        // مقبض الحجم في الزاوية العليا (داخل الشريط) المقابلة لجهة الالتصاق: المشغّل في اليسار ← المقبض يميناً، والعكس
         function gripSide() { box.classList.toggle('grip-r', home === 0 || home === 2); }
         // الزوايا الأربع: 0 أعلى يسار، 1 أعلى يمين، 2 أسفل يسار، 3 أسفل يمين
         function corners(w) {
