@@ -5276,6 +5276,22 @@ a.s24-cov-link:hover .s24-cov-title { color: #77bd1d; }
     .s24-follow:hover .s24-follow-rs { opacity: .9; }
     .s24-follow-rs:hover { opacity: 1; }
     .s24-follow-rs:hover path { stroke: #77bd1d; }
+    /* المقبض يميناً حين يلتصق المشغّل بيسار الشاشة (2.7.1) */
+    .s24-follow.grip-r .s24-follow-rs { left: auto; right: 0; justify-content: flex-end; padding: 0 3px 3px 0;
+        cursor: nwse-resize; border-bottom-left-radius: 0; border-bottom-right-radius: 10px;
+        background: radial-gradient(circle at 100% 100%, rgba(0,0,0,.55), transparent 70%); }
+    .s24-follow.grip-r .s24-follow-rs svg { transform: scaleX(-1); }
+    /* المشغّل المطويّ: شريط صغير فقط */
+    .s24-follow-open { display: none; }
+    .s24-follow.is-collapsed { width: max-content; min-width: 220px; border-radius: 30px; }
+    .s24-follow.is-collapsed .s24-follow-video,
+    .s24-follow.is-collapsed .s24-follow-rs,
+    .s24-follow.is-collapsed [data-a="snd"],
+    .s24-follow.is-collapsed [data-a="min"] { display: none; }
+    .s24-follow.is-collapsed .s24-follow-bar { height: 36px; padding: 0 14px; gap: 12px; }
+    .s24-follow.is-collapsed .s24-follow-btns .s24-follow-open { display: inline-block; background: #77bd1d; color: #fff;
+        font-size: 12px; padding: 4px 12px; border-radius: 20px; }
+    .s24-follow.is-collapsed .s24-follow-btns .s24-follow-open:hover { color: #fff; filter: brightness(1.08); }
 
 }
 /* «شاهد أيضاً» تحت صندوق البث (live-player.js 2.3) — شريط أفقي من فيديوهات الموقع، يُسحب بالإصبع */
