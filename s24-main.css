@@ -5242,7 +5242,7 @@ a.s24-cov-link:hover .s24-cov-title { color: #77bd1d; }
     body.s24-dragging iframe { pointer-events: none; }   /* لا يبتلع إطار يوتيوب حركة الماوس أثناء السحب */
 }
 /* المشغّل المرافق: يتبع القارئ بين الصفحات (live-player.js 2.7) — الكمبيوتر فقط؛ الموضع والعرض يكتبهما السكربت */
-.s24-follow, .s24-home-ch { display: none; }
+.s24-follow { display: none; }
 @media (min-width: 1024px) {
     .s24-follow { display: block; position: fixed; z-index: 10000; border-radius: 10px; overflow: hidden;
         background: #000; box-shadow: 0 12px 32px rgba(0,0,0,.45); direction: rtl; }
@@ -5277,20 +5277,6 @@ a.s24-cov-link:hover .s24-cov-title { color: #77bd1d; }
     .s24-follow-rs:hover { opacity: 1; }
     .s24-follow-rs:hover path { stroke: #77bd1d; }
 
-    /* سطر القنوات الأخرى تحت المشغّل الجانبي في الرئيسية */
-    .s24-home-ch { display: flex; align-items: center; gap: 10px; margin: 10px 0 4px; direction: rtl;
-        font: 600 13px var(--font-main); color: var(--text-sec); }
-    .s24-home-ch-lbl { flex-shrink: 0; }
-    .s24-home-ch-list { display: flex; gap: 8px; flex: 1; min-width: 0; overflow-x: auto; scrollbar-width: none; }
-    .s24-home-ch-list::-webkit-scrollbar { display: none; }
-    .s24-home-ch-i { width: 36px; height: 36px; flex-shrink: 0; border-radius: 50%; overflow: hidden;
-        border: 2px solid var(--border-color); background: var(--bg-body); display: flex; align-items: center;
-        justify-content: center; transition: border-color .2s; text-decoration: none; }
-    .s24-home-ch-i:hover { border-color: #77bd1d; }
-    .s24-home-ch-i img { width: 100%; height: 100%; object-fit: cover; }
-    .s24-home-ch-i b { color: var(--text-main); font-size: 15px; }
-    a.s24-home-ch-all { flex-shrink: 0; color: #77bd1d; text-decoration: none; font-weight: 700; }
-    a.s24-home-ch-all:hover { text-decoration: underline; }
 }
 /* «شاهد أيضاً» تحت صندوق البث (live-player.js 2.3) — شريط أفقي من فيديوهات الموقع، يُسحب بالإصبع */
 .s24-watch-row { display: flex; gap: 14px; overflow-x: auto; padding: 0 10px 14px; scroll-snap-type: x mandatory; scroll-padding-inline: 10px; -webkit-overflow-scrolling: touch; scrollbar-width: thin; }

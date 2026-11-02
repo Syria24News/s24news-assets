@@ -2,8 +2,8 @@
    S24News — مشغّل البث المباشر (playFast / loadVideoLibs)
    playFast تُستدعى من onclick داخل HTML القالب — يجب أن تبقى دالة عامة
 
-   الإصدار 2.7 — 2 نوفمبر 2026: المشغّل المرافق يتبع القارئ بين الصفحات (الكمبيوتر)، وسطر القنوات الأخرى
-                تحت المشغّل الجانبي في الرئيسية، و?ch= لفتح صفحة البث على قناة
+   الإصدار 2.7 — 2 نوفمبر 2026: المشغّل المرافق يتبع القارئ بين الصفحات (الكمبيوتر)، و?ch= لفتح صفحة البث على قناة
+                (سطر القنوات تحت المشغّل الجانبي في الرئيسية حُذف بقرار حسان)
    الإصدار 2.6 — 1 نوفمبر 2026: التغطية المباشرة النشطة (آخر 5 أخبار) تحت الشاشة فوق «أحدث الأخبار»
    الإصدار 2.5 — 1 نوفمبر 2026: المشغّل العائم على الكمبيوتر (يُسحب ويُحفظ موضعه) حين يخرج الصندوق من الصورة
    الإصدار 2.4 — 1 نوفمبر 2026: «أحدث الأخبار» أولاً ثم «شاهد أيضاً» تحتها؛ وتثبيت الشاشة فوق الأخبار على الموبايل
@@ -72,7 +72,6 @@ window.S24Live = (function () {
             if (!state.onAir) side.style.display = 'none';
             var sp = document.getElementById('fake-poster-img');
             if (sp && !sidebarPlayerActive && window.LIVE_CONFIG.posterImage) sp.src = window.LIVE_CONFIG.posterImage;
-            // سطر «قنوات أخرى» (2.7) أُوقف بقرار حسان (2 نوفمبر 2026): renderHomeRow باقية بلا استدعاء
         }
 
         // المشغّل المصغّر في الرئيسية
@@ -796,28 +795,6 @@ window.S24Live = (function () {
             }
         });
         track('show', src.name);
-    }
-
-    /* ============ سطر القنوات تحت المشغّل الجانبي في الرئيسية (2.7) ============
-       شعارات قنوات الشريط (بلا البث الرئيسي)؛ الضغط يفتح صفحة البث على تلك القناة (?ch=رقمها). */
-    function renderHomeRow(d) {
-        var side = document.querySelector('.live-tv-widget');
-        if (!side || document.getElementById('s24-home-ch')) return;
-        var mainId = state.mode === 'channel' ? state.channelId : window.LIVE_CONFIG.videoId;
-        var list = (Array.isArray(d.channels) ? d.channels : []).filter(function (c) {
-            return c && ID_RE[c.kind] && ID_RE[c.kind].test(c.id || '') && c.id !== mainId;
-        }).slice(0, 6);
-        if (!list.length) return;
-        var row = document.createElement('div');
-        row.id = 's24-home-ch';
-        row.className = 's24-home-ch';
-        row.innerHTML = '<span class="s24-home-ch-lbl">قنوات أخرى</span><span class="s24-home-ch-list">' +
-            list.map(function (c) {
-                var t = thumbOf(c);
-                return '<a class="s24-home-ch-i" href="/p/live.html?ch=' + encodeURIComponent(c.id) + '" title="' + escTxt(c.name || 'قناة') + '">' +
-                    (t ? '<img src="' + escTxt(t) + '" alt="' + escTxt(c.name || '') + '" loading="lazy">' : '<b>' + escTxt((c.name || '؟').charAt(0)) + '</b>') + '</a>';
-            }).join('') + '</span><a class="s24-home-ch-all" href="/p/live.html">كل القنوات ←</a>';
-        side.insertAdjacentElement('afterend', row);
     }
 
     var api = { state: state, whenReady: whenReady, embedUrl: embedUrl, MINI_PARAMS: MINI_PARAMS, switchTo: switchTo, followPause: null };
