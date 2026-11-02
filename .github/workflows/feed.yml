@@ -1,0 +1,65 @@
+# S24News — تحديث feed.xml (خلاصة RSS بصور كاملة الحجم) آلياً
+# يعمل كل 20 دقيقة تقريباً، ويمكن تشغيله يدوياً من Actions ← «خلاصة RSS» ← Run workflow.
+# الكود في .github/scripts/feed.mjs — المصدر خلاصة بلوجر + وصف البحث من صفحة كل مقالة جديدة.
+# الرابط العام: https://syria24news.github.io/s24news-assets/feed.xml
+# الاستهلاك: مجاني بالكامل (المستودع عام)، ولا يمس حصص Apps Script ولا Firestore.
+# النشر: فقط إن تغيّرت الخلاصة، عبر طابور pages.yml الواحد (لا طلب بناء آخر هنا).
+
+name: خلاصة RSS
+
+on:
+  schedule:
+    # 7 و27 و47 دقيقة بعد كل ساعة (بعيداً عن رأس الساعة المزدحم، وعن الطقس :23)
+    - cron: '7,27,47 * * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: feed
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    outputs:
+      changed: ${{ steps.save.outputs.changed }}
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+
+      - name: بناء feed.xml من خلاصة بلوجر
+        run: node .github/scripts/feed.mjs
+
+      - name: حفظ الملف في المستودع
+        id: save
+        run: |
+          git config user.name  "s24-feed-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add feed.xml feed-cache.json
+          if git diff --cached --quiet; then echo "لا تغيير"; echo "changed=false" >> "$GITHUB_OUTPUT"; exit 0; fi
+          # التزام بلا نشر إن تغيّرت الذاكرة وحدها
+          if git diff --cached --quiet -- feed.xml; then FEED=false; else FEED=true; fi
+          git commit -m "خلاصة RSS: تحديث آلي"
+          for i in 1 2 3; do
+            if git pull --rebase --quiet origin main && git push --quiet origin HEAD:main; then
+              echo "changed=$FEED" >> "$GITHUB_OUTPUT"; exit 0
+            fi
+            sleep 5
+          done
+          exit 1
+
+  # نشر الموقع فقط إن تغيّرت الخلاصة — عبر الطابور الواحد في pages.yml
+  deploy:
+    needs: update
+    if: needs.update.outputs.changed == 'true'
+    uses: ./.github/workflows/pages.yml
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
