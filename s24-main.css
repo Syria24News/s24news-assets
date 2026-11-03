@@ -5129,6 +5129,10 @@ body #comments .comment-thread .comment-thread { padding-right: 12px !important;
 .s24-live-offair { position: absolute; inset: 0; z-index: 3; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px; padding: 16px; text-align: center; background: rgba(0, 0, 0, 0.6); color: #fff; cursor: default; }
 .s24-live-offair strong { font-family: var(--font-title); font-size: 18px; }
 .s24-live-offair span { font-family: var(--font-main); font-size: 14px; opacity: 0.85; }
+/* رسالة «البث متوقف» من اللوحة: على الشاشة كلها فوق الغلاف (الغلاف z-index 1، زر التشغيل 2) */
+.s24-live-stop { z-index: 4; cursor: default; }
+.live-tv-widget .s24-live-stop strong { font-size: 15px; }
+.live-tv-widget .s24-live-stop span { font-size: 12px; }
 /* رسالة الانقطاع المفاجئ داخل مشغّل VideoJS (3 نوفمبر 2026): فوق رسالة يوتيوب وأزرار المشغّل */
 .video-js .s24-live-down { z-index: 100; background: #111; }
 .s24-follow .s24-live-down strong, .live-tv-widget .s24-live-down strong, .s24-float .s24-live-down strong { font-size: 15px; }

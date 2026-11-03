@@ -36,7 +36,11 @@ function s24Poster() {
 function s24SetPoster(img) {
     if (!img) return;
     var u = s24Poster();
-    if (u) { if (img.src !== u) img.src = u; img.style.visibility = ''; }
+    if (u) {
+        img.onerror = function () { img.style.visibility = 'hidden'; };   // صورة تعذّر تحميلها: لا أيقونة مكسورة
+        if (img.src !== u) img.src = u;
+        img.style.visibility = '';
+    }
     else { img.removeAttribute('src'); img.style.visibility = 'hidden'; if (img.parentElement) img.parentElement.style.background = '#111'; }
 }
 function s24ShowDown(host) {
@@ -101,12 +105,13 @@ window.S24Live = (function () {
         var poster = document.getElementById('main-fake-poster');
         if (poster && !isPlayerActive) s24SetPoster(poster);
 
-        // المشغّل الجانبي في الرئيسية: الغلاف، أو الإخفاء حين يكون البث متوقفاً
+        // المشغّل الجانبي في الرئيسية: الغلاف، ورسالة «البث متوقف» حين يكون متوقفاً
+        // (3 نوفمبر 2026، بطلب حسان: يبقى ظاهراً ولا يختفي — كان يُخفى كله)
         var side = document.querySelector('.live-tv-widget');
         if (side) {
-            if (!state.onAir) side.style.display = 'none';
             var sp = document.getElementById('fake-poster-img');
             if (sp && !sidebarPlayerActive) s24SetPoster(sp);
+            if (!sidebarPlayerActive) offAir(document.getElementById('video-placeholder'), 's24-side-offair', 'sidebar-play-btn', !state.onAir);
         }
 
         // المشغّل المصغّر في الرئيسية
@@ -125,7 +130,7 @@ window.S24Live = (function () {
         }
 
         // صفحة البث: رسالة بدل زر التشغيل حين يكون البث متوقفاً
-        if (isLivePage && !state.onAir) showOffAir();
+        if (isLivePage && !isPlayerActive) offAir(document.getElementById('main-video-placeholder'), 's24-live-offair', 'btn-overlay', !state.onAir);
 
         // صفحة البث: شريط القنوات تحت الشاشة (من المستند نفسه، بلا قراءة إضافية)
         if (isLivePage) renderStrip(d);
@@ -133,12 +138,25 @@ window.S24Live = (function () {
         try { document.dispatchEvent(new CustomEvent('s24:live-config', { detail: state })); } catch (e) {}
     }
 
-    function showOffAir() {
-        var overlay = document.getElementById('btn-overlay');
-        if (!overlay || document.getElementById('s24-live-offair')) return;
-        overlay.style.display = 'flex';
-        overlay.innerHTML = '<div class="s24-live-offair" id="s24-live-offair" role="status">' +
-            '<strong>البث متوقف حالياً</strong><span>تابعونا، سيعود البث المباشر قريباً</span></div>';
+    // رسالة «البث متوقف» على الشاشة كلها (3 نوفمبر 2026): كانت داخل زر التشغيل الصغير (68×48)
+    // فتنكسر كلمة كلمة. الآن طبقة بعرض الشاشة فوق الغلاف، ويُخفى زر التشغيل ما دامت ظاهرة.
+    function offAir(host, id, btnId, on) {
+        if (!host) return;
+        var el = document.getElementById(id), btn = document.getElementById(btnId);
+        if (on) {
+            if (!el) {
+                el = document.createElement('div');
+                el.className = 's24-live-offair s24-live-stop';
+                el.id = id;
+                el.setAttribute('role', 'status');
+                el.innerHTML = '<strong>البث متوقف حالياً</strong><span>تابعونا، سيعود البث المباشر قريباً</span>';
+                host.appendChild(el);
+            }
+            if (btn) btn.style.display = 'none';
+        } else if (el) {
+            el.remove();
+            if (btn) btn.style.display = '';
+        }
     }
 
     /* ============ شريط القنوات (صفحة البث فقط) ============
@@ -1167,11 +1185,8 @@ var isPlayerActive = false;
 
 // إعادة تشغيل الشاشة الرئيسية بالمصدر الجديد بعد اختيار قناة من الشريط
 function restartMain() {
-    var overlay = document.getElementById('btn-overlay');
-    if (overlay && document.getElementById('s24-live-offair')) {
-        // إزالة رسالة «البث متوقف» وإعادة زر التشغيل
-        overlay.innerHTML = '<svg viewBox="0 0 24 24"><path d="M8 5v14l11-7z"></path></svg>';
-    }
+    var off = document.getElementById('s24-live-offair');   // اختيار قناة من الشريط يزيل رسالة «البث متوقف»
+    if (off) off.remove();
     if (!isPlayerActive) { playFast(); return; }
     var old = window.videojs && videojs.getPlayer && videojs.getPlayer('rt-live-page-player');
     if (old) old.dispose();
