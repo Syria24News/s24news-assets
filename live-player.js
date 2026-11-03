@@ -24,11 +24,46 @@
    ودقيقة في صفحة البث. إن فشل الجلب يبقى LIVE_CONFIG (ودجت القالب أو الاحتياطي أدناه).
    ============================================================ */
 
+/* ============ الغلاف ورسالة الانقطاع (3 نوفمبر 2026) ============
+   الغلاف: رابط «صورة الغلاف» من اللوحة، وإلا صورة البث نفسه من يوتيوب (فيديو برقم)، وإلا خلفية داكنة بلا صورة.
+   الانقطاع: حين يُبلغ VideoJS أن البث انتهى أو تعذّر تشغيله، تظهر رسالة الموقع بدل رسالة يوتيوب. */
+function s24Poster() {
+    var c = window.LIVE_CONFIG || {};
+    if (c.posterImage) return c.posterImage;
+    var mode = window.S24Live && S24Live.state ? S24Live.state.mode : 'video';
+    return mode === 'video' && c.videoId ? 'https://i.ytimg.com/vi/' + c.videoId + '/hqdefault.jpg' : '';
+}
+function s24SetPoster(img) {
+    if (!img) return;
+    var u = s24Poster();
+    if (u) { if (img.src !== u) img.src = u; img.style.visibility = ''; }
+    else { img.removeAttribute('src'); img.style.visibility = 'hidden'; if (img.parentElement) img.parentElement.style.background = '#111'; }
+}
+function s24ShowDown(host) {
+    if (!host || host.querySelector('.s24-live-down')) return;
+    var d = document.createElement('div');
+    d.className = 's24-live-offair s24-live-down';
+    d.setAttribute('role', 'status');
+    d.innerHTML = '<strong>البث متوقف حالياً</strong><span>تابعونا، سيعود البث المباشر قريباً</span>';
+    host.appendChild(d);
+}
+function s24WatchDown(player, loaderId) {
+    function down() {
+        if (player.isDisposed && player.isDisposed()) return;
+        try { player.pause(); } catch (e) {}
+        var l = loaderId && document.getElementById(loaderId);
+        if (l) l.style.display = 'none';
+        s24ShowDown(player.el());
+    }
+    player.on('error', down);
+    player.on('ended', down);
+}
+
 /* ============ الاحتياطي: يعمل البث حتى لو حُذف ودجت «إعدادات البث المباشر» ============ */
 if (typeof window.LIVE_CONFIG === 'undefined') {
     window.LIVE_CONFIG = {
         videoId: "HQnkyS2u-Ks",
-        posterImage: "https://blogger.googleusercontent.com/img/b/R29vZ2xl/AVvXsEjqqEGaQfYWvucbm2JGaLWomhFRecJYYSxg7TLtEd-oHcqtuXMjy0IdTThDlp6HIXbTj3G4OmU16eok2yevyNX5PiQa5IJiHyIoHDCgIdb-WBndZmmb11VQksQi45o5W-_BAvBLRe98SrqiROPKSktAf6NlprmChmok1gxKpJctQzG9wgFjfjH_RBDLs7rU/s16000/1000264052.png"
+        posterImage: ""   // الغلاف من حقل «صورة الغلاف» في تبويب البث فقط (3 نوفمبر 2026: حُذفت الصورة الخضراء)
     };
 }
 if (typeof window.getLiveUrl !== 'function') {
@@ -64,14 +99,14 @@ window.S24Live = (function () {
 
         // صورة الغلاف في صفحة البث (ما دام المشغّل لم يبدأ)
         var poster = document.getElementById('main-fake-poster');
-        if (poster && !isPlayerActive && window.LIVE_CONFIG.posterImage) poster.src = window.LIVE_CONFIG.posterImage;
+        if (poster && !isPlayerActive) s24SetPoster(poster);
 
         // المشغّل الجانبي في الرئيسية: الغلاف، أو الإخفاء حين يكون البث متوقفاً
         var side = document.querySelector('.live-tv-widget');
         if (side) {
             if (!state.onAir) side.style.display = 'none';
             var sp = document.getElementById('fake-poster-img');
-            if (sp && !sidebarPlayerActive && window.LIVE_CONFIG.posterImage) sp.src = window.LIVE_CONFIG.posterImage;
+            if (sp && !sidebarPlayerActive) s24SetPoster(sp);
         }
 
         // المشغّل المصغّر في الرئيسية
@@ -344,7 +379,7 @@ window.S24Live = (function () {
         var main = {
             name: state.title || 'البث الرئيسي', kind: state.mode,
             id: state.mode === 'channel' ? state.channelId : window.LIVE_CONFIG.videoId,
-            logo: window.LIVE_CONFIG.posterImage
+            logo: window.LIVE_CONFIG.posterImage || ''
         };
         strip.items = state.onAir ? [main] : [];
         strip.hasMain = state.onAir;
@@ -754,6 +789,7 @@ window.S24Live = (function () {
                 controlBar: { pictureInPictureToggle: false, liveDisplay: true },
                 controls: true, liveui: true, language: 'ar', muted: true, autoplay: 'muted', fill: true
             });
+            s24WatchDown(vp);
             vp.ready(function () {
                 setTimeout(function () { vjsArmed = true; }, 1500);
                 s24Skin(vp);
@@ -1050,7 +1086,7 @@ document.addEventListener("DOMContentLoaded", function() {
     // المشغّل الجانبي في الرئيسية: الغلاف المبدئي وتحميل المكتبات مسبقاً
     if (document.querySelector('.live-tv-widget')) {
         var sp = document.getElementById('fake-poster-img');
-        if (sp && window.LIVE_CONFIG.posterImage) sp.src = window.LIVE_CONFIG.posterImage;
+        s24SetPoster(sp);
         loadVideoLibs();
     }
 });
@@ -1067,9 +1103,7 @@ function loadVideoLibs() {
         document.head.appendChild(link);
     }
     
-    if(typeof LIVE_CONFIG !== 'undefined' && document.getElementById('main-fake-poster')) {
-         document.getElementById('main-fake-poster').src = LIVE_CONFIG.posterImage;
-    }
+    s24SetPoster(document.getElementById('main-fake-poster'));
 
     if (!document.querySelector(`script[src="${VJS_JS}"]`)) {
         let s1 = document.createElement("script");
@@ -1182,6 +1216,7 @@ function launchPlayer() {
         language: 'ar'
     });
 
+    s24WatchDown(player, 'fast-loader');   // انقطاع مفاجئ ← رسالة الموقع (3 نوفمبر 2026)
     player.ready(function() {
         s24Skin(player);
         player.play();
@@ -1304,6 +1339,7 @@ function launchSidebarPlayer() {
         language: 'ar'
     });
 
+    s24WatchDown(player, 'sidebar-loader');   // انقطاع مفاجئ ← رسالة الموقع (3 نوفمبر 2026، بطلب حسان)
     player.ready(function () {
         s24Skin(player);
         player.play();
