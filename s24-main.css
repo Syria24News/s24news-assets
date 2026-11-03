@@ -5275,10 +5275,22 @@ a.s24-cov-link:hover .s24-cov-title { color: #77bd1d; }
     .s24-follow:hover .s24-follow-rs { opacity: .9; }
     .s24-follow-rs:hover { opacity: 1; }
     .s24-follow-rs:hover path { stroke: #77bd1d; }
+    /* المشغّل في زاوية عليا: المقبض في شريط سفلي رفيع تحت الفيديو (لا فوقه)، في الزاوية المقابلة */
+    .s24-follow-foot { display: none; height: 14px; background: #111; }
+    .s24-follow.grip-b .s24-follow-foot { display: block; }
+    .s24-follow.grip-b .s24-follow-bar { padding-left: 8px; padding-right: 8px; }
+    .s24-follow.grip-b .s24-follow-rs { top: auto; bottom: 0; height: 14px; width: 22px; }
+    .s24-follow.grip-b .s24-follow-rs svg { width: 12px; height: 12px; transform: scaleY(-1); }
+    .s24-follow.grip-b.grip-r .s24-follow-rs svg { transform: scale(-1, -1); }
+    .s24-follow.grip-b .s24-follow-rs { cursor: nesw-resize; }
+    .s24-follow.grip-b.grip-r .s24-follow-rs { cursor: nwse-resize; }
+    .s24-follow.is-collapsed .s24-follow-foot { display: none !important; }
     /* المقبض يميناً حين يلتصق المشغّل بيسار الشاشة */
     .s24-follow.grip-r .s24-follow-bar { padding-left: 8px; padding-right: 28px; }
     .s24-follow.grip-r .s24-follow-rs { left: auto; right: 0; cursor: nesw-resize; }
     .s24-follow.grip-r .s24-follow-rs svg { transform: scaleX(-1); }
+    .s24-follow.grip-b.grip-r .s24-follow-bar { padding-left: 8px; padding-right: 8px; }
+    .s24-follow.grip-b.grip-r .s24-follow-rs svg { transform: scale(-1, -1); }
     /* المشغّل المطويّ: شريط صغير فقط */
     .s24-follow-open { display: none; }
     .s24-follow.is-collapsed { width: max-content; min-width: 220px; border-radius: 30px; }
@@ -5553,4 +5565,10 @@ a.s24-imp-item:hover .s24-imp-title{color:var(--sy-green,#77bd1d)}
 .video-js.s24-skin .s24-seek svg { width: 1.9em; height: 1.9em; fill: none; stroke: #fff; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .video-js.s24-skin .s24-seek text { fill: #fff; stroke: none; font-size: 7px; font-weight: 700; font-family: var(--font-main); }
 .video-js.s24-skin .s24-seek:hover svg, .video-js.s24-skin .s24-seek:focus-visible svg { stroke: #77bd1d; }
+/* محاذاة الأزرار عمودياً (3 نوفمبر 2026): الشريط 3.6em بدل 3em الافتراضي، فكانت أيقونات التشغيل والصوت
+   وشريط مستوى الصوت أعلى قليلاً من شريط التقدم و«مباشر» — صفحة البث والمشغّل الجانبي */
+.video-js.s24-skin .vjs-control-bar .vjs-button > .vjs-icon-placeholder::before { display: flex; align-items: center; justify-content: center; }
+.video-js.s24-skin .vjs-volume-panel { display: flex; align-items: center; }
+.video-js.s24-skin .vjs-volume-control.vjs-volume-horizontal { display: flex; align-items: center; height: 100%; }
+.video-js.s24-skin .vjs-volume-bar.vjs-slider-horizontal { margin: 0 .45em; }
 @media (max-width: 768px) { .video-js.s24-skin .vjs-control-bar { font-size: 12px; } .video-js.s24-skin .s24-seek { width: 2.6em; } }

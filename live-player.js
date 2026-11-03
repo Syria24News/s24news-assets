@@ -552,6 +552,12 @@ window.S24Live = (function () {
             if (!window.isPlayerActive || !desk.matches || ss(FOLLOW_OFF)) return;
             var p = window.videojs && videojs.getPlayer && videojs.getPlayer('rt-live-page-player');
             if (p && p.paused && p.paused()) { ss(FOLLOW, null); return; }   // أوقفه القارئ بنفسه
+            try {
+                if (p && p.muted && !p.muted() && p.volume() > 0) {   // كان الصوت يعمل في صفحة البث
+                    ss(FOLLOW_SND, '1');
+                    ss('s24_follow_vol', String(Math.round(p.volume() * 100)));
+                }
+            } catch (e) {}
             var s = currentSource();
             if (s.id && ID_RE[s.kind] && ID_RE[s.kind].test(s.id)) ss(FOLLOW, JSON.stringify(s));
         });
@@ -598,7 +604,10 @@ window.S24Live = (function () {
 
         // أصغر عرض = عرض المشغّل الجانبي في الرئيسية (330 ← ارتفاع 186)، بقرار حسان (2 نوفمبر 2026) مع علمه
         // أنه دون الحد الذي يشترطه يوتيوب (200×200) — كان 360
-        var BAR = 30, MIN = 330, GAP = 16;
+        var BAR = 30, FOOT = 14, MIN = 330, GAP = 16;
+        var cur = 2;   // الزاوية الفعلية الآن (قد تختلف عن اختيار القارئ إن انزاح عن إعلان)
+        function topHome() { return cur === 0 || cur === 1; }
+        function extra() { return mini ? 36 : H + BAR + (topHome() ? FOOT : 0); }   // ارتفاع المشغّل كاملاً
         function maxW() { return Math.max(MIN, Math.min(640, Math.round(window.innerWidth / 3))); }
         var W = Number(localStorage.getItem(FSIZE)) || 480, H = 0, mini = ss(FOLLOW_MIN) === '1';
         var pos = null;
@@ -623,6 +632,7 @@ window.S24Live = (function () {
               '</span></div>' +
             '<div class="s24-follow-video"><iframe src="' + (mini ? 'about:blank' : escTxt(url)) + '" title="البث المباشر" ' +
               'allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe></div>' +
+            '<div class="s24-follow-foot"></div>' +
             // المقبض داخل الشريط الأسود لا فوق الفيديو: يوتيوب يمنع أي عنصر فوق المشغّل، وكان يحجب زر الصوت (2.7.2)
             '<span class="s24-follow-rs" title="اسحب لتكبير المشغّل أو تصغيره"><svg viewBox="0 0 16 16" width="16" height="16">' +
               '<path d="M2 10 L10 2 M2 14 L14 2"/></svg></span>';
@@ -653,11 +663,16 @@ window.S24Live = (function () {
             ifr.style.height = H + 'px';
             return w;
         }
-        // مقبض الحجم في الزاوية العليا (داخل الشريط) المقابلة لجهة الالتصاق: المشغّل في اليسار ← المقبض يميناً، والعكس
-        function gripSide() { box.classList.toggle('grip-r', home === 0 || home === 2); }
+        // مقبض الحجم في الزاوية المقابلة قُطرياً لزاوية الالتصاق (3 نوفمبر 2026):
+        //   أعلى يسار ← أسفل يمين، أعلى يمين ← أسفل يسار (في شريط سفلي رفيع تحت الفيديو)،
+        //   أسفل يسار ← أعلى يمين، أسفل يمين ← أعلى يسار (في الشريط الأسود العلوي)
+        function gripSide() {
+            box.classList.toggle('grip-r', cur === 0 || cur === 2);
+            box.classList.toggle('grip-b', topHome());
+        }
         // الزوايا الأربع: 0 أعلى يسار، 1 أعلى يمين، 2 أسفل يسار، 3 أسفل يمين
         function corners(w) {
-            var iw = document.documentElement.clientWidth, ih = window.innerHeight, h = mini ? 36 : H + BAR;
+            var iw = document.documentElement.clientWidth, ih = window.innerHeight, h = extra();
             var top = topEdge(), bottom = ih - h - GAP;
             return [{ x: GAP, y: top }, { x: iw - w - GAP, y: top }, { x: GAP, y: bottom }, { x: iw - w - GAP, y: bottom }];
         }
@@ -675,15 +690,21 @@ window.S24Live = (function () {
             for (var i = 0; i < ads.length; i++) {
                 var r = ads[i].getBoundingClientRect();
                 if (r.height < 20 || r.width < 20) continue;
-                if (r.left < c.x + w && r.right > c.x && r.top < c.y + (mini ? 36 : H + BAR) && r.bottom > c.y) return true;
+                if (r.left < c.x + w && r.right > c.x && r.top < c.y + extra() && r.bottom > c.y) return true;
             }
             return false;
         }
         var ORDER = { 0: [0, 2, 1, 3], 1: [1, 3, 0, 2], 2: [2, 0, 3, 1], 3: [3, 1, 2, 0] };
-        function place() {
+        var hover = false;
+        box.addEventListener('pointerenter', function () { hover = true; });
+        box.addEventListener('pointerleave', function () { hover = false; queue(); });
+        function place(force) {
             if (drag || rz) return;
+            if (hover && !force) return;   // لا يتحرك تحت الفأرة (كان يقفز عن إعلان أثناء ضبط الصوت)
             var w = size(), cs = corners(w), pick = home;
-            for (var k = 0; k < 4; k++) { var i = ORDER[home][k]; if (!hitsAd(cs[i], w)) { pick = i; break; } }
+            for (var k = 0; k < 4; k++) { var i = ORDER[home][k]; cur = i; size(); if (!hitsAd(corners(w)[i], w)) { pick = i; break; } }
+            cur = pick;
+            cs = corners(w);
             setXY(cs[pick].x, cs[pick].y);
             gripSide();
         }
@@ -715,7 +736,7 @@ window.S24Live = (function () {
             document.body.classList.remove('s24-dragging');
             var r = box.getBoundingClientRect();
             home = nearest(r.width, r.left, r.top);
-            place();
+            place(true);
             var c = corners(r.width)[home];
             try { localStorage.setItem(FPOS, JSON.stringify({ x: c.x, y: c.y })); } catch (e) {}
         }
@@ -727,7 +748,7 @@ window.S24Live = (function () {
         rs.addEventListener('pointerdown', function (e) {
             var r = box.getBoundingClientRect();
             rz = { x: e.clientX, w: r.width, left: r.left, right: r.right, top: r.top, bottom: r.bottom,
-                   fromLeft: home === 0 || home === 2, fromTop: home === 0 || home === 1 };
+                   fromLeft: cur === 0 || cur === 2, fromTop: cur === 0 || cur === 1 };
             rs.setPointerCapture(e.pointerId);
             box.classList.add('is-drag');
             document.body.classList.add('s24-dragging');
@@ -738,7 +759,7 @@ window.S24Live = (function () {
             var dx = e.clientX - rz.x;
             W = Math.min(Math.max(rz.w + (rz.fromLeft ? dx : -dx), MIN), maxW());
             var w = size();
-            setXY(rz.fromLeft ? rz.left : rz.right - w, rz.fromTop ? rz.top : rz.bottom - H - BAR);
+            setXY(rz.fromLeft ? rz.left : rz.right - w, rz.fromTop ? rz.top : rz.bottom - extra());
         });
         function endResize() {
             if (!rz) return;
@@ -748,23 +769,42 @@ window.S24Live = (function () {
             try { localStorage.setItem(FSIZE, String(Math.round(W))); } catch (e) {}
             var r = box.getBoundingClientRect();
             home = nearest(r.width, r.left, r.top);
-            place();
+            place(true);
         }
         rs.addEventListener('pointerup', endResize);
         rs.addEventListener('pointercancel', endResize);
 
-        // الصوت
+        // الصوت (3 نوفمبر 2026): يُحفظ أيضاً حين يشغّله القارئ من زر يوتيوب نفسه، ومعه مستوى الصوت
+        var sndBtn = box.querySelector('.s24-follow-snd'), soundOn = false;
+        function vol() { var v = Number(ss('s24_follow_vol')); return v > 0 && v <= 100 ? v : 0; }
         function unmute() {
-            cmd('unMute'); cmd('playVideo');
-            var b = box.querySelector('.s24-follow-snd');
-            if (b) b.hidden = true;
+            cmd('unMute');
+            if (vol()) { try { ifr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setVolume', args: [vol()] }), '*'); } catch (e) {} }
+            cmd('playVideo');
+            sndBtn.hidden = true;
             ss(FOLLOW_SND, '1');
         }
+        // أحداث مشغّل يوتيوب (IFrame API): كتمه ومستوى صوته
+        function listen() { try { ifr.contentWindow.postMessage(JSON.stringify({ event: 'listening', id: 1, channel: 'widget' }), '*'); } catch (e) {} }
+        ifr.addEventListener('load', function () { listen(); setTimeout(listen, 1500); });
+        window.addEventListener('message', function (e) {
+            if (!follow || e.source !== ifr.contentWindow || !/youtube/.test(e.origin)) return;
+            var d; try { d = typeof e.data === 'string' ? JSON.parse(e.data) : e.data; } catch (x) { return; }
+            var info = d && d.info;
+            if (!info || typeof info !== 'object') return;
+            if (typeof info.volume === 'number' && info.volume > 0) ss('s24_follow_vol', String(Math.round(info.volume)));
+            if (info.muted === false && !soundOn) { soundOn = true; sndBtn.hidden = true; ss(FOLLOW_SND, '1'); }
+            else if (info.muted === true && soundOn) { soundOn = false; sndBtn.hidden = false; ss(FOLLOW_SND, null); }
+        });
+        // أول نقرة أو ضغطة زر خارج المشغّل تعيد الصوت (والنقرة داخله لا تُلغي الانتظار)
         if (ss(FOLLOW_SND)) {
             var once = function (e) {
+                if (!follow) return;
+                if (box.contains(e.target)) return;
                 window.removeEventListener('pointerdown', once, true);
                 window.removeEventListener('keydown', once, true);
-                if (follow && !box.contains(e.target)) unmute();
+                unmute();
+                setTimeout(unmute, 800);   // إن لم يكن المشغّل جاهزاً بعد
             };
             window.addEventListener('pointerdown', once, true);
             window.addEventListener('keydown', once, true);
