@@ -649,6 +649,24 @@ window.S24Live = (function () {
         return null;
     }
     function followGet() { try { return JSON.parse(ss(FOLLOW) || 'null'); } catch (e) { return null; } }
+    // موضع الفيديو المسجَّل (3 نوفمبر 2026، بطلب حسان): الفيديو الثابت كان يبدأ من أوله في كل صفحة.
+    // يُحفظ الموضع عند مغادرة الصفحة ويُستأنف منه، مع إضافة الثواني التي مرّت أثناء الانتقال إن كان يعمل.
+    // البث المباشر لا يُحفظ له موضع: يبقى على اللحظة الحية (الفرق بين المدة والموضع أقل من 30 ثانية).
+    var FTIME = 's24_follow_t';
+    function saveTime(id, player) {
+        try {
+            var t = player.currentTime(), d = player.duration();
+            if (!id || !(t > 5) || !isFinite(d) || !(d > 0) || d - t < 30) { ss(FTIME, null); return; }
+            ss(FTIME, JSON.stringify({ id: id, t: t, d: d, p: player.paused() ? 0 : 1, at: Date.now() }));
+        } catch (e) {}
+    }
+    function resumeTime(id) {
+        var r = null;
+        try { r = JSON.parse(ss(FTIME) || 'null'); } catch (e) {}
+        if (!r || r.id !== id || !(r.t > 0)) return 0;
+        var t = r.t + (r.p ? Math.max(0, (Date.now() - r.at) / 1000) : 0);
+        return t < r.d - 5 ? t : 0;
+    }
     function track(action, name) {
         try { if (window.gtag) window.gtag('event', 's24_live_follow', { follow_action: action, channel: name || '' }); } catch (e) {}
     }
@@ -675,6 +693,7 @@ window.S24Live = (function () {
             } catch (e) {}
             var s = currentSource();
             if (s.id && ID_RE[s.kind] && ID_RE[s.kind].test(s.id)) ss(FOLLOW, JSON.stringify(s));
+            if (p && s.kind === 'video') saveTime(s.id, p); else ss(FTIME, null);
         });
     }
 
@@ -726,6 +745,7 @@ window.S24Live = (function () {
             : 'https://www.youtube.com/embed/' + encodeURIComponent(src.id) + '?';
         var url = base + 'autoplay=1&mute=1&playsinline=1&rel=0&modestbranding=1&enablejsapi=1&origin=' +
             encodeURIComponent(location.origin);
+        if (src.kind === 'video' && resumeTime(src.id)) url += '&start=' + Math.floor(resumeTime(src.id));
         // فيديو برقم ← VideoJS كصفحة البث؛ «قناة» بلا رقم بث ← مشغّل يوتيوب المضمّن (كما في صفحة البث نفسها)
         var useVjs = !!vjsOK && src.kind === 'video';
 
@@ -795,7 +815,11 @@ window.S24Live = (function () {
                 s24Skin(vp);
                 vp.muted(true);
                 var pr = vp.play(); if (pr && pr.catch) pr.catch(function () {});
+                // الاستئناف من الموضع السابق (فيديو ثابت فقط)
+                var rt = resumeTime(src.id);
+                if (rt) vp.one('playing', function () { try { vp.currentTime(rt); } catch (e) {} });
             });
+            window.addEventListener('pagehide', function () { if (vp && !mini) saveTime(src.id, vp); });
             // حفظ الصوت ومستواه حين يشغّله القارئ من أزرار VideoJS
             vp.on('volumechange', function () {
                 if (!vjsArmed) return;   // الكتم الأولي عند التشغيل ليس قرار القارئ
