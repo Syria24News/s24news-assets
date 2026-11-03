@@ -431,7 +431,7 @@ window.S24Live = (function () {
         var box = host && host.closest('.live-stream-wrapper');
         if (!host || !box || document.querySelector('.s24-float-bar')) return;
         // الحجم مشترك مع المرافق (3 نوفمبر 2026): أساسي 380، من 240 إلى 640 بالسحب من المقبض
-        var W = pSize(), H = 0, BAR = 30, FOOT = 14, KEY = 's24_float_pos';
+        var W = pSize(), H = 0, BAR = 30, KEY = 's24_float_pos';
         var mq = window.matchMedia('(min-width: 1024px)');
 
         var bar = document.createElement('div');
@@ -439,15 +439,13 @@ window.S24Live = (function () {
         bar.innerHTML = '<span><span class="s24-float-dot">●</span> مباشر</span><span>' +
             '<button type="button" data-a="up" title="العودة إلى الشاشة" aria-label="العودة إلى الشاشة">⤒</button>' +
             '<button type="button" data-a="x" title="إغلاق" aria-label="إغلاق">✕</button></span>';
-        // شريط سفلي رفيع للمقبض حين يكون المشغّل في النصف الأعلى من الشاشة (لا شيء فوق الفيديو)
-        var foot = document.createElement('div');
-        foot.className = 's24-float-foot';
+        // المقبض دائماً في الشريط الأسود العلوي (3 نوفمبر 2026، بطلب حسان: الشريط السفلي كان يبدو زائداً تحت أزرار VideoJS)
         var rs = document.createElement('span');
         rs.className = 's24-follow-rs s24-float-rs';
         rs.title = 'اسحب لتكبير المشغّل أو تصغيره';
         rs.innerHTML = '<svg viewBox="0 0 16 16" width="16" height="16"><path d="M2 10 L10 2 M2 14 L14 2"/></svg>';
+        bar.appendChild(rs);
         document.body.appendChild(bar);
-        document.body.appendChild(foot);
 
         var pos = null;
         try { pos = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
@@ -468,19 +466,16 @@ window.S24Live = (function () {
             var iw = document.documentElement.clientWidth;
             var w = Math.min(Math.max(W, P_MIN), Math.max(P_MIN, Math.min(P_MAX, iw - 32)));
             H = Math.round(w * 9 / 16);
-            [host, bar, foot].forEach(function (el) { el.style.setProperty('--s24-fw', w + 'px'); });
+            [host, bar].forEach(function (el) { el.style.setProperty('--s24-fw', w + 'px'); });
             host.style.setProperty('--s24-fh', H + 'px');
             return w;
         }
-        function extra() { return BAR + H + (gripB ? FOOT : 0); }
-        // المقبض في الزاوية المقابلة قُطرياً لربع الشاشة الذي فيه المشغّل (كالمرافق)
+        function extra() { return BAR + H; }
+        // المقبض في الزاوية العليا المقابلة لجهة المشغّل من الشاشة؛ وفي النصف الأعلى يكبر نحو الأسفل
         function gripSide(w) {
             gripR = pos.x + w / 2 < document.documentElement.clientWidth / 2;
             gripB = pos.y + (BAR + H) / 2 < window.innerHeight / 2;
-            (gripB ? foot : bar).appendChild(rs);
-            bar.classList.toggle('grip-r', gripR); foot.classList.toggle('grip-r', gripR);
-            bar.classList.toggle('grip-b', gripB);
-            foot.classList.toggle('on', floating && gripB);
+            bar.classList.toggle('grip-r', gripR);
         }
         // الموضع يُكتب بأولوية important ليغلب قواعد التثبيت (top !important) في s24-main.css
         function draw(w) {
@@ -488,8 +483,6 @@ window.S24Live = (function () {
             bar.style.top = pos.y + 'px';
             host.style.setProperty('left', pos.x + 'px', 'important');
             host.style.setProperty('top', (pos.y + BAR) + 'px', 'important');
-            foot.style.left = pos.x + 'px';
-            foot.style.top = (pos.y + BAR + H) + 'px';
         }
         function place() {
             var w = size();
@@ -507,7 +500,6 @@ window.S24Live = (function () {
             else { box.style.minHeight = ''; lift(false); host.style.removeProperty('left'); host.style.removeProperty('top'); }
             host.classList.toggle('s24-float', on);
             bar.classList.toggle('on', on);
-            foot.classList.toggle('on', on && gripB);
         }
         function check() {
             if (!mq.matches) return setFloat(false);
@@ -529,6 +521,7 @@ window.S24Live = (function () {
         bar.addEventListener('pointerdown', function (e) {
             if (e.target.closest('button') || e.target.closest('.s24-float-rs')) return;
             drag = { dx: e.clientX - pos.x, dy: e.clientY - pos.y };
+            noSelect();
             bar.setPointerCapture(e.pointerId);
             bar.classList.add('drag');
             document.body.classList.add('s24-dragging');
@@ -556,6 +549,7 @@ window.S24Live = (function () {
         rs.addEventListener('pointerdown', function (e) {
             var w = size();
             rz = { x: e.clientX, w: w, right: pos.x + w, bottom: pos.y + extra(), fromLeft: gripR, fromTop: gripB };
+            noSelect();
             rs.setPointerCapture(e.pointerId);
             document.body.classList.add('s24-dragging');
             e.preventDefault();
@@ -607,6 +601,8 @@ window.S24Live = (function () {
     // حجم المشغّل العائم والمرافق معاً (3 نوفمبر 2026): أساسي 380، من 240 إلى 640، ويُحفظ اختيار القارئ
     var PSIZE = 's24_player_w', P_BASE = 380, P_MIN = 240, P_MAX = 640;
     function pSize() { var v = 0; try { v = Number(localStorage.getItem(PSIZE)); } catch (e) {} return v >= P_MIN && v <= P_MAX ? v : P_BASE; }
+    // يمسح أي نص حدّده المتصفح عند بدء السحب (كان يظهر تظليلاً أخضر على البطاقات)
+    function noSelect() { try { var sel = window.getSelection(); if (sel) sel.removeAllRanges(); } catch (e) {} }
     function pSave(w) { try { localStorage.setItem(PSIZE, String(Math.round(w))); } catch (e) {} }
     var lastDoc = null, follow = null;
 
@@ -670,11 +666,21 @@ window.S24Live = (function () {
         var saved = followGet();
         if (!saved || !saved.id) return;
         // بعد اكتمال الصفحة كلها، فلا يبطئ إطار يوتيوب فتح المقالة
-        var go = function () { setTimeout(function () { whenReady(function () { showFollow(saved); }); }, 400); };
+        // VideoJS نفسه الذي في صفحة البث (3 نوفمبر 2026، بطلب حسان: شكل موحّد) — يُنتظر 6 ثوانٍ على الأكثر،
+        // وإلا يُعرض مشغّل يوتيوب المضمّن
+        var go = function () {
+            setTimeout(function () {
+                loadVideoLibs();
+                var n = 0, t = setInterval(function () {
+                    var ok = window.videojs && videojs.getTech && videojs.getTech('Youtube');
+                    if (ok || ++n > 60) { clearInterval(t); whenReady(function () { showFollow(saved, !!ok); }); }
+                }, 100);
+            }, 400);
+        };
         if (document.readyState === 'complete') go(); else window.addEventListener('load', go);
     }
 
-    function showFollow(saved) {
+    function showFollow(saved, vjsOK) {
         if (follow || !desk.matches || document.getElementById('s24-follow')) return;
         var src = resolveSource(saved);
         if (!src) { ss(FOLLOW, null); return; }
@@ -685,10 +691,12 @@ window.S24Live = (function () {
             : 'https://www.youtube.com/embed/' + encodeURIComponent(src.id) + '?';
         var url = base + 'autoplay=1&mute=1&playsinline=1&rel=0&modestbranding=1&enablejsapi=1&origin=' +
             encodeURIComponent(location.origin);
+        // فيديو برقم ← VideoJS كصفحة البث؛ «قناة» بلا رقم بث ← مشغّل يوتيوب المضمّن (كما في صفحة البث نفسها)
+        var useVjs = !!vjsOK && src.kind === 'video';
 
         // الحجم (3 نوفمبر 2026، بقرار حسان): الأساسي 380، ويُصغَّر حتى 240 أو يُكبَّر حتى 640 بالسحب من المقبض،
         // والحجم المختار مشترك مع العائم في صفحة البث (PSIZE). حسان يعلم أن ما دون 200×200 يخالف شرط يوتيوب
-        var BAR = 30, FOOT = 28, MIN = P_MIN, GAP = 16;
+        var BAR = 30, FOOT = useVjs ? 0 : 28, MIN = P_MIN, GAP = 16;
         function maxW() { return Math.max(MIN, Math.min(P_MAX, document.documentElement.clientWidth - 2 * GAP)); }
         var W = pSize(), H = 0, mini = ss(FOLLOW_MIN) === '1';
         var upper = false;   // المشغّل في النصف الأعلى من الشاشة: يكبر نحو الأسفل، وإلا نحو الأعلى
@@ -711,26 +719,68 @@ window.S24Live = (function () {
                 '<button type="button" data-a="open" class="s24-follow-open" title="مشاهدة البث">▶ مشاهدة</button>' +
                 '<button type="button" data-a="live" title="صفحة البث" aria-label="صفحة البث">⤢</button>' +
                 '<button type="button" data-a="x" title="إغلاق" aria-label="إغلاق">✕</button>' +
-              '</span></div>' +
-            '<div class="s24-follow-video"><iframe src="' + (mini ? 'about:blank' : escTxt(url)) + '" title="البث المباشر" ' +
-              'allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe></div>' +
-            // الشريط السفلي (3 نوفمبر 2026، بطلب حسان): الصوت أفقياً في الأسفل كمشغّل صفحة البث، تحت الفيديو لا فوقه.
-            // يوتيوب يضع صوته في الأعلى وشريطاً عمودياً قصيراً حين يُحمَّل المشغّل صغيراً، ولا نملك تغيير ذلك
-            '<div class="s24-follow-foot">' +
+              '</span>' +
+              // المقبض في الشريط العلوي، في الزاوية المقابلة لجهة المشغّل من الشاشة (كالعائم في صفحة البث)
+              '<span class="s24-follow-rs" title="اسحب لتكبير المشغّل أو تصغيره"><svg viewBox="0 0 16 16" width="16" height="16">' +
+                '<path d="M2 10 L10 2 M2 14 L14 2"/></svg></span></div>' +
+            '<div class="s24-follow-video">' + (useVjs ? '<div class="s24-follow-vjs"></div>' :
+              '<iframe src="' + (mini ? 'about:blank' : escTxt(url)) + '" title="البث المباشر" ' +
+              'allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>') + '</div>' +
+            // الشريط السفلي للصوت — لمشغّل يوتيوب المضمّن فقط («قناة»): يضع يوتيوب صوته في الأعلى وشريطاً عمودياً
+            // قصيراً حين يُحمَّل صغيراً. مع VideoJS لا حاجة له، فأزرار VideoJS نفسها في الأسفل كصفحة البث
+            (useVjs ? '' : '<div class="s24-follow-foot">' +
               '<span class="s24-follow-vol is-muted"><button type="button" data-a="mute" title="الصوت" aria-label="تشغيل الصوت أو كتمه">' +
                 '<svg viewBox="0 0 24 24" width="18" height="18"><path d="M4 9h4l5-4v14l-5-4H4z"/><path class="w" d="M16 9a4 4 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11"/>' +
                 '<path class="m" d="M16 9l5 6M21 9l-5 6"/></svg></button>' +
                 '<input type="range" min="0" max="100" step="1" value="0" dir="ltr" aria-label="مستوى الصوت"></span>' +
-              // المقبض في الزاوية السفلية المقابلة لجهة المشغّل من الشاشة — لا شيء فوق إطار يوتيوب
-              '<span class="s24-follow-rs" title="اسحب لتكبير المشغّل أو تصغيره"><svg viewBox="0 0 16 16" width="16" height="16">' +
-                '<path d="M2 10 L10 2 M2 14 L14 2"/></svg></span>' +
-            '</div>';
+            '</div>');
         document.body.appendChild(box);
         follow = box;
-        var bar = box.querySelector('.s24-follow-bar'), ifr = box.querySelector('iframe');
+        var bar = box.querySelector('.s24-follow-bar');
+        var ifr = box.querySelector(useVjs ? '.s24-follow-vjs' : 'iframe');   // ما يُضبط ارتفاعه
+        if (useVjs) box.classList.add('is-vjs');
+        var vp = null, vjsArmed = false;   // مشغّل VideoJS
+        function startVjs() {
+            if (vp || !useVjs) return;
+            var v = document.createElement('video');
+            v.className = 'video-js vjs-default-skin';
+            v.setAttribute('playsinline', '');
+            v.muted = true;
+            ifr.appendChild(v);
+            vp = videojs(v, {
+                techOrder: ['youtube'],
+                sources: [{ type: 'video/youtube', src: 'https://www.youtube.com/watch?v=' + src.id }],
+                youtube: { iv_load_policy: 3, modestbranding: 1, rel: 0, autoplay: 1, playsinline: 1, fs: 0 },
+                controlBar: { pictureInPictureToggle: false, liveDisplay: true },
+                controls: true, liveui: true, language: 'ar', muted: true, autoplay: 'muted', fill: true
+            });
+            vp.ready(function () {
+                setTimeout(function () { vjsArmed = true; }, 1500);
+                s24Skin(vp);
+                vp.muted(true);
+                var pr = vp.play(); if (pr && pr.catch) pr.catch(function () {});
+            });
+            // حفظ الصوت ومستواه حين يشغّله القارئ من أزرار VideoJS
+            vp.on('volumechange', function () {
+                if (!vjsArmed) return;   // الكتم الأولي عند التشغيل ليس قرار القارئ
+                if (!vp.muted() && vp.volume() > 0) { ss(FOLLOW_SND, '1'); ss('s24_follow_vol', String(Math.round(vp.volume() * 100))); }
+                else ss(FOLLOW_SND, null);
+            });
+        }
+        if (!mini) startVjs();
         var resumeBtn = box.querySelector('.s24-follow-resume'), minBtn = box.querySelector('[data-a="min"]');
 
         function cmd(fn) {
+            if (useVjs) {
+                if (!vp) return;
+                try {
+                    if (fn === 'unMute') vp.muted(false);
+                    else if (fn === 'mute') vp.muted(true);
+                    else if (fn === 'playVideo') { var pr = vp.play(); if (pr && pr.catch) pr.catch(function () {}); }
+                    else if (fn === 'pauseVideo') vp.pause();
+                } catch (e) {}
+                return;
+            }
             try { ifr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: fn, args: [] }), '*'); } catch (e) {}
         }
         // الطيّ (2.7.1): «–» يوقف البث ويطوي المشغّل إلى شريط صغير «● مباشر · القناة ▶ مشاهدة»؛
@@ -783,8 +833,9 @@ window.S24Live = (function () {
         // السحب من الشريط إلى أي مكان
         var drag = null;
         bar.addEventListener('pointerdown', function (e) {
-            if (e.target.closest('button, input')) return;
+            if (e.target.closest('button, input, .s24-follow-rs')) return;
             drag = { dx: e.clientX - x, dy: e.clientY - y };
+            noSelect();
             bar.setPointerCapture(e.pointerId);
             box.classList.add('is-drag');
             document.body.classList.add('s24-dragging');
@@ -811,6 +862,8 @@ window.S24Live = (function () {
         // تغيير الحجم: الحافة المقابلة للمقبض ثابتة، فيكبر المشغّل ويصغر من جهة المقبض
         var rs = box.querySelector('.s24-follow-rs'), rz = null;
         rs.addEventListener('pointerdown', function (e) {
+            e.stopPropagation();
+            noSelect();
             rz = { x: e.clientX, w: box.offsetWidth, right: x + box.offsetWidth, bottom: y + extra(),
                    fromLeft: box.classList.contains('grip-r'), fromTop: upper };
             rs.setPointerCapture(e.pointerId);
@@ -842,9 +895,14 @@ window.S24Live = (function () {
 
         // الصوت (3 نوفمبر 2026): يُحفظ أيضاً حين يشغّله القارئ من زر يوتيوب نفسه، ومعه مستوى الصوت
         var soundOn = false;
-        var volBox = box.querySelector('.s24-follow-vol'), volIn = volBox.querySelector('input'), volDrag = false;
+        // مع VideoJS لا شريط صوت خاص بنا: عنصران وهميان يكفيان لبقية المنطق
+        var volBox = box.querySelector('.s24-follow-vol') || document.createElement('span');
+        var volIn = volBox.querySelector('input') || document.createElement('input'), volDrag = false;
         function vol() { var v = Number(ss('s24_follow_vol')); return v > 0 && v <= 100 ? v : 0; }
-        function setVol(v) { try { ifr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setVolume', args: [v] }), '*'); } catch (e) {} }
+        function setVol(v) {
+            if (useVjs) { try { if (vp) vp.volume(v / 100); } catch (e) {} return; }
+            try { ifr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setVolume', args: [v] }), '*'); } catch (e) {}
+        }
         // مكتوم: سمّاعة بعلامة الكتم والشريط عند الصفر؛ النقر على أيّهما يشغّل الصوت
         function showVol(muted) {
             volBox.classList.toggle('is-muted', !!muted);
@@ -870,7 +928,7 @@ window.S24Live = (function () {
         volIn.addEventListener('change', function () { volDrag = false; });
         // أحداث مشغّل يوتيوب (IFrame API): كتمه ومستوى صوته
         function listen() { try { ifr.contentWindow.postMessage(JSON.stringify({ event: 'listening', id: 1, channel: 'widget' }), '*'); } catch (e) {} }
-        ifr.addEventListener('load', function () { listen(); setTimeout(listen, 1500); });
+        if (!useVjs) ifr.addEventListener('load', function () { listen(); setTimeout(listen, 1500); });
         window.addEventListener('message', function (e) {
             if (!follow || e.source !== ifr.contentWindow || !/youtube/.test(e.origin)) return;
             var d; try { d = typeof e.data === 'string' ? JSON.parse(e.data) : e.data; } catch (x) { return; }
@@ -910,7 +968,7 @@ window.S24Live = (function () {
         window.addEventListener('blur', function () {
             setTimeout(function () {
                 var a = document.activeElement;
-                if (a && a.tagName === 'IFRAME' && a !== ifr && !box.contains(a)) pause();
+                if (a && a.tagName === 'IFRAME' && !box.contains(a)) pause();
             }, 0);
         });
 
@@ -933,7 +991,8 @@ window.S24Live = (function () {
             else if (a === 'open') {
                 mini = false;
                 ss(FOLLOW_MIN, null);
-                if (!ifr.src || ifr.src === 'about:blank') ifr.src = url;   // أول فتح في هذه الصفحة
+                if (useVjs) { if (!vp) startVjs(); else cmd('playVideo'); }
+                else if (!ifr.src || ifr.src === 'about:blank') ifr.src = url;   // أول فتح في هذه الصفحة
                 else cmd('playVideo');
                 resumeBtn.hidden = true;
                 place();
@@ -944,6 +1003,7 @@ window.S24Live = (function () {
                 ss(FOLLOW, null); ss(FOLLOW_SND, null); ss(FOLLOW_MIN, null); ss(FOLLOW_OFF, '1');
                 track('close', src.name);
                 window.removeEventListener('resize', queue);
+                if (vp) { try { vp.dispose(); } catch (e) {} vp = null; }
                 box.remove();
                 follow = null;
                 api.followPause = null;

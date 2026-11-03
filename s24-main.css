@@ -5242,19 +5242,12 @@ a.s24-cov-link:hover .s24-cov-title { color: #77bd1d; }
     /* مقبض الحجم للعائم في صفحة البث (3 نوفمبر 2026): في الشريط الأسود، أو في شريط سفلي رفيع حين يكون في النصف الأعلى */
     .s24-float-bar { padding-left: 28px; }
     .s24-float-bar.grip-r { padding-left: 10px; padding-right: 28px; }
-    .s24-float-bar.grip-b { padding-left: 10px; padding-right: 10px; }
     .s24-float-bar .s24-float-rs { position: absolute; left: 0; top: 0; }
     .s24-float-bar.grip-r .s24-float-rs { left: auto; right: 0; cursor: nesw-resize; }
     .s24-float-bar.grip-r .s24-float-rs svg { transform: scaleX(-1); }
-    .s24-float-foot { display: none; position: fixed; z-index: 10003; width: var(--s24-fw, 380px); height: 14px;
-        background: #111; border-radius: 0 0 8px 8px; }
-    .s24-float-foot.on { display: block; }
-    .s24-float-foot .s24-float-rs { position: absolute; left: 0; bottom: 0; top: auto; height: 14px; width: 22px; cursor: nesw-resize; opacity: .7; }
-    .s24-float-foot .s24-float-rs svg { width: 12px; height: 12px; transform: scaleY(-1); }
-    .s24-float-foot.grip-r .s24-float-rs { left: auto; right: 0; cursor: nwse-resize; }
-    .s24-float-foot.grip-r .s24-float-rs svg { transform: scale(-1, -1); }
-    .s24-float-bar .s24-float-rs:hover path, .s24-float-foot .s24-float-rs:hover path { stroke: #77bd1d; }
-    body.s24-dragging iframe { pointer-events: none; }   /* لا يبتلع إطار يوتيوب حركة الماوس أثناء السحب */
+    .s24-float-bar .s24-float-rs:hover path { stroke: #77bd1d; }
+    body.s24-dragging iframe { pointer-events: none; }
+    body.s24-dragging, body.s24-dragging * { -webkit-user-select: none !important; user-select: none !important; }   /* لا تظليل أخضر أثناء السحب */   /* لا يبتلع إطار يوتيوب حركة الماوس أثناء السحب */
 }
 /* المشغّل المرافق: يتبع القارئ بين الصفحات (live-player.js 2.7) — الكمبيوتر فقط؛ الموضع والعرض يكتبهما السكربت */
 .s24-follow { display: none; }
@@ -5290,19 +5283,22 @@ a.s24-cov-link:hover .s24-cov-title { color: #77bd1d; }
     /* «▶ متابعة» بعد إيقافه لصالح فيديو آخر — في الشريط لا فوق الفيديو */
     .s24-follow-btns .s24-follow-resume { background: #77bd1d; color: #fff; font-size: 12px; padding: 3px 9px; margin-inline-end: 4px; }
     .s24-follow-btns .s24-follow-resume:hover { color: #fff; filter: brightness(1.08); }
-    /* الشريط السفلي: الصوت في جهة، ومقبض الحجم في الزاوية الأخرى (المقابلة لجهة المشغّل من الشاشة) */
-    .s24-follow-foot { position: relative; height: 28px; display: flex; align-items: center; justify-content: flex-start;
-        padding: 0 8px 0 30px; background: #111; box-sizing: border-box; }
-    .s24-follow.grip-r .s24-follow-foot { justify-content: flex-end; padding: 0 30px 0 8px; }
-    .s24-follow-rs { position: absolute; left: 0; bottom: 0; width: 26px; height: 28px; display: flex;
-        align-items: center; justify-content: center; cursor: nesw-resize; opacity: .6; transition: opacity .25s; touch-action: none; }
-    .s24-follow-rs svg { width: 13px; height: 13px; transform: scaleY(-1); }
+    /* الشريط السفلي للصوت (مشغّل يوتيوب المضمّن فقط) */
+    .s24-follow-foot { height: 28px; display: flex; align-items: center; padding: 0 10px; background: #111; box-sizing: border-box; }
+    /* مقبض الحجم في الشريط العلوي، في الزاوية المقابلة لجهة المشغّل من الشاشة (كالعائم في صفحة البث) */
+    .s24-follow-bar { position: relative; padding-left: 28px; }
+    .s24-follow.grip-r .s24-follow-bar { padding-left: 8px; padding-right: 28px; }
+    .s24-follow-rs { position: absolute; left: 0; top: 0; width: 24px; height: 30px; display: flex;
+        align-items: center; justify-content: center; cursor: nwse-resize; opacity: .6; transition: opacity .25s; touch-action: none; }
     .s24-follow-rs path { stroke: #fff; stroke-width: 1.6; stroke-linecap: round; fill: none; transition: stroke .2s; }
     .s24-follow:hover .s24-follow-rs { opacity: .9; }
     .s24-follow-rs:hover { opacity: 1; }
     .s24-follow-rs:hover path { stroke: #77bd1d; }
-    .s24-follow.grip-r .s24-follow-rs { left: auto; right: 0; cursor: nwse-resize; }
-    .s24-follow.grip-r .s24-follow-rs svg { transform: scale(-1, -1); }
+    .s24-follow.grip-r .s24-follow-rs { left: auto; right: 0; cursor: nesw-resize; }
+    .s24-follow.grip-r .s24-follow-rs svg { transform: scaleX(-1); }
+    /* VideoJS داخل المرافق (فيديو برقم): أزراره في الأسفل كصفحة البث */
+    .s24-follow-vjs { position: relative; width: 100%; }
+    .s24-follow-vjs .video-js { position: absolute; inset: 0; width: 100%; height: 100%; }
     .s24-follow.is-collapsed .s24-follow-foot { display: none !important; }
     /* المشغّل المطويّ: شريط صغير فقط */
     .s24-follow-open { display: none; }
