@@ -5273,57 +5273,42 @@ a.s24-cov-link:hover .s24-cov-title { color: #77bd1d; }
     .s24-follow-btns button { background: none; border: 0; color: #fff; cursor: pointer; font: 700 15px var(--font-main);
         line-height: 1; padding: 3px 5px; border-radius: 6px; }
     .s24-follow-btns button:hover, .s24-follow-btns button:focus-visible { color: #77bd1d; }
-    .s24-follow-btns .s24-follow-snd { background: #77bd1d; color: #fff; font-size: 12px; padding: 3px 9px; margin-inline-end: 4px; }
-    .s24-follow-btns .s24-follow-snd:hover { color: #fff; filter: brightness(1.08); }
     .s24-follow-btns button[hidden] { display: none; }
-    /* شريط الصوت الخاص بالمرافق: في الشريط الأسود، ثابت لا يختفي */
-    .s24-follow-vol { display: inline-flex; align-items: center; gap: 2px; margin-inline-end: 4px; }
-    .s24-follow-vol[hidden] { display: none; }
-    .s24-follow-vol button { display: inline-flex; padding: 2px 3px; }
+    /* شريط الصوت في الشريط السفلي تحت الفيديو (3 نوفمبر 2026): أفقي ثابت كمشغّل صفحة البث */
+    .s24-follow-vol { display: inline-flex; align-items: center; gap: 4px; }
+    .s24-follow-vol button { display: inline-flex; background: none; border: 0; color: #fff; cursor: pointer; padding: 2px 3px; border-radius: 6px; }
+    .s24-follow-vol button:hover, .s24-follow-vol button:focus-visible { color: #77bd1d; }
     .s24-follow-vol svg path { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
     .s24-follow-vol svg path:first-child { fill: currentColor; }
     .s24-follow-vol svg .m { display: none; }
     .s24-follow-vol.is-muted svg .w { display: none; }
     .s24-follow-vol.is-muted svg .m { display: inline; }
-    .s24-follow-vol input[type=range] { width: 64px; height: 18px; margin: 0; accent-color: #77bd1d; cursor: pointer; }
-    .s24-follow.is-collapsed .s24-follow-vol { display: none; }
-    .s24-follow.is-narrow .s24-follow-vol input[type=range] { width: 44px; }
+    .s24-follow-vol input[type=range] { width: 96px; height: 18px; margin: 0; accent-color: #77bd1d; cursor: pointer; }
+    .s24-follow.is-narrow .s24-follow-vol input[type=range] { width: 72px; }
     .s24-follow-video { position: relative; }
     .s24-follow-video iframe { display: block; width: 100%; border: 0; }
     /* «▶ متابعة» بعد إيقافه لصالح فيديو آخر — في الشريط لا فوق الفيديو */
     .s24-follow-btns .s24-follow-resume { background: #77bd1d; color: #fff; font-size: 12px; padding: 3px 9px; margin-inline-end: 4px; }
     .s24-follow-btns .s24-follow-resume:hover { color: #fff; filter: brightness(1.08); }
-    /* مقبض تغيير الحجم: خطّان رفيعان في الزاوية العليا اليسرى من الشريط (لا شيء فوق إطار يوتيوب) */
-    .s24-follow-bar { padding-left: 28px; }
-    .s24-follow-rs { position: absolute; left: 0; top: 0; width: 24px; height: 30px; display: flex;
-        align-items: center; justify-content: center; cursor: nwse-resize; opacity: .6; transition: opacity .25s;
-        touch-action: none; z-index: 1; }
+    /* الشريط السفلي: الصوت في جهة، ومقبض الحجم في الزاوية الأخرى (المقابلة لجهة المشغّل من الشاشة) */
+    .s24-follow-foot { position: relative; height: 28px; display: flex; align-items: center; justify-content: flex-start;
+        padding: 0 8px 0 30px; background: #111; box-sizing: border-box; }
+    .s24-follow.grip-r .s24-follow-foot { justify-content: flex-end; padding: 0 30px 0 8px; }
+    .s24-follow-rs { position: absolute; left: 0; bottom: 0; width: 26px; height: 28px; display: flex;
+        align-items: center; justify-content: center; cursor: nesw-resize; opacity: .6; transition: opacity .25s; touch-action: none; }
+    .s24-follow-rs svg { width: 13px; height: 13px; transform: scaleY(-1); }
     .s24-follow-rs path { stroke: #fff; stroke-width: 1.6; stroke-linecap: round; fill: none; transition: stroke .2s; }
     .s24-follow:hover .s24-follow-rs { opacity: .9; }
     .s24-follow-rs:hover { opacity: 1; }
     .s24-follow-rs:hover path { stroke: #77bd1d; }
-    /* المشغّل في زاوية عليا: المقبض في شريط سفلي رفيع تحت الفيديو (لا فوقه)، في الزاوية المقابلة */
-    .s24-follow-foot { display: none; height: 14px; background: #111; }
-    .s24-follow.grip-b .s24-follow-foot { display: block; }
-    .s24-follow.grip-b .s24-follow-bar { padding-left: 8px; padding-right: 8px; }
-    .s24-follow.grip-b .s24-follow-rs { top: auto; bottom: 0; height: 14px; width: 22px; }
-    .s24-follow.grip-b .s24-follow-rs svg { width: 12px; height: 12px; transform: scaleY(-1); }
-    .s24-follow.grip-b.grip-r .s24-follow-rs svg { transform: scale(-1, -1); }
-    .s24-follow.grip-b .s24-follow-rs { cursor: nesw-resize; }
-    .s24-follow.grip-b.grip-r .s24-follow-rs { cursor: nwse-resize; }
+    .s24-follow.grip-r .s24-follow-rs { left: auto; right: 0; cursor: nwse-resize; }
+    .s24-follow.grip-r .s24-follow-rs svg { transform: scale(-1, -1); }
     .s24-follow.is-collapsed .s24-follow-foot { display: none !important; }
-    /* المقبض يميناً حين يلتصق المشغّل بيسار الشاشة */
-    .s24-follow.grip-r .s24-follow-bar { padding-left: 8px; padding-right: 28px; }
-    .s24-follow.grip-r .s24-follow-rs { left: auto; right: 0; cursor: nesw-resize; }
-    .s24-follow.grip-r .s24-follow-rs svg { transform: scaleX(-1); }
-    .s24-follow.grip-b.grip-r .s24-follow-bar { padding-left: 8px; padding-right: 8px; }
-    .s24-follow.grip-b.grip-r .s24-follow-rs svg { transform: scale(-1, -1); }
     /* المشغّل المطويّ: شريط صغير فقط */
     .s24-follow-open { display: none; }
     .s24-follow.is-collapsed { width: max-content; min-width: 220px; border-radius: 30px; }
     .s24-follow.is-collapsed .s24-follow-video,
     .s24-follow.is-collapsed .s24-follow-rs,
-    .s24-follow.is-collapsed [data-a="snd"],
     .s24-follow.is-collapsed [data-a="min"] { display: none; }
     .s24-follow.is-collapsed .s24-follow-bar { height: 36px; padding: 0 14px !important; gap: 12px; }
     .s24-follow.is-collapsed .s24-follow-btns .s24-follow-open { display: inline-block; background: #77bd1d; color: #fff;

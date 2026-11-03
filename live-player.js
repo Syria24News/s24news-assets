@@ -688,11 +688,11 @@ window.S24Live = (function () {
 
         // الحجم (3 نوفمبر 2026، بقرار حسان): الأساسي 380، ويُصغَّر حتى 240 أو يُكبَّر حتى 640 بالسحب من المقبض،
         // والحجم المختار مشترك مع العائم في صفحة البث (PSIZE). حسان يعلم أن ما دون 200×200 يخالف شرط يوتيوب
-        var BAR = 30, FOOT = 14, MIN = P_MIN, GAP = 16;
+        var BAR = 30, FOOT = 28, MIN = P_MIN, GAP = 16;
         function maxW() { return Math.max(MIN, Math.min(P_MAX, document.documentElement.clientWidth - 2 * GAP)); }
         var W = pSize(), H = 0, mini = ss(FOLLOW_MIN) === '1';
-        var gripB = false;
-        function extra() { return mini ? 36 : H + BAR + (gripB ? FOOT : 0); }   // ارتفاع المشغّل كاملاً
+        var upper = false;   // المشغّل في النصف الأعلى من الشاشة: يكبر نحو الأسفل، وإلا نحو الأعلى
+        function extra() { return mini ? 36 : H + BAR + FOOT; }   // ارتفاع المشغّل كاملاً
         var pos = null;
         try { pos = JSON.parse(localStorage.getItem(FPOS)); } catch (e) {}
 
@@ -707,12 +707,6 @@ window.S24Live = (function () {
                 (src.name ? ' · <b>' + escTxt(src.name) + '</b>' : '') + '</span>' +
               '<span class="s24-follow-btns">' +
                 '<button type="button" data-a="resume" class="s24-follow-resume" title="متابعة البث" hidden>▶ متابعة</button>' +
-                '<button type="button" data-a="snd" class="s24-follow-snd" title="تشغيل الصوت">🔊 الصوت</button>' +
-                // شريط صوت خاص بنا (3 نوفمبر 2026): شريط يوتيوب في الحجم الصغير عمودي قصير يختفي بسرعة
-                '<span class="s24-follow-vol" hidden><button type="button" data-a="mute" title="كتم الصوت" aria-label="كتم الصوت">' +
-                  '<svg viewBox="0 0 24 24" width="16" height="16"><path d="M4 9h4l5-4v14l-5-4H4z"/><path class="w" d="M16 9a4 4 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11"/>' +
-                  '<path class="m" d="M16 9l5 6M21 9l-5 6"/></svg></button>' +
-                  '<input type="range" min="0" max="100" step="1" value="100" dir="ltr" aria-label="مستوى الصوت"></span>' +
                 '<button type="button" data-a="min" title="طيّ المشغّل" aria-label="طيّ المشغّل">–</button>' +
                 '<button type="button" data-a="open" class="s24-follow-open" title="مشاهدة البث">▶ مشاهدة</button>' +
                 '<button type="button" data-a="live" title="صفحة البث" aria-label="صفحة البث">⤢</button>' +
@@ -720,10 +714,17 @@ window.S24Live = (function () {
               '</span></div>' +
             '<div class="s24-follow-video"><iframe src="' + (mini ? 'about:blank' : escTxt(url)) + '" title="البث المباشر" ' +
               'allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe></div>' +
-            '<div class="s24-follow-foot"></div>' +
-            // المقبض داخل الشريط الأسود لا فوق الفيديو: يوتيوب يمنع أي عنصر فوق المشغّل، وكان يحجب زر الصوت (2.7.2)
-            '<span class="s24-follow-rs" title="اسحب لتكبير المشغّل أو تصغيره"><svg viewBox="0 0 16 16" width="16" height="16">' +
-              '<path d="M2 10 L10 2 M2 14 L14 2"/></svg></span>';
+            // الشريط السفلي (3 نوفمبر 2026، بطلب حسان): الصوت أفقياً في الأسفل كمشغّل صفحة البث، تحت الفيديو لا فوقه.
+            // يوتيوب يضع صوته في الأعلى وشريطاً عمودياً قصيراً حين يُحمَّل المشغّل صغيراً، ولا نملك تغيير ذلك
+            '<div class="s24-follow-foot">' +
+              '<span class="s24-follow-vol is-muted"><button type="button" data-a="mute" title="الصوت" aria-label="تشغيل الصوت أو كتمه">' +
+                '<svg viewBox="0 0 24 24" width="18" height="18"><path d="M4 9h4l5-4v14l-5-4H4z"/><path class="w" d="M16 9a4 4 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11"/>' +
+                '<path class="m" d="M16 9l5 6M21 9l-5 6"/></svg></button>' +
+                '<input type="range" min="0" max="100" step="1" value="0" dir="ltr" aria-label="مستوى الصوت"></span>' +
+              // المقبض في الزاوية السفلية المقابلة لجهة المشغّل من الشاشة — لا شيء فوق إطار يوتيوب
+              '<span class="s24-follow-rs" title="اسحب لتكبير المشغّل أو تصغيره"><svg viewBox="0 0 16 16" width="16" height="16">' +
+                '<path d="M2 10 L10 2 M2 14 L14 2"/></svg></span>' +
+            '</div>';
         document.body.appendChild(box);
         follow = box;
         var bar = box.querySelector('.s24-follow-bar'), ifr = box.querySelector('iframe');
@@ -750,16 +751,13 @@ window.S24Live = (function () {
         }
         // الحركة حرّة (3 نوفمبر 2026، بقرار حسان): يبقى المشغّل حيث يتركه القارئ تماماً، فوق كل شيء
         // حتى الهيدر — لا التصاق بالزوايا ولا ابتعاد عن الإعلانات. يُحصر فقط داخل حدود النافذة.
-        // المقبض في الزاوية المقابلة قُطرياً لربع الشاشة الذي فيه المشغّل:
-        //   أعلى يسار ← أسفل يمين، أعلى يمين ← أسفل يسار (شريط سفلي رفيع تحت الفيديو)،
-        //   أسفل يسار ← أعلى يمين، أسفل يمين ← أعلى يسار (في الشريط الأسود العلوي)
+        // المقبض دائماً في الشريط السفلي، في الزاوية المقابلة لجهة المشغّل من الشاشة:
+        //   المشغّل في النصف الأيسر ← المقبض أسفل يمين، وفي النصف الأيمن ← أسفل يسار
         var x = 0, y = 0;
         function gripSide() {
             var iw = document.documentElement.clientWidth, ih = window.innerHeight, w = box.offsetWidth;
-            var left = x + w / 2 < iw / 2, top = y + (H + BAR) / 2 < ih / 2;
-            box.classList.toggle('grip-r', left);
-            gripB = top && !mini;
-            box.classList.toggle('grip-b', gripB);
+            box.classList.toggle('grip-r', x + w / 2 < iw / 2);
+            upper = y + extra() / 2 < ih / 2;
         }
         function place() {
             if (drag || rz) return;
@@ -814,7 +812,7 @@ window.S24Live = (function () {
         var rs = box.querySelector('.s24-follow-rs'), rz = null;
         rs.addEventListener('pointerdown', function (e) {
             rz = { x: e.clientX, w: box.offsetWidth, right: x + box.offsetWidth, bottom: y + extra(),
-                   fromLeft: box.classList.contains('grip-r'), fromTop: gripB };
+                   fromLeft: box.classList.contains('grip-r'), fromTop: upper };
             rs.setPointerCapture(e.pointerId);
             box.classList.add('is-drag');
             document.body.classList.add('s24-dragging');
@@ -843,14 +841,12 @@ window.S24Live = (function () {
         rs.addEventListener('pointercancel', endResize);
 
         // الصوت (3 نوفمبر 2026): يُحفظ أيضاً حين يشغّله القارئ من زر يوتيوب نفسه، ومعه مستوى الصوت
-        var sndBtn = box.querySelector('.s24-follow-snd'), soundOn = false;
+        var soundOn = false;
         var volBox = box.querySelector('.s24-follow-vol'), volIn = volBox.querySelector('input'), volDrag = false;
         function vol() { var v = Number(ss('s24_follow_vol')); return v > 0 && v <= 100 ? v : 0; }
         function setVol(v) { try { ifr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setVolume', args: [v] }), '*'); } catch (e) {} }
-        // يظهر شريطنا حين يعمل الصوت، وزر «🔊 الصوت» الأخضر حين يكون مكتوماً
-        function showVol(on, muted) {
-            sndBtn.hidden = on;
-            volBox.hidden = !on;
+        // مكتوم: سمّاعة بعلامة الكتم والشريط عند الصفر؛ النقر على أيّهما يشغّل الصوت
+        function showVol(muted) {
             volBox.classList.toggle('is-muted', !!muted);
             if (!volDrag) volIn.value = muted ? 0 : (vol() || 100);
         }
@@ -858,14 +854,17 @@ window.S24Live = (function () {
             cmd('unMute');
             if (vol()) setVol(vol());
             cmd('playVideo');
-            showVol(true, false);
+            showVol(false);
             ss(FOLLOW_SND, '1');
         }
         volIn.addEventListener('pointerdown', function () { volDrag = true; });
         volIn.addEventListener('pointerup', function () { volDrag = false; });
         volIn.addEventListener('input', function () {
             var v = Number(volIn.value);
-            if (v > 0) { cmd('unMute'); setVol(v); ss('s24_follow_vol', String(v)); ss(FOLLOW_SND, '1'); volBox.classList.remove('is-muted'); }
+            if (v > 0) {
+                if (volBox.classList.contains('is-muted')) { cmd('playVideo'); track('unmute', src.name); }
+                cmd('unMute'); setVol(v); ss('s24_follow_vol', String(v)); ss(FOLLOW_SND, '1'); volBox.classList.remove('is-muted');
+            }
             else { cmd('mute'); volBox.classList.add('is-muted'); }
         });
         volIn.addEventListener('change', function () { volDrag = false; });
@@ -881,8 +880,8 @@ window.S24Live = (function () {
                 ss('s24_follow_vol', String(Math.round(info.volume)));
                 if (soundOn && !volDrag && !volBox.classList.contains('is-muted')) volIn.value = Math.round(info.volume);
             }
-            if (info.muted === false && !soundOn) { soundOn = true; showVol(true, false); ss(FOLLOW_SND, '1'); }
-            else if (info.muted === true && soundOn) { soundOn = false; showVol(false); ss(FOLLOW_SND, null); }
+            if (info.muted === false && !soundOn) { soundOn = true; showVol(false); ss(FOLLOW_SND, '1'); }
+            else if (info.muted === true && soundOn) { soundOn = false; showVol(true); ss(FOLLOW_SND, null); }
         });
         // أول نقرة أو ضغطة زر خارج المشغّل تعيد الصوت (والنقرة داخله لا تُلغي الانتظار)
         if (ss(FOLLOW_SND)) {
@@ -919,10 +918,9 @@ window.S24Live = (function () {
             var b = e.target.closest('button');
             if (!b) return;
             var a = b.getAttribute('data-a');
-            if (a === 'snd') { unmute(); track('unmute', src.name); }
-            else if (a === 'mute') {
-                if (volBox.classList.contains('is-muted')) { cmd('unMute'); setVol(vol() || 100); volBox.classList.remove('is-muted'); volIn.value = vol() || 100; }
-                else { cmd('mute'); volBox.classList.add('is-muted'); volIn.value = 0; }
+            if (a === 'mute') {
+                if (volBox.classList.contains('is-muted')) { unmute(); track('unmute', src.name); }
+                else { cmd('mute'); showVol(true); }
             }
             else if (a === 'resume') { cmd('playVideo'); resumeBtn.hidden = true; track('resume', src.name); }
             else if (a === 'min') {
