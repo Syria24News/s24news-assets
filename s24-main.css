@@ -5225,12 +5225,12 @@ a.s24-cov-link:hover .s24-cov-title { color: #77bd1d; }
 @media (min-width: 1024px) {
     #main-video-placeholder.s24-float {
         position: fixed !important; bottom: auto !important; right: auto !important;
-        width: 380px !important; height: 214px !important; flex: none !important; padding-top: 0 !important;
-        z-index: 9999 !important; border-radius: 0 0 8px 8px !important;
+        width: var(--s24-fw, 380px) !important; height: var(--s24-fh, 214px) !important; flex: none !important; padding-top: 0 !important;
+        z-index: 10002 !important; border-radius: 0 0 8px 8px !important;
         box-shadow: 0 12px 32px rgba(0,0,0,.45) !important;
         transition: none !important;   /* .video-container فيها transition: top 0.3s فيتأخر الفيديو عن الشريط أثناء السحب */
     }
-    .s24-float-bar { position: fixed; z-index: 10000; width: 380px; height: 30px; box-sizing: border-box;
+    .s24-float-bar { position: fixed; z-index: 10003; width: var(--s24-fw, 380px); height: 30px; box-sizing: border-box;
         justify-content: space-between; align-items: center; padding: 0 10px;
         background: #111; color: #fff; border-radius: 8px 8px 0 0; font: 700 12px var(--font-main);
         cursor: grab; user-select: none; touch-action: none; }
@@ -5239,14 +5239,29 @@ a.s24-cov-link:hover .s24-cov-title { color: #77bd1d; }
     .s24-float-dot { color: #e71414; }
     .s24-float-bar button { background: none; border: 0; color: #fff; cursor: pointer; font-size: 16px; padding: 0 4px; }
     .s24-float-bar button:hover, .s24-float-bar button:focus-visible { color: #77bd1d; }
+    /* مقبض الحجم للعائم في صفحة البث (3 نوفمبر 2026): في الشريط الأسود، أو في شريط سفلي رفيع حين يكون في النصف الأعلى */
+    .s24-float-bar { padding-left: 28px; }
+    .s24-float-bar.grip-r { padding-left: 10px; padding-right: 28px; }
+    .s24-float-bar.grip-b { padding-left: 10px; padding-right: 10px; }
+    .s24-float-bar .s24-float-rs { position: absolute; left: 0; top: 0; }
+    .s24-float-bar.grip-r .s24-float-rs { left: auto; right: 0; cursor: nesw-resize; }
+    .s24-float-bar.grip-r .s24-float-rs svg { transform: scaleX(-1); }
+    .s24-float-foot { display: none; position: fixed; z-index: 10003; width: var(--s24-fw, 380px); height: 14px;
+        background: #111; border-radius: 0 0 8px 8px; }
+    .s24-float-foot.on { display: block; }
+    .s24-float-foot .s24-float-rs { position: absolute; left: 0; bottom: 0; top: auto; height: 14px; width: 22px; cursor: nesw-resize; opacity: .7; }
+    .s24-float-foot .s24-float-rs svg { width: 12px; height: 12px; transform: scaleY(-1); }
+    .s24-float-foot.grip-r .s24-float-rs { left: auto; right: 0; cursor: nwse-resize; }
+    .s24-float-foot.grip-r .s24-float-rs svg { transform: scale(-1, -1); }
+    .s24-float-bar .s24-float-rs:hover path, .s24-float-foot .s24-float-rs:hover path { stroke: #77bd1d; }
     body.s24-dragging iframe { pointer-events: none; }   /* لا يبتلع إطار يوتيوب حركة الماوس أثناء السحب */
 }
 /* المشغّل المرافق: يتبع القارئ بين الصفحات (live-player.js 2.7) — الكمبيوتر فقط؛ الموضع والعرض يكتبهما السكربت */
 .s24-follow { display: none; }
 @media (min-width: 1024px) {
-    .s24-follow { display: block; position: fixed; z-index: 10000; border-radius: 10px; overflow: hidden;
+    .s24-follow { display: block; position: fixed; z-index: 10003; border-radius: 10px; overflow: hidden;
         background: #000; box-shadow: 0 12px 32px rgba(0,0,0,.45); direction: rtl; }
-    .s24-follow.is-ready { transition: left .3s ease, top .3s ease, width .2s ease; }
+    .s24-follow.is-ready { transition: width .2s ease; }
     .s24-follow.is-drag { transition: none; }
     .s24-follow-bar { height: 30px; display: flex; align-items: center; justify-content: space-between; gap: 8px;
         padding: 0 8px; background: #111; color: #fff; font: 700 12px var(--font-main);
@@ -5272,6 +5287,7 @@ a.s24-cov-link:hover .s24-cov-title { color: #77bd1d; }
     .s24-follow-vol.is-muted svg .m { display: inline; }
     .s24-follow-vol input[type=range] { width: 64px; height: 18px; margin: 0; accent-color: #77bd1d; cursor: pointer; }
     .s24-follow.is-collapsed .s24-follow-vol { display: none; }
+    .s24-follow.is-narrow .s24-follow-vol input[type=range] { width: 44px; }
     .s24-follow-video { position: relative; }
     .s24-follow-video iframe { display: block; width: 100%; border: 0; }
     /* «▶ متابعة» بعد إيقافه لصالح فيديو آخر — في الشريط لا فوق الفيديو */

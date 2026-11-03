@@ -430,7 +430,8 @@ window.S24Live = (function () {
         var host = document.getElementById('main-video-placeholder');
         var box = host && host.closest('.live-stream-wrapper');
         if (!host || !box || document.querySelector('.s24-float-bar')) return;
-        var W = 380, H = Math.round(W * 9 / 16), BAR = 30, KEY = 's24_float_pos';
+        // الحجم مشترك مع المرافق (3 نوفمبر 2026): أساسي 380، من 240 إلى 640 بالسحب من المقبض
+        var W = pSize(), H = 0, BAR = 30, FOOT = 14, KEY = 's24_float_pos';
         var mq = window.matchMedia('(min-width: 1024px)');
 
         var bar = document.createElement('div');
@@ -438,30 +439,75 @@ window.S24Live = (function () {
         bar.innerHTML = '<span><span class="s24-float-dot">●</span> مباشر</span><span>' +
             '<button type="button" data-a="up" title="العودة إلى الشاشة" aria-label="العودة إلى الشاشة">⤒</button>' +
             '<button type="button" data-a="x" title="إغلاق" aria-label="إغلاق">✕</button></span>';
+        // شريط سفلي رفيع للمقبض حين يكون المشغّل في النصف الأعلى من الشاشة (لا شيء فوق الفيديو)
+        var foot = document.createElement('div');
+        foot.className = 's24-float-foot';
+        var rs = document.createElement('span');
+        rs.className = 's24-follow-rs s24-float-rs';
+        rs.title = 'اسحب لتكبير المشغّل أو تصغيره';
+        rs.innerHTML = '<svg viewBox="0 0 16 16" width="16" height="16"><path d="M2 10 L10 2 M2 14 L14 2"/></svg>';
         document.body.appendChild(bar);
+        document.body.appendChild(foot);
 
         var pos = null;
         try { pos = JSON.parse(localStorage.getItem(KEY)); } catch (e) {}
-        if (!pos || typeof pos.x !== 'number') pos = { x: 20, y: window.innerHeight - H - BAR - 90 };
+        if (!pos || typeof pos.x !== 'number') pos = { x: 20, y: window.innerHeight - Math.round(W * 9 / 16) - BAR - 90 };
 
+        // الحاويات المثبّتة (sticky) حول الشاشة تصنع طبقة أدنى من الهيدر (z-index 10000)، فكان الهيدر يغطي
+        // الفيديو في صفحة البث وحدها (3 نوفمبر 2026). ما دام عائماً تُرفع طبقاتها فوق الهيدر ثم تُعاد.
+        var lifted = [];
+        function lift(on) {
+            if (!on) { lifted.forEach(function (el) { el.style.removeProperty('z-index'); }); lifted = []; return; }
+            for (var el = host.parentElement; el && el !== document.body; el = el.parentElement) {
+                var cs = getComputedStyle(el);
+                if (cs.position !== 'static' && cs.zIndex !== 'auto') { el.style.setProperty('z-index', '10001', 'important'); lifted.push(el); }
+            }
+        }
+        var gripB = false, gripR = false;
+        function size() {
+            var iw = document.documentElement.clientWidth;
+            var w = Math.min(Math.max(W, P_MIN), Math.max(P_MIN, Math.min(P_MAX, iw - 32)));
+            H = Math.round(w * 9 / 16);
+            [host, bar, foot].forEach(function (el) { el.style.setProperty('--s24-fw', w + 'px'); });
+            host.style.setProperty('--s24-fh', H + 'px');
+            return w;
+        }
+        function extra() { return BAR + H + (gripB ? FOOT : 0); }
+        // المقبض في الزاوية المقابلة قُطرياً لربع الشاشة الذي فيه المشغّل (كالمرافق)
+        function gripSide(w) {
+            gripR = pos.x + w / 2 < document.documentElement.clientWidth / 2;
+            gripB = pos.y + (BAR + H) / 2 < window.innerHeight / 2;
+            (gripB ? foot : bar).appendChild(rs);
+            bar.classList.toggle('grip-r', gripR); foot.classList.toggle('grip-r', gripR);
+            bar.classList.toggle('grip-b', gripB);
+            foot.classList.toggle('on', floating && gripB);
+        }
         // الموضع يُكتب بأولوية important ليغلب قواعد التثبيت (top !important) في s24-main.css
-        function place() {
-            pos.x = Math.min(Math.max(0, pos.x), window.innerWidth - W);
-            pos.y = Math.min(Math.max(0, pos.y), window.innerHeight - H - BAR);
+        function draw(w) {
             bar.style.left = pos.x + 'px';
             bar.style.top = pos.y + 'px';
             host.style.setProperty('left', pos.x + 'px', 'important');
             host.style.setProperty('top', (pos.y + BAR) + 'px', 'important');
+            foot.style.left = pos.x + 'px';
+            foot.style.top = (pos.y + BAR + H) + 'px';
+        }
+        function place() {
+            var w = size();
+            gripSide(w);
+            pos.x = Math.min(Math.max(0, pos.x), Math.max(0, document.documentElement.clientWidth - w));
+            pos.y = Math.min(Math.max(0, pos.y), Math.max(0, window.innerHeight - extra()));
+            draw(w);
         }
         var floating = false, dismissed = false;
         function started() { return !!host.querySelector('.video-js, iframe'); }
         function setFloat(on) {
             if (on === floating) return;
-            if (on) { box.style.minHeight = box.offsetHeight + 'px'; place(); }   // حجز المكان فلا تقفز الصفحة
-            else { box.style.minHeight = ''; host.style.removeProperty('left'); host.style.removeProperty('top'); }
+            floating = on;
+            if (on) { box.style.minHeight = box.offsetHeight + 'px'; lift(true); place(); }   // حجز المكان فلا تقفز الصفحة
+            else { box.style.minHeight = ''; lift(false); host.style.removeProperty('left'); host.style.removeProperty('top'); }
             host.classList.toggle('s24-float', on);
             bar.classList.toggle('on', on);
-            floating = on;
+            foot.classList.toggle('on', on && gripB);
         }
         function check() {
             if (!mq.matches) return setFloat(false);
@@ -478,10 +524,10 @@ window.S24Live = (function () {
         }, { passive: true });
         window.addEventListener('resize', function () { if (floating) place(); check(); });
 
-        // السحب من الشريط (لا من الفيديو، كي تبقى أزرار المشغّل تعمل)
+        // السحب من الشريط إلى أي مكان، فوق كل شيء حتى الهيدر (لا من الفيديو، كي تبقى أزرار المشغّل تعمل)
         var drag = null;
         bar.addEventListener('pointerdown', function (e) {
-            if (e.target.closest('button')) return;
+            if (e.target.closest('button') || e.target.closest('.s24-float-rs')) return;
             drag = { dx: e.clientX - pos.x, dy: e.clientY - pos.y };
             bar.setPointerCapture(e.pointerId);
             bar.classList.add('drag');
@@ -489,19 +535,53 @@ window.S24Live = (function () {
         });
         bar.addEventListener('pointermove', function (e) {
             if (!drag) return;
-            pos.x = e.clientX - drag.dx;
-            pos.y = e.clientY - drag.dy;
-            place();
+            var w = size();
+            pos.x = Math.min(Math.max(0, e.clientX - drag.dx), Math.max(0, document.documentElement.clientWidth - w));
+            pos.y = Math.min(Math.max(0, e.clientY - drag.dy), Math.max(0, window.innerHeight - extra()));
+            draw(w);
         });
         function endDrag() {
             if (!drag) return;
             drag = null;
             bar.classList.remove('drag');
             document.body.classList.remove('s24-dragging');
+            place();
             try { localStorage.setItem(KEY, JSON.stringify(pos)); } catch (e) {}
         }
         bar.addEventListener('pointerup', endDrag);
         bar.addEventListener('pointercancel', endDrag);
+
+        // تغيير الحجم: الحافة المقابلة للمقبض ثابتة
+        var rz = null;
+        rs.addEventListener('pointerdown', function (e) {
+            var w = size();
+            rz = { x: e.clientX, w: w, right: pos.x + w, bottom: pos.y + extra(), fromLeft: gripR, fromTop: gripB };
+            rs.setPointerCapture(e.pointerId);
+            document.body.classList.add('s24-dragging');
+            e.preventDefault();
+            e.stopPropagation();
+        });
+        rs.addEventListener('pointermove', function (e) {
+            if (!rz) return;
+            var dx = e.clientX - rz.x;
+            W = Math.min(Math.max(rz.w + (rz.fromLeft ? dx : -dx), P_MIN), P_MAX);
+            var w = size();
+            if (!rz.fromLeft) pos.x = rz.right - w;
+            if (!rz.fromTop) pos.y = rz.bottom - extra();
+            draw(w);
+        });
+        function endResize() {
+            if (!rz) return;
+            rz = null;
+            document.body.classList.remove('s24-dragging');
+            W = size();
+            pSave(W);
+            place();
+            try { localStorage.setItem(KEY, JSON.stringify(pos)); } catch (e) {}
+        }
+        rs.addEventListener('pointerup', endResize);
+        rs.addEventListener('pointercancel', endResize);
+
         bar.addEventListener('click', function (e) {
             var b = e.target.closest('button');
             if (!b) return;
@@ -522,8 +602,12 @@ window.S24Live = (function () {
        - القناة المحذوفة من الشريط تعود إلى البث الرئيسي، والبث الرئيسي المتوقف من اللوحة يخفي المرافق.
        - Google Analytics: الحدث s24_live_follow (show / close / unmute / minimize / resume). */
     var FOLLOW = 's24_follow', FOLLOW_OFF = 's24_follow_off', FOLLOW_SND = 's24_follow_snd',
-        FOLLOW_MIN = 's24_follow_min', FPOS = 's24_float_pos', FSIZE = 's24_follow_w';
+        FOLLOW_MIN = 's24_follow_min', FPOS = 's24_float_pos';
     var desk = window.matchMedia('(min-width: 1024px)');
+    // حجم المشغّل العائم والمرافق معاً (3 نوفمبر 2026): أساسي 380، من 240 إلى 640، ويُحفظ اختيار القارئ
+    var PSIZE = 's24_player_w', P_BASE = 380, P_MIN = 240, P_MAX = 640;
+    function pSize() { var v = 0; try { v = Number(localStorage.getItem(PSIZE)); } catch (e) {} return v >= P_MIN && v <= P_MAX ? v : P_BASE; }
+    function pSave(w) { try { localStorage.setItem(PSIZE, String(Math.round(w))); } catch (e) {} }
     var lastDoc = null, follow = null;
 
     function ss(k, v) {
@@ -602,14 +686,13 @@ window.S24Live = (function () {
         var url = base + 'autoplay=1&mute=1&playsinline=1&rel=0&modestbranding=1&enablejsapi=1&origin=' +
             encodeURIComponent(location.origin);
 
-        // أصغر عرض = عرض المشغّل الجانبي في الرئيسية (330 ← ارتفاع 186)، بقرار حسان (2 نوفمبر 2026) مع علمه
-        // أنه دون الحد الذي يشترطه يوتيوب (200×200) — كان 360
-        var BAR = 30, FOOT = 14, MIN = 330, GAP = 16;
-        var cur = 2;   // الزاوية الفعلية الآن (قد تختلف عن اختيار القارئ إن انزاح عن إعلان)
-        function topHome() { return cur === 0 || cur === 1; }
-        function extra() { return mini ? 36 : H + BAR + (topHome() ? FOOT : 0); }   // ارتفاع المشغّل كاملاً
-        function maxW() { return Math.max(MIN, Math.min(640, Math.round(window.innerWidth / 3))); }
-        var W = Number(localStorage.getItem(FSIZE)) || 480, H = 0, mini = ss(FOLLOW_MIN) === '1';
+        // الحجم (3 نوفمبر 2026، بقرار حسان): الأساسي 380، ويُصغَّر حتى 240 أو يُكبَّر حتى 640 بالسحب من المقبض،
+        // والحجم المختار مشترك مع العائم في صفحة البث (PSIZE). حسان يعلم أن ما دون 200×200 يخالف شرط يوتيوب
+        var BAR = 30, FOOT = 14, MIN = P_MIN, GAP = 16;
+        function maxW() { return Math.max(MIN, Math.min(P_MAX, document.documentElement.clientWidth - 2 * GAP)); }
+        var W = pSize(), H = 0, mini = ss(FOLLOW_MIN) === '1';
+        var gripB = false;
+        function extra() { return mini ? 36 : H + BAR + (gripB ? FOOT : 0); }   // ارتفاع المشغّل كاملاً
         var pos = null;
         try { pos = JSON.parse(localStorage.getItem(FPOS)); } catch (e) {}
 
@@ -649,10 +732,6 @@ window.S24Live = (function () {
         function cmd(fn) {
             try { ifr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: fn, args: [] }), '*'); } catch (e) {}
         }
-        function topEdge() {
-            var t = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--sticky-top-offset')) || 0;
-            return t + 10;
-        }
         // الطيّ (2.7.1): «–» يوقف البث ويطوي المشغّل إلى شريط صغير «● مباشر · القناة ▶ مشاهدة»؛
         // لا يبقى صوت بلا صورة (شرط يوتيوب)، والإطار لا يُحمَّل في الصفحات التالية ما دام مطويّاً
         function size() {
@@ -666,94 +745,76 @@ window.S24Live = (function () {
             H = Math.round(w * 9 / 16);
             box.style.width = w + 'px';
             ifr.style.height = H + 'px';
+            box.classList.toggle('is-narrow', w < 300);
             return w;
         }
-        // مقبض الحجم في الزاوية المقابلة قُطرياً لزاوية الالتصاق (3 نوفمبر 2026):
-        //   أعلى يسار ← أسفل يمين، أعلى يمين ← أسفل يسار (في شريط سفلي رفيع تحت الفيديو)،
+        // الحركة حرّة (3 نوفمبر 2026، بقرار حسان): يبقى المشغّل حيث يتركه القارئ تماماً، فوق كل شيء
+        // حتى الهيدر — لا التصاق بالزوايا ولا ابتعاد عن الإعلانات. يُحصر فقط داخل حدود النافذة.
+        // المقبض في الزاوية المقابلة قُطرياً لربع الشاشة الذي فيه المشغّل:
+        //   أعلى يسار ← أسفل يمين، أعلى يمين ← أسفل يسار (شريط سفلي رفيع تحت الفيديو)،
         //   أسفل يسار ← أعلى يمين، أسفل يمين ← أعلى يسار (في الشريط الأسود العلوي)
+        var x = 0, y = 0;
         function gripSide() {
-            box.classList.toggle('grip-r', cur === 0 || cur === 2);
-            box.classList.toggle('grip-b', topHome());
+            var iw = document.documentElement.clientWidth, ih = window.innerHeight, w = box.offsetWidth;
+            var left = x + w / 2 < iw / 2, top = y + (H + BAR) / 2 < ih / 2;
+            box.classList.toggle('grip-r', left);
+            gripB = top && !mini;
+            box.classList.toggle('grip-b', gripB);
         }
-        // الزوايا الأربع: 0 أعلى يسار، 1 أعلى يمين، 2 أسفل يسار، 3 أسفل يمين
-        function corners(w) {
-            var iw = document.documentElement.clientWidth, ih = window.innerHeight, h = extra();
-            var top = topEdge(), bottom = ih - h - GAP;
-            return [{ x: GAP, y: top }, { x: iw - w - GAP, y: top }, { x: GAP, y: bottom }, { x: iw - w - GAP, y: bottom }];
-        }
-        function nearest(w, x, y) {
-            var cs = corners(w), best = 0, bd = Infinity;
-            cs.forEach(function (c, i) { var dd = Math.pow(c.x - x, 2) + Math.pow(c.y - y, 2); if (dd < bd) { bd = dd; best = i; } });
-            return best;
-        }
-        var home = 2;   // الزاوية التي اختارها القارئ (افتراضياً أسفل يسار)
-        function setXY(x, y) { box.style.left = Math.round(x) + 'px'; box.style.top = Math.round(y) + 'px'; }
-
-        // هل يتقاطع المشغّل في زاوية ما مع إعلان ظاهر؟
-        function hitsAd(c, w) {
-            var ads = document.querySelectorAll('.s24-ad, ins.adsbygoogle');
-            for (var i = 0; i < ads.length; i++) {
-                var r = ads[i].getBoundingClientRect();
-                if (r.height < 20 || r.width < 20) continue;
-                if (r.left < c.x + w && r.right > c.x && r.top < c.y + extra() && r.bottom > c.y) return true;
-            }
-            return false;
-        }
-        var ORDER = { 0: [0, 2, 1, 3], 1: [1, 3, 0, 2], 2: [2, 0, 3, 1], 3: [3, 1, 2, 0] };
-        var hover = false;
-        box.addEventListener('pointerenter', function () { hover = true; });
-        box.addEventListener('pointerleave', function () { hover = false; queue(); });
-        function place(force) {
+        function place() {
             if (drag || rz) return;
-            if (hover && !force) return;   // لا يتحرك تحت الفأرة (كان يقفز عن إعلان أثناء ضبط الصوت)
-            var w = size(), cs = corners(w), pick = home;
-            for (var k = 0; k < 4; k++) { var i = ORDER[home][k]; cur = i; size(); if (!hitsAd(corners(w)[i], w)) { pick = i; break; } }
-            cur = pick;
-            cs = corners(w);
-            setXY(cs[pick].x, cs[pick].y);
+            var w = size();
             gripSide();
+            var iw = document.documentElement.clientWidth, ih = window.innerHeight;
+            x = Math.min(Math.max(0, x), Math.max(0, iw - w));
+            y = Math.min(Math.max(0, y), Math.max(0, ih - extra()));
+            box.style.left = Math.round(x) + 'px';
+            box.style.top = Math.round(y) + 'px';
         }
+        function savePos() { try { localStorage.setItem(FPOS, JSON.stringify({ x: Math.round(x), y: Math.round(y) })); } catch (e) {} }
 
-        if (pos && typeof pos.x === 'number') home = nearest(size(), pos.x, pos.y);
+        if (pos && typeof pos.x === 'number' && typeof pos.y === 'number') { x = pos.x; y = pos.y; }
+        else { size(); x = GAP; y = window.innerHeight - extra() - GAP; }   // افتراضياً أسفل يسار
         place();
-        requestAnimationFrame(function () { box.classList.add('is-ready'); });   // الحركة بعد أول وضع فقط
+        requestAnimationFrame(function () { box.classList.add('is-ready'); });
 
         var queued = false;
         function queue() { if (queued) return; queued = true; requestAnimationFrame(function () { queued = false; place(); }); }
-        window.addEventListener('scroll', queue, { passive: true });
         window.addEventListener('resize', queue);
 
-        // السحب من الشريط، ثم الالتصاق بأقرب زاوية
+        // السحب من الشريط إلى أي مكان
         var drag = null;
         bar.addEventListener('pointerdown', function (e) {
-            if (e.target.closest('button')) return;
-            var r = box.getBoundingClientRect();
-            drag = { dx: e.clientX - r.left, dy: e.clientY - r.top };
+            if (e.target.closest('button, input')) return;
+            drag = { dx: e.clientX - x, dy: e.clientY - y };
             bar.setPointerCapture(e.pointerId);
             box.classList.add('is-drag');
             document.body.classList.add('s24-dragging');
         });
-        bar.addEventListener('pointermove', function (e) { if (drag) setXY(e.clientX - drag.dx, e.clientY - drag.dy); });
+        bar.addEventListener('pointermove', function (e) {
+            if (!drag) return;
+            var iw = document.documentElement.clientWidth, ih = window.innerHeight;
+            x = Math.min(Math.max(0, e.clientX - drag.dx), Math.max(0, iw - box.offsetWidth));
+            y = Math.min(Math.max(0, e.clientY - drag.dy), Math.max(0, ih - extra()));
+            box.style.left = Math.round(x) + 'px';
+            box.style.top = Math.round(y) + 'px';
+        });
         function endDrag() {
             if (!drag) return;
             drag = null;
             box.classList.remove('is-drag');
             document.body.classList.remove('s24-dragging');
-            var r = box.getBoundingClientRect();
-            home = nearest(r.width, r.left, r.top);
-            place(true);
-            var c = corners(r.width)[home];
-            try { localStorage.setItem(FPOS, JSON.stringify({ x: c.x, y: c.y })); } catch (e) {}
+            place();
+            savePos();
         }
         bar.addEventListener('pointerup', endDrag);
         bar.addEventListener('pointercancel', endDrag);
 
-        // تغيير الحجم: الحافة الملاصقة للشاشة ثابتة (يسار أو يمين، وأعلى أو أسفل حسب الزاوية)
+        // تغيير الحجم: الحافة المقابلة للمقبض ثابتة، فيكبر المشغّل ويصغر من جهة المقبض
         var rs = box.querySelector('.s24-follow-rs'), rz = null;
         rs.addEventListener('pointerdown', function (e) {
-            var r = box.getBoundingClientRect();
-            rz = { x: e.clientX, w: r.width, left: r.left, right: r.right, top: r.top, bottom: r.bottom,
-                   fromLeft: cur === 0 || cur === 2, fromTop: cur === 0 || cur === 1 };
+            rz = { x: e.clientX, w: box.offsetWidth, right: x + box.offsetWidth, bottom: y + extra(),
+                   fromLeft: box.classList.contains('grip-r'), fromTop: gripB };
             rs.setPointerCapture(e.pointerId);
             box.classList.add('is-drag');
             document.body.classList.add('s24-dragging');
@@ -764,17 +825,19 @@ window.S24Live = (function () {
             var dx = e.clientX - rz.x;
             W = Math.min(Math.max(rz.w + (rz.fromLeft ? dx : -dx), MIN), maxW());
             var w = size();
-            setXY(rz.fromLeft ? rz.left : rz.right - w, rz.fromTop ? rz.top : rz.bottom - extra());
+            if (!rz.fromLeft) x = rz.right - w;
+            if (!rz.fromTop) y = rz.bottom - extra();
+            box.style.left = Math.round(x) + 'px';
+            box.style.top = Math.round(y) + 'px';
         });
         function endResize() {
             if (!rz) return;
             rz = null;
             box.classList.remove('is-drag');
             document.body.classList.remove('s24-dragging');
-            try { localStorage.setItem(FSIZE, String(Math.round(W))); } catch (e) {}
-            var r = box.getBoundingClientRect();
-            home = nearest(r.width, r.left, r.top);
-            place(true);
+            pSave(W);
+            place();
+            savePos();
         }
         rs.addEventListener('pointerup', endResize);
         rs.addEventListener('pointercancel', endResize);
@@ -882,7 +945,6 @@ window.S24Live = (function () {
             else if (a === 'x') {
                 ss(FOLLOW, null); ss(FOLLOW_SND, null); ss(FOLLOW_MIN, null); ss(FOLLOW_OFF, '1');
                 track('close', src.name);
-                window.removeEventListener('scroll', queue);
                 window.removeEventListener('resize', queue);
                 box.remove();
                 follow = null;
