@@ -625,6 +625,11 @@ window.S24Live = (function () {
               '<span class="s24-follow-btns">' +
                 '<button type="button" data-a="resume" class="s24-follow-resume" title="متابعة البث" hidden>▶ متابعة</button>' +
                 '<button type="button" data-a="snd" class="s24-follow-snd" title="تشغيل الصوت">🔊 الصوت</button>' +
+                // شريط صوت خاص بنا (3 نوفمبر 2026): شريط يوتيوب في الحجم الصغير عمودي قصير يختفي بسرعة
+                '<span class="s24-follow-vol" hidden><button type="button" data-a="mute" title="كتم الصوت" aria-label="كتم الصوت">' +
+                  '<svg viewBox="0 0 24 24" width="16" height="16"><path d="M4 9h4l5-4v14l-5-4H4z"/><path class="w" d="M16 9a4 4 0 0 1 0 6M18.5 6.5a8 8 0 0 1 0 11"/>' +
+                  '<path class="m" d="M16 9l5 6M21 9l-5 6"/></svg></button>' +
+                  '<input type="range" min="0" max="100" step="1" value="100" dir="ltr" aria-label="مستوى الصوت"></span>' +
                 '<button type="button" data-a="min" title="طيّ المشغّل" aria-label="طيّ المشغّل">–</button>' +
                 '<button type="button" data-a="open" class="s24-follow-open" title="مشاهدة البث">▶ مشاهدة</button>' +
                 '<button type="button" data-a="live" title="صفحة البث" aria-label="صفحة البث">⤢</button>' +
@@ -776,14 +781,31 @@ window.S24Live = (function () {
 
         // الصوت (3 نوفمبر 2026): يُحفظ أيضاً حين يشغّله القارئ من زر يوتيوب نفسه، ومعه مستوى الصوت
         var sndBtn = box.querySelector('.s24-follow-snd'), soundOn = false;
+        var volBox = box.querySelector('.s24-follow-vol'), volIn = volBox.querySelector('input'), volDrag = false;
         function vol() { var v = Number(ss('s24_follow_vol')); return v > 0 && v <= 100 ? v : 0; }
+        function setVol(v) { try { ifr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setVolume', args: [v] }), '*'); } catch (e) {} }
+        // يظهر شريطنا حين يعمل الصوت، وزر «🔊 الصوت» الأخضر حين يكون مكتوماً
+        function showVol(on, muted) {
+            sndBtn.hidden = on;
+            volBox.hidden = !on;
+            volBox.classList.toggle('is-muted', !!muted);
+            if (!volDrag) volIn.value = muted ? 0 : (vol() || 100);
+        }
         function unmute() {
             cmd('unMute');
-            if (vol()) { try { ifr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: 'setVolume', args: [vol()] }), '*'); } catch (e) {} }
+            if (vol()) setVol(vol());
             cmd('playVideo');
-            sndBtn.hidden = true;
+            showVol(true, false);
             ss(FOLLOW_SND, '1');
         }
+        volIn.addEventListener('pointerdown', function () { volDrag = true; });
+        volIn.addEventListener('pointerup', function () { volDrag = false; });
+        volIn.addEventListener('input', function () {
+            var v = Number(volIn.value);
+            if (v > 0) { cmd('unMute'); setVol(v); ss('s24_follow_vol', String(v)); ss(FOLLOW_SND, '1'); volBox.classList.remove('is-muted'); }
+            else { cmd('mute'); volBox.classList.add('is-muted'); }
+        });
+        volIn.addEventListener('change', function () { volDrag = false; });
         // أحداث مشغّل يوتيوب (IFrame API): كتمه ومستوى صوته
         function listen() { try { ifr.contentWindow.postMessage(JSON.stringify({ event: 'listening', id: 1, channel: 'widget' }), '*'); } catch (e) {} }
         ifr.addEventListener('load', function () { listen(); setTimeout(listen, 1500); });
@@ -792,9 +814,12 @@ window.S24Live = (function () {
             var d; try { d = typeof e.data === 'string' ? JSON.parse(e.data) : e.data; } catch (x) { return; }
             var info = d && d.info;
             if (!info || typeof info !== 'object') return;
-            if (typeof info.volume === 'number' && info.volume > 0) ss('s24_follow_vol', String(Math.round(info.volume)));
-            if (info.muted === false && !soundOn) { soundOn = true; sndBtn.hidden = true; ss(FOLLOW_SND, '1'); }
-            else if (info.muted === true && soundOn) { soundOn = false; sndBtn.hidden = false; ss(FOLLOW_SND, null); }
+            if (typeof info.volume === 'number' && info.volume > 0) {
+                ss('s24_follow_vol', String(Math.round(info.volume)));
+                if (soundOn && !volDrag && !volBox.classList.contains('is-muted')) volIn.value = Math.round(info.volume);
+            }
+            if (info.muted === false && !soundOn) { soundOn = true; showVol(true, false); ss(FOLLOW_SND, '1'); }
+            else if (info.muted === true && soundOn) { soundOn = false; showVol(false); ss(FOLLOW_SND, null); }
         });
         // أول نقرة أو ضغطة زر خارج المشغّل تعيد الصوت (والنقرة داخله لا تُلغي الانتظار)
         if (ss(FOLLOW_SND)) {
@@ -832,6 +857,10 @@ window.S24Live = (function () {
             if (!b) return;
             var a = b.getAttribute('data-a');
             if (a === 'snd') { unmute(); track('unmute', src.name); }
+            else if (a === 'mute') {
+                if (volBox.classList.contains('is-muted')) { cmd('unMute'); setVol(vol() || 100); volBox.classList.remove('is-muted'); volIn.value = vol() || 100; }
+                else { cmd('mute'); volBox.classList.add('is-muted'); volIn.value = 0; }
+            }
             else if (a === 'resume') { cmd('playVideo'); resumeBtn.hidden = true; track('resume', src.name); }
             else if (a === 'min') {
                 cmd('pauseVideo');

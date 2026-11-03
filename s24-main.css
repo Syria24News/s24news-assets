@@ -5261,6 +5261,17 @@ a.s24-cov-link:hover .s24-cov-title { color: #77bd1d; }
     .s24-follow-btns .s24-follow-snd { background: #77bd1d; color: #fff; font-size: 12px; padding: 3px 9px; margin-inline-end: 4px; }
     .s24-follow-btns .s24-follow-snd:hover { color: #fff; filter: brightness(1.08); }
     .s24-follow-btns button[hidden] { display: none; }
+    /* شريط الصوت الخاص بالمرافق: في الشريط الأسود، ثابت لا يختفي */
+    .s24-follow-vol { display: inline-flex; align-items: center; gap: 2px; margin-inline-end: 4px; }
+    .s24-follow-vol[hidden] { display: none; }
+    .s24-follow-vol button { display: inline-flex; padding: 2px 3px; }
+    .s24-follow-vol svg path { fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+    .s24-follow-vol svg path:first-child { fill: currentColor; }
+    .s24-follow-vol svg .m { display: none; }
+    .s24-follow-vol.is-muted svg .w { display: none; }
+    .s24-follow-vol.is-muted svg .m { display: inline; }
+    .s24-follow-vol input[type=range] { width: 64px; height: 18px; margin: 0; accent-color: #77bd1d; cursor: pointer; }
+    .s24-follow.is-collapsed .s24-follow-vol { display: none; }
     .s24-follow-video { position: relative; }
     .s24-follow-video iframe { display: block; width: 100%; border: 0; }
     /* «▶ متابعة» بعد إيقافه لصالح فيديو آخر — في الشريط لا فوق الفيديو */
