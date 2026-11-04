@@ -20,7 +20,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 30          # كان 10: أُلغي نشر 4 نوفمبر مرتين وهو عالق في updating_pages (GitHub بطيء أحياناً حتى 25 دقيقة)
     concurrency:
       group: pages              # الطابور الواحد لكل المصادر
       cancel-in-progress: false # لا يُقطع نشر جارٍ
