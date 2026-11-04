@@ -2,6 +2,8 @@
    S24News — مشغّل البث المباشر (playFast / loadVideoLibs)
    playFast تُستدعى من onclick داخل HTML القالب — يجب أن تبقى دالة عامة
 
+   الإصدار 2.11 — 4 نوفمبر 2026: منسّق المشغّلات — مشغّل واحد يعمل في الاتجاهين (المرافق والجانبي)، من أي زر؛
+                والمرافق على البث الرئيسي نفسه يُطوى حين يبدأ الجانبي؛ لا عودة تلقائية (بقرار حسان)
    الإصدار 2.7 — 2 نوفمبر 2026: المشغّل المرافق يتبع القارئ بين الصفحات (الكمبيوتر)، و?ch= لفتح صفحة البث على قناة
                 (سطر القنوات تحت المشغّل الجانبي في الرئيسية حُذف بقرار حسان)
    الإصدار 2.6 — 1 نوفمبر 2026: التغطية المباشرة النشطة (آخر 5 أخبار) تحت الشاشة فوق «أحدث الأخبار»
@@ -637,6 +639,50 @@ window.S24Live = (function () {
         });
     }
 
+    /* ============ منسّق المشغّلات (2.11 — 4 نوفمبر 2026، بقرار حسان) ============
+       مشغّل واحد يعمل في الصفحة: كل مشغّل مسجَّل يُبلغ المنسّق حين يبدأ (claim)، فيُوقَف كل ما عداه —
+       في الاتجاهين، ومن أي زر وفي أي وقت (كان الإيقاف في اتجاه واحد ومع الضغطة الأولى على الجانبي فقط).
+       المسجَّلان: 'follow' المرافق، و'sidebar' الجانبي في الرئيسية. لا عودة تلقائية: المتوقف يبقى متوقفاً
+       حتى يشغّله القارئ بنفسه. وفيديو غير مسجَّل في الصفحة (داخل مقالة مثلاً) يوقف المسجَّلين كلهم.
+       pause(by) تُستدعى بمعرّف المشغّل الذي بدأ، ليقرر كل مشغّل طريقة توقفه. */
+    var players = {}, active = null;
+    function register(id, el, pause) { players[id] = { el: el, pause: pause }; }
+    function unregister(id) { delete players[id]; if (active === id) active = null; }
+    function claim(id) {
+        active = id;
+        Object.keys(players).forEach(function (k) {
+            if (k !== id) { try { players[k].pause(id); } catch (e) {} }
+        });
+    }
+    function ownerOf(node) {
+        for (var k in players) if (players[k].el && players[k].el.contains(node)) return k;
+        return '';
+    }
+    // عنصر <video> حقيقي في الصفحة
+    document.addEventListener('play', function (e) {
+        if (e.target && e.target.tagName === 'VIDEO') claim(ownerOf(e.target));
+    }, true);
+    // نقرة داخل إطار غير مسجَّل (يوتيوب في مقالة مثلاً)؛ إطارات المسجَّلين تُبلغ بنفسها
+    window.addEventListener('blur', function () {
+        setTimeout(function () {
+            var a = document.activeElement;
+            if (a && a.tagName === 'IFRAME' && !ownerOf(a)) claim('');
+        }, 0);
+    });
+    // إطار يوتيوب لمشغّل مسجَّل (وضع «قناة»): يُبلغ حين يبدأ التشغيل (IFrame API، playerState 1)
+    function ytWatch(ifr, id) {
+        function listen() { try { ifr.contentWindow.postMessage(JSON.stringify({ event: 'listening', id: 1, channel: 'widget' }), '*'); } catch (e) {} }
+        ifr.addEventListener('load', function () { listen(); setTimeout(listen, 1500); });
+        window.addEventListener('message', function (e) {
+            if (!ifr.isConnected || e.source !== ifr.contentWindow || !/youtube/.test(e.origin)) return;
+            var d; try { d = typeof e.data === 'string' ? JSON.parse(e.data) : e.data; } catch (x) { return; }
+            if (d && d.info && d.info.playerState === 1) claim(id);
+        });
+    }
+    function ytCmd(ifr, fn) {
+        try { ifr.contentWindow.postMessage(JSON.stringify({ event: 'command', func: fn, args: [] }), '*'); } catch (e) {}
+    }
+
     /* ============ المشغّل المرافق (2.7) — يتبع القارئ بين الصفحات، الكمبيوتر فقط (≥1024px) ============
        يبدأ حين يغادر القارئ صفحة البث والبث يعمل: تُحفظ القناة التي يشاهدها في هذا التبويب (sessionStorage)،
        وفي كل صفحة بعدها يظهر مشغّل يوتيوب عائم بالقناة نفسها بعد اكتمال تحميل الصفحة، إلى أن يضغط ✕.
@@ -644,7 +690,8 @@ window.S24Live = (function () {
        - الموضع والحجم يُحفظان؛ يلتصق بأقرب زاوية، وينزاح عن أماكن الإعلانات (سياسة أدسنس).
        - الحجم بين 330 بكسل (عرض المشغّل الجانبي في الرئيسية، بقرار حسان) و640 أو ثلث الشاشة، بمقبض في الشريط.
        - زر «–» يوقف البث ويطوي المشغّل إلى شريط «● مباشر · القناة ▶ مشاهدة» (2.7.1).
-       - مشغّل واحد يعمل: إن شغّل القارئ فيديو آخر يتوقف المرافق، ويعود بزر «▶ متابعة» في الشريط.
+       - مشغّل واحد يعمل (منسّق المشغّلات 2.11): إن شغّل القارئ فيديو آخر يتوقف المرافق، ويعود بزر «▶ متابعة»؛
+         وتشغيل المرافق يوقف الجانبي. وإن كان المرافق على البث الرئيسي نفسه الذي في الجانبي، يُطوى بدل الإيقاف.
        - لا شيء فوق إطار يوتيوب (شرط يوتيوب): المقبض والأزرار كلها في الشريط الأسود (2.7.2).
        - القناة المحذوفة من الشريط تعود إلى البث الرئيسي، والبث الرئيسي المتوقف من اللوحة يخفي المرافق.
        - Google Analytics: الحدث s24_live_follow (show / close / unmute / minimize / resume). */
@@ -766,6 +813,11 @@ window.S24Live = (function () {
         if (src.kind === 'video' && resumeTime(src.id)) url += '&start=' + Math.floor(resumeTime(src.id));
         // فيديو برقم ← VideoJS كصفحة البث؛ «قناة» بلا رقم بث ← مشغّل يوتيوب المضمّن (كما في صفحة البث نفسها)
         var useVjs = !!vjsOK && src.kind === 'video';
+        // held: أوقفه مشغّل آخر — لا يعمل حتى يشغّله القارئ بنفسه (ولو وصل تشغيله التلقائي متأخراً).
+        // إن كان مشغّل آخر يعمل لحظة ظهوره (الجانبي مثلاً) يظهر متوقفاً
+        var held = !!(active && active !== 'follow' && players[active]);
+        var playUrl = url;   // للفتح بزر «▶ مشاهدة»: يعمل دائماً
+        if (held) url = url.replace('autoplay=1', 'autoplay=0');
 
         // الحجم (3 نوفمبر 2026، بقرار حسان): الأساسي 380، ويُصغَّر حتى 240 أو يُكبَّر حتى 640 بالسحب من المقبض،
         // والحجم المختار مشترك مع العائم في صفحة البث (PSIZE). حسان يعلم أن ما دون 200×200 يخالف شرط يوتيوب
@@ -832,12 +884,18 @@ window.S24Live = (function () {
                 setTimeout(function () { vjsArmed = true; }, 1500);
                 s24Skin(vp);
                 vp.muted(true);
+                if (held) { resumeBtn.hidden = false; return; }   // مشغّل آخر يعمل: لا تشغيل تلقائي
                 var pr = vp.play(); if (pr && pr.catch) pr.catch(function () {});
                 // الاستئناف من الموضع السابق (فيديو ثابت فقط)
                 var rt = resumeTime(src.id);
                 if (rt) vp.one('playing', function () { try { vp.currentTime(rt); } catch (e) {} });
             });
             window.addEventListener('pagehide', function () { if (vp && !mini) saveTime(src.id, vp); });
+            // بدأ المرافق: يتوقف غيره؛ وإن كان موقوفاً بمشغّل آخر ولم يشغّله القارئ بنفسه يُعاد إيقافه
+            vp.on('play', function () {
+                if (held) { vp.pause(); resumeBtn.hidden = false; return; }
+                claim('follow');
+            });
             // حفظ الصوت ومستواه حين يشغّله القارئ من أزرار VideoJS
             vp.on('volumechange', function () {
                 if (!vjsArmed) return;   // الكتم الأولي عند التشغيل ليس قرار القارئ
@@ -1012,6 +1070,9 @@ window.S24Live = (function () {
             var d; try { d = typeof e.data === 'string' ? JSON.parse(e.data) : e.data; } catch (x) { return; }
             var info = d && d.info;
             if (!info || typeof info !== 'object') return;
+            if (info.playerState === 1) {                 // بدأ التشغيل (منسّق المشغّلات)
+                if (held) cmd('pauseVideo'); else claim('follow');
+            }
             if (typeof info.volume === 'number' && info.volume > 0) {
                 ss('s24_follow_vol', String(Math.round(info.volume)));
                 if (soundOn && !volDrag && !volBox.classList.contains('is-muted')) volIn.value = Math.round(info.volume);
@@ -1033,22 +1094,26 @@ window.S24Live = (function () {
             window.addEventListener('keydown', once, true);
         }
 
-        // مشغّل واحد يعمل: فيديو آخر في الصفحة يوقف المرافق
-        function pause() {
+        // منسّق المشغّلات: مشغّل آخر بدأ ← يتوقف المرافق، أو يُطوى إن كان الجانبي على البث الرئيسي نفسه
+        function collapse() {
+            cmd('pauseVideo');
+            mini = true;
+            ss(FOLLOW_MIN, '1');
+            place();
+        }
+        register('follow', box, function (by) {
             if (!follow || mini) return;
+            held = true;
+            if (by === 'sidebar' && src.main) { collapse(); track('minimize', src.name); return; }
             cmd('pauseVideo');
             resumeBtn.hidden = false;
-        }
-        api.followPause = pause;
-        document.addEventListener('play', function (e) {
-            if (e.target && e.target.tagName === 'VIDEO' && !box.contains(e.target)) pause();
-        }, true);
-        window.addEventListener('blur', function () {
-            setTimeout(function () {
-                var a = document.activeElement;
-                if (a && a.tagName === 'IFRAME' && !box.contains(a)) pause();
-            }, 0);
         });
+        // القارئ يتعامل مع المرافق نفسه (أزرار VideoJS أو داخل إطار يوتيوب): تشغيله قراره هو
+        box.addEventListener('pointerdown', function () { held = false; }, true);
+        window.addEventListener('blur', function () {
+            setTimeout(function () { if (follow && box.contains(document.activeElement)) held = false; }, 0);
+        });
+        if (held) resumeBtn.hidden = false;
 
         box.addEventListener('click', function (e) {
             var b = e.target.closest('button');
@@ -1058,19 +1123,15 @@ window.S24Live = (function () {
                 if (volBox.classList.contains('is-muted')) { unmute(); track('unmute', src.name); }
                 else { cmd('mute'); showVol(true); }
             }
-            else if (a === 'resume') { cmd('playVideo'); resumeBtn.hidden = true; track('resume', src.name); }
-            else if (a === 'min') {
-                cmd('pauseVideo');
-                mini = true;
-                ss(FOLLOW_MIN, '1');
-                place();
-                track('minimize', src.name);
-            }
+            else if (a === 'resume') { held = false; claim('follow'); cmd('playVideo'); resumeBtn.hidden = true; track('resume', src.name); }
+            else if (a === 'min') { collapse(); track('minimize', src.name); }
             else if (a === 'open') {
                 mini = false;
                 ss(FOLLOW_MIN, null);
+                held = false;
+                claim('follow');
                 if (useVjs) { if (!vp) startVjs(); else cmd('playVideo'); }
-                else if (!ifr.src || ifr.src === 'about:blank') ifr.src = url;   // أول فتح في هذه الصفحة
+                else if (!ifr.src || ifr.src === 'about:blank') ifr.src = playUrl;   // أول فتح في هذه الصفحة
                 else cmd('playVideo');
                 resumeBtn.hidden = true;
                 place();
@@ -1084,13 +1145,14 @@ window.S24Live = (function () {
                 if (vp) { try { vp.dispose(); } catch (e) {} vp = null; }
                 box.remove();
                 follow = null;
-                api.followPause = null;
+                unregister('follow');
             }
         });
         track('show', src.name);
     }
 
-    var api = { state: state, whenReady: whenReady, embedUrl: embedUrl, MINI_PARAMS: MINI_PARAMS, switchTo: switchTo, followPause: null };
+    var api = { state: state, whenReady: whenReady, embedUrl: embedUrl, MINI_PARAMS: MINI_PARAMS, switchTo: switchTo,
+                register: register, unregister: unregister, claim: claim, ytWatch: ytWatch, ytCmd: ytCmd };
 
     function load() {
         if (isLivePage) { ensureSplit(); renderMore(); initFloat(); recordOnLeave(); }
@@ -1327,7 +1389,8 @@ function playSidebarFast() {
     if (sidebarPlayerActive) return;
     if (!S24Live.state.onAir) return;   // البث متوقف من اللوحة
     sidebarPlayerActive = true;
-    if (S24Live.followPause) S24Live.followPause();   // مشغّل واحد يعمل (2.7)
+    sidebarRegister();
+    S24Live.claim('sidebar');   // مشغّل واحد يعمل (منسّق المشغّلات 2.11)
     var oldError = document.getElementById('sidebar-load-error');
     if (oldError) oldError.remove();
     document.getElementById('sidebar-play-btn').style.display = 'none';
@@ -1353,6 +1416,18 @@ function playSidebarFast() {
     }, 100);
 }
 
+// يُسجَّل الجانبي في منسّق المشغّلات: إيقافه حين يبدأ مشغّل آخر (VideoJS، أو إطار يوتيوب في وضع «قناة»)
+function sidebarRegister() {
+    var w = document.querySelector('.live-tv-widget');
+    if (!w) return;
+    S24Live.register('sidebar', w, function () {
+        var p = window.videojs && videojs.getPlayer && videojs.getPlayer('rt-sidebar-player');
+        if (p) { try { p.pause(); } catch (e) {} }
+        var f = document.getElementById('rt-sidebar-iframe');
+        if (f) S24Live.ytCmd(f, 'pauseVideo');
+    });
+}
+
 function launchSidebarPlayer() {
     var container = document.getElementById('real-player-container');
     function hideCover() {
@@ -1362,9 +1437,13 @@ function launchSidebarPlayer() {
 
     // وضع القناة: مشغّل يوتيوب المضمّن (البث الجاري للقناة لا رقم له)
     if (S24Live.state.mode === 'channel') {
-        container.innerHTML = '<iframe id="rt-sidebar-iframe" src="' + S24Live.embedUrl('autoplay=1&rel=0&modestbranding=1&playsinline=1') +
+        // enablejsapi: ليستطيع المنسّق إيقافه، ويعرف متى يبدأ (2.11)
+        container.innerHTML = '<iframe id="rt-sidebar-iframe" src="' + S24Live.embedUrl('autoplay=1&rel=0&modestbranding=1&playsinline=1&enablejsapi=1&origin=' +
+            encodeURIComponent(location.origin)) +
             '" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen frameborder="0" title="البث المباشر"></iframe>';
-        container.querySelector('iframe').addEventListener('load', hideCover);
+        var sf = container.querySelector('iframe');
+        sf.addEventListener('load', hideCover);
+        S24Live.ytWatch(sf, 'sidebar');
         return;
     }
 
@@ -1379,6 +1458,7 @@ function launchSidebarPlayer() {
     });
 
     s24WatchDown(player, 'sidebar-loader');   // انقطاع مفاجئ ← رسالة الموقع (3 نوفمبر 2026، بطلب حسان)
+    player.on('play', function () { S24Live.claim('sidebar'); });   // كل تشغيل للجانبي يوقف غيره (2.11)
     player.ready(function () {
         s24Skin(player);
         player.play();
