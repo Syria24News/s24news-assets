@@ -1,5 +1,6 @@
 /* ============================================================
    S24News — وحدة البث المباشر في لوحة التحكم (admin/js/stream.js)
+   الإصدار 1.4 — 4 نوفمبر 2026: زر «تعديل» في قنوات الشريط — يملأ الحقول بالقناة، «حفظ التعديل» يبدّلها في مكانها، يُعتمد بـ«حفظ»
    الإصدار 1.3 — 1 نوفمبر 2026: زر «حذف» في «آخر الأرقام المستخدمة» (عدا الرقم الحالي)، يُعتمد بـ«حفظ»
    الإصدار 1.2 — 1 نوفمبر 2026: صندوق «مراقبة المحطات» من live_stream/health
      (يكتبه StreamWatch.gs في اللوحة المركزية كل 3 ساعات عبر YouTube Data API)،
@@ -125,7 +126,7 @@ const MARKUP = `
         <li>يصل التغيير إلى صفحة البث خلال دقيقة، وإلى الرئيسية خلال 15 دقيقة على الأكثر (كاش الزوار لتوفير الحصة).</li>
         <li>«آخر الأرقام المستخدمة» تعيد بثاً سابقاً بضغطة، وتحتفظ بآخر 8 أرقام فقط (يُحذف الأقدم تلقائياً). «حذف» يزيل رقماً منتهياً من القائمة بعد «حفظ»، ولا يظهر بجانب الرقم الحالي. القائمة لا تؤثر في الموقع.</li>
         <li><b>مراقبة المحطات:</b> اللوحة المركزية تفحص البث الرئيسي وقنوات الشريط كل 3 ساعات تقريباً، وتعرض النتيجة في صندوق أعلى هذا التبويب: الأحمر يعني أن البث انقطع (انتهى، أو حُذف، أو مُنع عرضه، أو لا بث في القناة)، فضع رقماً جديداً واحفظ. النقطة بجانب كل قناة في الشريط تعرض حالتها. للفحص فوراً: مركز الحصص في اللوحة المركزية ← «مراقبة البث» ← «فحص الآن».</li>
-        <li><b>قنوات الشريط:</b> تظهر تحت الشاشة في صفحة البث ويختار منها الزائر. الصق رابط بث القناة (أو معرّفها <code>UC...</code>) واسمها، ثم «إضافة» ثم «حفظ». القناة بمعرّف <code>UC</code> تحتاج رابط شعار، وإلا ظهر الحرف الأول من اسمها. جرّب كل قناة بعد إضافتها، فبعض القنوات تمنع عرض بثها خارج يوتيوب.</li>
+        <li><b>قنوات الشريط:</b> تظهر تحت الشاشة في صفحة البث ويختار منها الزائر. الصق رابط بث القناة (أو معرّفها <code>UC...</code>) واسمها، ثم «إضافة» ثم «حفظ». القناة بمعرّف <code>UC</code> تحتاج رابط شعار، وإلا ظهر الحرف الأول من اسمها. جرّب كل قناة بعد إضافتها، فبعض القنوات تمنع عرض بثها خارج يوتيوب. «تعديل» يملأ الحقول بالقناة لتغيير رابطها أو اسمها أو شعارها دون حذفها، ثم «حفظ التعديل» ثم «حفظ».</li>
       </ol>
     </details>
 
@@ -180,6 +181,7 @@ const MARKUP = `
           <input class="input" id="stChLogo" type="url" dir="ltr" placeholder="https://...">
         </label>
         <button class="btn" id="stChAdd" type="button">إضافة</button>
+        <button class="btn" id="stChCancel" type="button" hidden>إلغاء</button>
       </div>
       <div class="st-recent" id="stChList"></div>
 
@@ -219,6 +221,7 @@ export default {
     let loadedAt = 0;
     let dirty = false;      // تعديلات في النموذج لم تُحفظ (لا يُستبدل النموذج عند التحديث)
     let channels = [];      // قنوات الشريط كما في النموذج (تُحفظ مع «حفظ»)
+    let chEdit = -1;        // رقم القناة قيد التعديل (-1 = إضافة جديدة)
     let recentList = [];    // «آخر الأرقام» كما في النموذج (الحذف يُعتمد مع «حفظ»)
 
     const radio = (name) => (root.querySelector('input[name="' + name + '"]:checked') || {}).value;
@@ -250,6 +253,7 @@ export default {
       $('stTitle').value = data.title || '';
       $('stPoster').value = data.poster || '';
       channels = Array.isArray(data.channels) ? data.channels.slice(0, CH_MAX) : [];
+      endEdit();
       recentList = Array.isArray(data.recent) ? data.recent.slice() : [];
       renderChannels();
       syncMode();
@@ -287,12 +291,13 @@ export default {
         const img = c.logo || (c.kind === 'video' ? thumb(c.id) : '');
         const hs = healthOf('strip', c.id);   // حالة القناة في آخر فحص (إن فُحصت)
         const dot = hs ? '<span class="st-dot ' + swTone(hs.state) + '" title="' + esc(SW_LABEL[hs.state] || hs.state) + '"></span>' : '';
-        return '<div class="card st-rec">' +
+        return '<div class="card st-rec"' + (i === chEdit ? ' style="outline:2px solid #77bd1d"' : '') + '>' +
           (img ? '<img src="' + esc(img) + '" alt="" loading="lazy">' : '<img alt="">') +
           '<div class="st-meta"><div>' + dot + esc(c.name) + '</div>' +
           '<div class="st-sub">' + (c.kind === 'channel' ? 'قناة' : 'فيديو') + ' · <code>' + esc(c.id) + '</code></div></div>' +
           '<button class="btn btn-sm" type="button" data-ch="up" data-i="' + i + '" aria-label="تقديم"' + (i === 0 ? ' disabled' : '') + '>↑</button>' +
           '<button class="btn btn-sm" type="button" data-ch="down" data-i="' + i + '" aria-label="تأخير"' + (i === channels.length - 1 ? ' disabled' : '') + '>↓</button>' +
+          '<button class="btn btn-sm" type="button" data-ch="edit" data-i="' + i + '">تعديل</button>' +
           '<button class="btn btn-sm" type="button" data-ch="del" data-i="' + i + '">حذف</button>' +
         '</div>';
       }).join('') : '<div class="card empty">لا قنوات في الشريط بعد (لا يظهر الشريط في الموقع).</div>';
@@ -308,14 +313,40 @@ export default {
       if (!name) { msg.textContent = 'اكتب اسم القناة.'; return; }
       if (!vid && !cid) { msg.textContent = 'لم أجد رقم فيديو ولا معرّف قناة (UC...) في الرابط.'; return; }
       if (logo && !isHttps(logo)) { msg.textContent = 'رابط الشعار يجب أن يبدأ بـ https://'; return; }
-      if (channels.length >= CH_MAX) { msg.textContent = 'الحد الأقصى ' + CH_MAX + ' قنوات.'; return; }
+      if (chEdit < 0 && channels.length >= CH_MAX) { msg.textContent = 'الحد الأقصى ' + CH_MAX + ' قنوات.'; return; }
       const id = vid || cid;
-      if (channels.some((c) => c.id === id)) { msg.textContent = 'هذه القناة موجودة في الشريط.'; return; }
-      channels.push({ name, kind: vid ? 'video' : 'channel', id, logo });
-      ['stChName', 'stChId', 'stChLogo'].forEach((x) => { $(x).value = ''; });
+      if (channels.some((c, k) => c.id === id && k !== chEdit)) { msg.textContent = 'هذه القناة موجودة في الشريط.'; return; }
+      const item = { name, kind: vid ? 'video' : 'channel', id, logo };
+      const edited = chEdit >= 0;
+      if (edited) channels[chEdit] = item;   // تبديل في المكان نفسه (يبقى الترتيب)
+      else channels.push(item);
+      endEdit();
       dirty = true;
       renderChannels();
-      msg.textContent = 'أُضيفت. اضغط «حفظ» لاعتمادها.';
+      msg.textContent = edited ? 'عُدّلت. اضغط «حفظ» لاعتماد التعديل.' : 'أُضيفت. اضغط «حفظ» لاعتمادها.';
+    }
+
+    // بدء تعديل قناة: نملأ الحقول بها ويصير الزر «حفظ التعديل»
+    function startEdit(i) {
+      const c = channels[i];
+      if (!c) return;
+      chEdit = i;
+      $('stChName').value = c.name || '';
+      $('stChId').value = c.kind === 'video' ? 'https://www.youtube.com/watch?v=' + c.id : c.id;
+      $('stChLogo').value = c.logo || '';
+      $('stChAdd').textContent = 'حفظ التعديل';
+      $('stChCancel').hidden = false;
+      $('stMsg').textContent = 'عدّل الحقول ثم اضغط «حفظ التعديل».';
+      $('stChName').scrollIntoView({ behavior: 'smooth', block: 'center' });
+      $('stChName').focus({ preventScroll: true });
+    }
+
+    // إنهاء وضع التعديل وإفراغ الحقول
+    function endEdit() {
+      chEdit = -1;
+      ['stChName', 'stChId', 'stChLogo'].forEach((x) => { if ($(x)) $(x).value = ''; });
+      if ($('stChAdd')) $('stChAdd').textContent = 'إضافة';
+      if ($('stChCancel')) $('stChCancel').hidden = true;
     }
 
     /* ============ مراقبة المحطات (live_stream/health) ============ */
@@ -434,10 +465,13 @@ export default {
     ['stTitle', 'stPoster'].forEach((id) => $(id).addEventListener('input', () => { dirty = true; }));
     $('stSave').addEventListener('click', save);
     $('stChAdd').addEventListener('click', addChannel);
+    $('stChCancel').addEventListener('click', () => { endEdit(); renderChannels(); $('stMsg').textContent = ''; });
     $('stChList').addEventListener('click', (e) => {
       const b = e.target.closest('button[data-ch]');
       if (!b) return;
       const i = +b.dataset.i, act = b.dataset.ch;
+      if (act === 'edit') { startEdit(i); renderChannels(); return; }
+      if (chEdit >= 0) endEdit();   // أي حذف أو نقل يُنهي التعديل كي لا يتبدّل رقم القناة
       if (act === 'del') channels.splice(i, 1);
       else {
         const j = act === 'up' ? i - 1 : i + 1;
