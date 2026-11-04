@@ -173,12 +173,14 @@ document.addEventListener("DOMContentLoaded", function() {
     let currentFontSize = parseInt(localStorage.getItem('s24_font_size')) || 19;
     
     function applyFontSize(size) {
+                // مكوّنات الموسوعة (s24-enc-* وبطاقة الختام والإحالات) مستثناة: مقاساتها ثابتة في encyclopedia.css
+        // (تظهر في المقالات العادية مثل ملخصات الكتب، فلا يكبّرها مقاس القارئ)
         dynamicStyle.innerHTML = `
             .item-page .post-body, 
             .item-page .post-body p, 
-            .item-page .post-body span:not(.sy-article-tools *), 
-            .item-page .post-body div:not(.sy-article-tools):not(.sy-article-tools *), 
-            .item-page .post-body a:not(.sy-article-tools *), 
+            .item-page .post-body span:not(.sy-article-tools *):not([class*="s24-enc"]), 
+            .item-page .post-body div:not(.sy-article-tools):not(.sy-article-tools *):not([class*="s24-enc"]):not(.s24-ending), 
+            .item-page .post-body a:not(.sy-article-tools *):not(.s24-ref *):not(.s24-ending *), 
             .item-page .post-body li { 
                 font-size: ${size}px !important; 
                 line-height: 1.9 !important; 
