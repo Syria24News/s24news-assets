@@ -399,7 +399,10 @@ export default {
           if (!m || e.target.disabled) return;
           if (m === 'up' && i > 0) [editing.opts[i - 1], editing.opts[i]] = [editing.opts[i], editing.opts[i - 1]];
           if (m === 'down' && !last) [editing.opts[i + 1], editing.opts[i]] = [editing.opts[i], editing.opts[i + 1]];
-          if (m === 'del') editing.opts.splice(i, 1);
+          if (m === 'del') {   // تأكيد قبل كل حذف (4 نوفمبر 2026، بطلب حسان)
+            if (!confirm('حذف الخيار ' + (i + 1) + (o.text ? ' «' + o.text + '»' : '') + '؟')) return;
+            editing.opts.splice(i, 1);
+          }
           renderOptEditor(); renderPreview();
         });
         box.appendChild(row);
