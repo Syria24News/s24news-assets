@@ -8,6 +8,13 @@
    ══════════════════════════════════════════════════════════════ */
 
 document.addEventListener('DOMContentLoaded',function(){
+  // تحميل خطوط المصحف فقط إن وُجدت آيات في الصفحة
+  if(document.querySelector('.s24-ayah,.s24-quran-text,.s24-ayah-block,.s24-quran-basmala')){
+    var qf=document.createElement('link');
+    qf.rel='stylesheet';
+    qf.href='https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Scheherazade+New:wght@400;500&family=Noto+Naskh+Arabic:wght@400;500&family=Lateef&display=swap';
+    document.head.appendChild(qf);
+  }
   function calcLiveAge(birthStr){
     var p=birthStr.split('-').map(Number);
     var birth=new Date(p[0],p[1]-1,p[2]);
