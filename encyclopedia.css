@@ -4,8 +4,7 @@
    <link href="https://syria24news.github.io/s24news-assets/encyclopedia.css" rel="stylesheet"/>
    ══════════════════════════════════════════════════════════════ */
 
-@import url('https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Scheherazade+New:wght@400;500&family=Noto+Naskh+Arabic:wght@400;500&family=Lateef&display=swap');
-
+/* خطوط المصحف تُحمَّل عند الحاجة فقط من encyclopedia.js (لا @import هنا — كان يحظر العرض في كل الصفحات) */
 /* ═══ ١. صندوق المعلومات — الاسم القياسي + الأسماء الموروثة ═══ */
 .s24-infobox,
 .s24-bio-infobox,.s24-place-infobox,.s24-enc-infobox{
