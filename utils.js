@@ -122,6 +122,8 @@ function getSkeletonHTML(type) {
         html += '  <div class="sy-skeleton sy-sk-title" style="width:60%"></div>'; // عنوان
         html += '  <div class="sy-sk-sub-grid">';
         html += '    <div class="sy-skeleton sy-sk-sub-item"></div>'; // مربع صغير يمين
+        html += '    <div class="sy-skeleton sy-sk-sub-item"></div>';
+        html += '    <div class="sy-skeleton sy-sk-sub-item"></div>';
         html += '    <div class="sy-skeleton sy-sk-sub-item"></div>'; // مربع صغير يسار
         html += '  </div>';
         html += '</div>';
