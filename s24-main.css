@@ -3488,9 +3488,14 @@ body.most-read-page .main-layout {
 
 /* 4. تخصيص الشبكة (Grid Skeleton) */
 .sy-sk-grid-wrapper { display: flex; flex-direction: column; gap: 15px; width: 100%; }
-.sy-sk-main-img { height: 300px; }
-.sy-sk-sub-grid { display: flex; gap: 15px; }
-.sy-sk-sub-item { flex: 1; height: 150px; }
+/* الهيكل يطابق الشبكة الحقيقية: صورة 16:9 + شبكة 2×2 */
+.sy-sk-main-img { height: auto; aspect-ratio: 16 / 9; border-radius: 8px; }
+.sy-sk-sub-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
+.sy-sk-sub-item { height: auto; aspect-ratio: 16 / 9; border-radius: 8px; margin-bottom: 65px; /* مكان العنوان */ }
+/* حجز ارتفاع الشبكة على الجوال قبل وصول أي JS */
+@media (max-width: 768px) {
+  #special-news-grid { min-height: calc(1.125 * (100vw - 30px) + 270px); }
+}
 
 /* 5. تخصيص القائمة (List Skeleton - للأكثر قراءة) */
 .rt-sk-list-item {
