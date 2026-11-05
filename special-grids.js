@@ -22,6 +22,7 @@ document.addEventListener("DOMContentLoaded", function() {
             // شبكة "مختارات" في الرئيسية
             containerId: 'special-news-grid',
             cacheKey: 's24_special_grid_v2',
+            eager: true, // فوق الطيّة: لا تأجيل — هي عنصر LCP
             // اختيارك من لوحة التحكم (قسم «الشبكة المميزة»)؛ يُقرأ من GitHub Pages مجاناً
             pinsUrl: 'https://syria24news.github.io/s24news-assets/home-grid.json',
             titleElId: 'grid-label-title',
@@ -77,7 +78,7 @@ document.addEventListener("DOMContentLoaded", function() {
             }
         }
 
-        if ('IntersectionObserver' in window) {
+        if (!cfg.eager && 'IntersectionObserver' in window) {
             const gridObserver = new IntersectionObserver(function(entries) {
                 entries.forEach(function(entry) {
                     if (entry.isIntersecting) {
