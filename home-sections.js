@@ -91,7 +91,7 @@ document.addEventListener("DOMContentLoaded", function() {
         const mainPost = entries[0];
         const mainTitle = mainPost.title.$t;
         const mainLink = getLink(mainPost.link);
-        let mainImg = getImgUrl(mainPost, '/w500-h280-c/'); // حجم محسن
+        let mainImg = getImgUrl(mainPost, '/w500-h280-c-rw/'); // حجم محسن
 
         html += `
             <a href="${mainLink}" class="theme-main-post" aria-label="${mainTitle}">

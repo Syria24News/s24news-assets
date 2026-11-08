@@ -13,7 +13,11 @@ document.addEventListener("DOMContentLoaded", function() {
     // 1️⃣ استخدام الكاش العام للقالب بدلاً من إعادة اختراع العجلة
     var s24CachedGlossarySummary = window.S24Cache ? window.S24Cache.get(S24_GLOSSARY_SUMMARY_CACHE_KEY, S24_GLOSSARY_CACHE_TTL) : null;
 
-    var s24GlossaryUrlsReady = (s24CachedGlossarySummary ? Promise.resolve(s24CachedGlossarySummary) :
+    // تُجلب عند أول ضغط على «تحميل المزيد» فقط، لا في كل زيارة (8 نوفمبر 2026): الخلاصة نحو 81KB
+    var s24GlossaryUrlsPromise = null;
+    function s24GlossaryUrlsReady() {
+      if (s24GlossaryUrlsPromise) return s24GlossaryUrlsPromise;
+      s24GlossaryUrlsPromise = (s24CachedGlossarySummary ? Promise.resolve(s24CachedGlossarySummary) :
         fetch('/feeds/posts/summary/-/' + encodeURIComponent('الموسوعة') + '?alt=json&max-results=500')
             .then(function(r){ return r.json(); })
             .then(function(data){
@@ -28,7 +32,9 @@ document.addEventListener("DOMContentLoaded", function() {
                 if (l.rel === 'alternate') s24GlossaryUrls.add(l.href.split('?')[0]);
             });
         });
-    });
+      });
+      return s24GlossaryUrlsPromise;
+    }
 
     var activeNextLink = null;
     // تبسيط اختيار الرابط
@@ -94,7 +100,7 @@ document.addEventListener("DOMContentLoaded", function() {
         }
 
         function fetchOneBatch() {
-            return s24GlossaryUrlsReady.then(function(){
+            return s24GlossaryUrlsReady().then(function(){
                 return fetch(activeNextLink);
             })
             .then(function(response){ return response.text(); })

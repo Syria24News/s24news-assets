@@ -2,6 +2,11 @@
    S24News — محرّك الشبكات المميزة (الرئيسية + صفحات الأقسام)
    ملف خارجي — لا يُعدَّل داخل قالب بلوجر
 
+   الإصدار 2.1 — 8 نوفمبر 2026: سرعة LCP على الموبايل
+     - بطاقات الشبكة كلها بلا loading=lazy (عنصر LCP على الموبايل قد يكون أي بطاقة: الصور بقياس واحد)،
+       وfetchpriority=high لأول بطاقتين.
+     - الصورة الكبيرة بـsrcset: الموبايل يجلب 348 (أو 720 على الشاشات الكثيفة) والكمبيوتر 720.
+     - كل الأحجام بلاحقة -rw (WebP مضغوط من خوادم بلوجر).
    الإصدار 2.0 — 26 أكتوبر 2026: التحكم اليدوي بشبكة الرئيسية من لوحة التحكم المركزية
      - قسم «الشبكة المميزة» في اللوحة (ملف HomeGrid.gs) يكتب اختيارك في home-grid.json
        في هذا المستودع، والرئيسية تقرؤه من GitHub Pages: صفر قراءات Firestore وصفر Apps Script.
@@ -168,18 +173,25 @@ document.addEventListener("DOMContentLoaded", function() {
             items.forEach((item, i) => {
                 const title = esc(item.title);
                 const link = esc(item.link);
-                const imgRes = (i === 0) ? '/w720-h405-c/' : '/w348-h196-c/';
+                const imgRes = (i === 0) ? '/w720-h405-c-rw/' : '/w348-h196-c-rw/';
                 const imgSize = (i === 0) ? 'width="720" height="405"' : 'width="348" height="196"';
-                const loadingAttr = (i === 0) ? 'fetchpriority="high"' : 'loading="lazy"';
+                // البطاقات كلها فوق الطيّة: لا lazy، والأولوية لأول بطاقتين
+                const loadingAttr = (i < 2) ? 'fetchpriority="high"' : '';
+                let srcsetAttr = '';
 
                 let img = 'data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"%3E%3Crect width="100" height="100" fill="%23e0e0e0"/%3E%3C/svg%3E';
                 if (item.img) {
                     img = item.img.replace(/\/s[0-9]+.*?\//, imgRes);
+                    // الصورة الكبيرة تُعرض على الموبايل بعرض مصغّر: يختار المتصفح الحجم حسب كثافة الشاشة
+                    if (i === 0 && img !== item.img) {
+                        const small = item.img.replace(/\/s[0-9]+.*?\//, '/w348-h196-c-rw/');
+                        srcsetAttr = `srcset="${small} 348w, ${img} 720w" sizes="(max-width: 768px) 196px, 720px"`;
+                    }
                 }
 
                 const itemHTML = `
                     <div class="grid-item ${i === 0 ? 'main-story' : 'small-story'}" onclick="window.location.href='${link}'" role="link" tabindex="0">
-                        <img src="${img}" alt="${title}" ${imgSize} ${loadingAttr}>
+                        <img src="${img}" ${srcsetAttr} alt="${title}" ${imgSize} ${loadingAttr}>
                         <div class="grid-content">
                             <h3 class="grid-title">${title}</h3>
                         </div>

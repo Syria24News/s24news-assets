@@ -81,6 +81,7 @@ document.addEventListener("DOMContentLoaded", function() {
     });
 
     const searchBtn = document.getElementById('mobile-search-btn');
+    if (searchBtn) searchBtn.setAttribute('aria-label', 'بحث'); // اسم الزر لقارئات الشاشة
     const overlay = document.getElementById('mobile-search-overlay');
     const searchInput = overlay ? overlay.querySelector('.search-form__input') : null; // 🛡️ تحصين: تفادي خطأ Uncaught TypeError لو غاب العنصر مستقبلاً
 

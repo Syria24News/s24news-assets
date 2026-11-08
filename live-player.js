@@ -2,6 +2,7 @@
    S24News — مشغّل البث المباشر (playFast / loadVideoLibs)
    playFast تُستدعى من onclick داخل HTML القالب — يجب أن تبقى دالة عامة
 
+   الإصدار 2.13 — 8 نوفمبر 2026: مكتبات VideoJS في الرئيسية تُحمَّل عند الضغط على المشغّل الجانبي فقط
    الإصدار 2.11 — 4 نوفمبر 2026: منسّق المشغّلات — مشغّل واحد يعمل في الاتجاهين (المرافق والجانبي)، من أي زر؛
                 والمرافق على البث الرئيسي نفسه يُطوى حين يبدأ الجانبي؛ لا عودة تلقائية (بقرار حسان)
    الإصدار 2.7 — 2 نوفمبر 2026: المشغّل المرافق يتبع القارئ بين الصفحات (الكمبيوتر)، و?ch= لفتح صفحة البث على قناة
@@ -1187,13 +1188,10 @@ document.addEventListener("DOMContentLoaded", function() {
     }
     // المشغّل المصغّر في الرئيسية (الموبايل)
     initMiniLive();
-    // المشغّل الجانبي في الرئيسية: الغلاف المبدئي وتحميل المكتبات مسبقاً
+    // المشغّل الجانبي في الرئيسية: الغلاف المبدئي؛ المكتبات (نحو 170KB) عند الضغط فقط (playSidebarFast)
     if (document.querySelector('.live-tv-widget')) {
         var sp = document.getElementById('fake-poster-img');
         s24SetPoster(sp);
-        // المكتبات (نحو 170KB) بعد اكتمال الصفحة لا أثناءها (8 نوفمبر 2026)
-        if (document.readyState === 'complete') loadVideoLibs();
-        else window.addEventListener('load', loadVideoLibs, { once: true });
     }
 });
 
@@ -1391,7 +1389,7 @@ function playSidebarFast() {
     if (sidebarPlayerActive) return;
     if (!S24Live.state.onAir) return;   // البث متوقف من اللوحة
     sidebarPlayerActive = true;
-    loadVideoLibs(); // إن ضغط القارئ قبل اكتمال الصفحة (الدالة لا تكرر التحميل إن سبق)
+    loadVideoLibs(); // التحميل يبدأ هنا عند الضغط (الدالة لا تكرر التحميل إن سبق)
     sidebarRegister();
     S24Live.claim('sidebar');   // مشغّل واحد يعمل (منسّق المشغّلات 2.11)
     var oldError = document.getElementById('sidebar-load-error');

@@ -200,7 +200,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
                     let img = FALLBACK_IMG;
                     if (entry.media$thumbnail) {
-                        img = entry.media$thumbnail.url.replace(/\/s[0-9]+.*?\//, '/w400-h260-c/');
+                        img = entry.media$thumbnail.url.replace(/\/s[0-9]+.*?\//, '/w400-h260-c-rw/');
                     }
 
                     if (renderedCount === 0) {

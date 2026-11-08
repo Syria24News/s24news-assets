@@ -12,6 +12,9 @@ document.addEventListener("DOMContentLoaded", function() {
     const dotsContainer = document.getElementById('rt-dots-container');
     const btnLeft = document.getElementById('rt-btn-left'); 
     const btnRight = document.getElementById('rt-btn-right');
+    // أسماء الأزرار لقارئات الشاشة (سهولة الوصول)
+    if (btnLeft) btnLeft.setAttribute('aria-label', 'الفيديو التالي');
+    if (btnRight) btnRight.setAttribute('aria-label', 'الفيديو السابق');
     
     let cards = []; 
     let totalSlides = 0;
@@ -37,6 +40,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 displayHTML += createCardHTML(entry, 'original');
                 let dot = document.createElement('button');
                 dot.className = index === 0 ? 'play-slider__dot-button active' : 'play-slider__dot-button';
+                dot.setAttribute('aria-label', 'الانتقال إلى الفيديو ' + (index + 1));
                 dot.onclick = () => {
                     if(isTransitioning) return;
                     currentIndex = index + CLONES_COUNT;
@@ -61,7 +65,7 @@ document.addEventListener("DOMContentLoaded", function() {
         let shortsLink = postIdMatch ? '/p/shorts.html?id=' + postIdMatch[1] : link;
         let img = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%23e0e0e0'/%3E%3C/svg%3E";
         if (entry.media$thumbnail) {
-            img = entry.media$thumbnail.url.replace(/\/s[0-9]+.*?\//, '/w400-h225-c/');
+            img = entry.media$thumbnail.url.replace(/\/s[0-9]+.*?\//, '/w400-h225-c-rw/');
         }
         return `
             <a href="${shortsLink}" class="rt-video-card ${type}">
