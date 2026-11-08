@@ -1281,6 +1281,15 @@ body#layout #grid-label-config { display: block; border: 2px dashed orange; back
 }
 .sy-sidebar-icon svg { width: 22px; height: 22px; fill: var(--text-main); }
 
+/* قوائم فرعية في القائمة اليمنى (مثل «برامج القناة») — يبنيها ui-core.js من أداة LinkList1 */
+.sy-side-group.is-open > a { background-color: var(--color-main-nav-toggler-active-bg); }
+.sy-side-chevron { display: flex; margin-right: 12px; }
+.sy-side-chevron svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; }
+.sy-side-group.is-open > a .sy-side-chevron svg { transform: rotate(180deg); }
+.sy-side-sub { display: none; padding: 5px 36px 0 0 !important; }
+.sy-side-group.is-open > .sy-side-sub { display: block; }
+.sy-side-soon { padding: 10px 12px; font-size: 14px; color: var(--text-sec); }
+
 .sy-color-box {
     width: 22px; height: 22px;
     border-radius: 4px;

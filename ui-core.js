@@ -151,13 +151,60 @@ document.addEventListener("DOMContentLoaded", function() {
             '<svg viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"></path><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"></path></svg>'
 
         ];
-        links.forEach(function(link, index) {
+        /* ── قوائم فرعية في «القائمة اليمنى (أيقونات)» (أداة LinkList1 في «التنسيق») ──
+           القاعدة نفسها في «معلومات عامة» (misc2.js):
+           • الرابط الذي عنوانه URL هو «#» يصبح رأس قائمة تُفتح وتُغلق (مثل «برامج القناة»)
+           • الروابط التي تليه ويبدأ اسمها بشرطة «-» تدخل تحته وتُحذف الشرطة من العرض
+           • الرأس بلا روابط تحته يعرض «قريباً»
+           الأيقونات أدناه تُوزَّع بالترتيب على الروابط الرئيسية فقط، فالروابط الفرعية لا تزيحها. */
+        var childMark = /^\s*[-_\u2013\u2014\u0640]|[-_\u2013\u2014\u0640]\s*$/;
+        var childMarks = /^\s*[-_\u2013\u2014\u0640]+\s*|\s*[-_\u2013\u2014\u0640]+\s*$/g;
+        var mainLinks = [], sideGroups = [], sideGroup = null;
+        links.forEach(function(link) {
+            var href = link.getAttribute('href') || '';
+            if (href === '#' || /\/#$/.test(href)) {
+                sideGroup = { link: link, sub: document.createElement('ul') };
+                sideGroups.push(sideGroup);
+                mainLinks.push(link);
+            } else if (sideGroup && childMark.test(link.textContent)) {
+                link.textContent = link.textContent.replace(childMarks, '');
+                sideGroup.sub.appendChild(link.parentNode);
+            } else {
+                sideGroup = null;
+                mainLinks.push(link);
+            }
+        });
+
+        mainLinks.forEach(function(link, index) {
             if (icons[index]) {
                 var iconSpan = document.createElement('span');
                 iconSpan.className = 'sy-sidebar-icon';
                 iconSpan.innerHTML = icons[index];
                 link.insertBefore(iconSpan, link.firstChild);
             }
+        });
+
+        sideGroups.forEach(function(g) {
+            if (!g.sub.children.length) {
+                var soon = document.createElement('li');
+                soon.className = 'sy-side-soon';
+                soon.textContent = 'قريباً';
+                g.sub.appendChild(soon);
+            }
+            g.sub.className = 'sy-side-sub';
+            var li = g.link.parentNode;
+            li.classList.add('sy-side-group');
+            li.appendChild(g.sub);
+            g.link.setAttribute('role', 'button');
+            g.link.setAttribute('aria-expanded', 'false');
+            var chevron = document.createElement('span');
+            chevron.className = 'sy-side-chevron';
+            chevron.innerHTML = '<svg viewBox="0 0 24 24" aria-hidden="true"><polyline points="6 9 12 15 18 9"/></svg>';
+            g.link.appendChild(chevron);
+            g.link.addEventListener('click', function(e) {
+                e.preventDefault();
+                g.link.setAttribute('aria-expanded', li.classList.toggle('is-open') ? 'true' : 'false');
+            });
         });
     }
 
