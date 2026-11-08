@@ -1288,7 +1288,7 @@ body#layout #grid-label-config { display: block; border: 2px dashed orange; back
 .sy-side-group.is-open > a .sy-side-chevron svg { transform: rotate(180deg); }
 .sy-side-sub { display: none; padding: 5px 36px 0 0 !important; }
 .sy-side-group.is-open > .sy-side-sub { display: block; }
-.main-layout__column .sy-side-sub a { font-size: 14px; font-weight: 500 !important; color: var(--text-sec); }
+.main-layout__column .sy-side-sub a { font-size: 14px !important; font-weight: 500 !important; color: var(--text-sec); }
 .main-layout__column .sy-side-sub a:hover { color: var(--text-main); }
 .sy-side-soon { padding: 10px 12px; font-size: 14px; color: var(--text-sec); }
 
