@@ -39,6 +39,22 @@ document.addEventListener("DOMContentLoaded", function() {
     moveSidebarForMobile();
     window.addEventListener('resize', moveSidebarForMobile);
 
+    // زر اللغة: أعلى القائمة الجانبية على الموبايل والتابلت (كما في RT عربي)، وفي الهيدر على الكمبيوتر
+    function moveLangSelector() {
+        const lang = document.getElementById('langSelector');
+        const side = document.getElementById('main-right-sidebar');
+        const leftArea = document.querySelector('.left-area');
+        if (!lang || !side || !leftArea) return;
+        if (window.innerWidth <= 1023) {
+            if (lang.parentNode !== side) side.insertBefore(lang, side.firstChild);
+        } else if (lang.parentNode !== leftArea) {
+            leftArea.insertBefore(lang, document.getElementById('themeToggle'));
+        }
+    }
+
+    moveLangSelector();
+    window.addEventListener('resize', moveLangSelector);
+
     // 2. تحويل نصوص القائمة الجديدة إلى أيقونات
     const socialIconsMap = {
         'فيسبوك': '<svg viewBox="0 0 24 24"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg>',

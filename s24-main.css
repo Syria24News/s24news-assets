@@ -4853,7 +4853,7 @@ body {  padding-top: 80px; overflow-x: clip; } /* clip لا hidden: hidden يج�
 .left-area { width: auto; order: 2; display: flex; align-items: center; margin-inline-start: auto; }
 
 /* --- إخفاء العناصر غير الضرورية --- */
-.top-date-bar, .desktop-search-container, .language-selector, .sidebar-left, .main-layout__column, #force-left-sidebar, #HTML505, .live-tv-widget { display: none !important; }
+.top-date-bar, .desktop-search-container, .left-area .language-selector, .sidebar-left, .main-layout__column, #force-left-sidebar, #HTML505, .live-tv-widget { display: none !important; }
 
 /* --- عناصر الموبايل الظاهرة --- */
 .menu-toggle, #sidebar-toggle-btn { display: block; font-size: 26px; cursor: pointer; margin-inline-start: 15px !important; }
@@ -4865,6 +4865,7 @@ body {  padding-top: 80px; overflow-x: clip; } /* clip لا hidden: hidden يج�
 /* --- القوائم الجانبية (Logic) --- */
 #main-right-sidebar { display: none; position: fixed; top: 80px; bottom: 0; left: 0; right: 0; width: 100%; height: auto; background: var(--bg-card); z-index: 99999; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 20px 20px 100px 20px; flex-direction: column; border-top: 1px solid var(--border-color); }
 body.sidebar-toggled #main-right-sidebar { display: flex !important; }
+#main-right-sidebar > .language-selector { align-self: flex-start; flex-shrink: 0; margin-bottom: 20px; } /* زر اللغة أعلى القائمة الجانبية (ينقله mobile-nav.js) */
 body.sidebar-toggled { overflow: hidden !important; }
 body.sidebar-toggled::after { display: none; }
 
