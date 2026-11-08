@@ -58,6 +58,7 @@ const THEME_COLORS = {
   '--sy-health': '#2ecc71', '--sy-social': '#caa6c6', '--sy-culture': '#8d6e63', '--sy-history': '#8e5431',
   '--sy-orange': '#e67e22',
   // فروع الرياضة (8 نوفمبر 2026) — متغيرات cat.sportXxx في «تخصيص» بلوغر
+  '--sy-sport-bikes': '#0F766E', '--sy-sport-chess': '#7C3AED',
   '--sy-sport-syria': '#AD1457', '--sy-sport-football': '#004D40', '--sy-sport-team': '#0277BD', '--sy-sport-tennis': '#9E9D24',
   '--sy-sport-motor': '#212121', '--sy-sport-combat': '#4E342E', '--sy-sport-solo': '#00ACC1', '--sy-sport-esports': '#6200EA',
   '--sy-sport-ucl': '#283593', '--sy-sport-uel': '#FF6F00', '--sy-sport-esp': '#FF1744', '--sy-sport-eng': '#311B92',
