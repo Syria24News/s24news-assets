@@ -3496,6 +3496,13 @@ body.most-read-page .main-layout {
 @media (max-width: 768px) {
   #special-news-grid { min-height: calc(1.125 * (100vw - 30px) + 270px); }
 }
+/* حجز ارتفاع الشبكة على الكمبيوتر (8 نوفمبر 2026) — يمنع دفع ما تحتها عند وصول الأخبار
+   الارتفاع = صورة رئيسية 16:9 + شبكة 2×2 = 1.125 × عرض الشبكة + العناوين والفواصل
+   الثابت 150 أقل قليلاً من المقاس الفعلي (170) حتى لا يبقى فراغ إن قصرت العناوين */
+@media (min-width: 1024px) {
+  .special-js-grid-wrapper:has(#special-news-grid) { container-type: inline-size; }
+  #special-news-grid { min-height: calc(1.125 * 100cqi + 150px); }
+}
 
 /* 5. تخصيص القائمة (List Skeleton - للأكثر قراءة) */
 .rt-sk-list-item {
