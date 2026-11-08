@@ -49,14 +49,25 @@ function loadDefaults() {
 let liveColors = {}, liveAt = 0;
 const THEME_COLORS = {
   '--sy-green': '#77bd1d', '--color-red': '#e71414', '--sy-red': '#e71414',
-  '--sy-Econ': '#e01010', '--sy-sport': '#ff8c00', '--sy-ArabNews': '#ebdf09', '--sy-INT': '#0000ff',
+  '--sy-Econ': '#e01010', '--sy-sport': '#FF5A36', '--sy-ArabNews': '#ebdf09', '--sy-INT': '#0000ff',
   '--sy-purple': '#d53ef7', '--sy-light-green': '#0bfa02', '--sy-dark-green': '#1b6950',
   '--sy-health-light': '#34eb7d', '--sy-tech': '#c2fff6', '--sy-docs': '#2c3e50', '--sy-gold': '#f1c40f',
   '--sy-docfilms': '#5E35B1', '--sy-syworld': '#8E1B2E',
   '--sy-Arena': '#556B2F', '--sy-syria': '#C0392B', '--sy-Reports': '#800080',
   '--sy-Miscellaneous': '#ff9800', '--sy-weather': '#3498db', '--sy-education': '#7986cb',
   '--sy-health': '#2ecc71', '--sy-social': '#caa6c6', '--sy-culture': '#8d6e63', '--sy-history': '#8e5431',
-  '--sy-spo-sco': '#a3e08e', '--sy-orange': '#e67e22',
+  '--sy-orange': '#e67e22',
+  // فروع الرياضة (8 نوفمبر 2026) — متغيرات cat.sportXxx في «تخصيص» بلوغر
+  '--sy-sport-syria': '#AD1457', '--sy-sport-football': '#004D40', '--sy-sport-team': '#0277BD', '--sy-sport-tennis': '#9E9D24',
+  '--sy-sport-motor': '#212121', '--sy-sport-combat': '#4E342E', '--sy-sport-solo': '#00ACC1', '--sy-sport-esports': '#6200EA',
+  '--sy-sport-ucl': '#283593', '--sy-sport-uel': '#FF6F00', '--sy-sport-esp': '#FF1744', '--sy-sport-eng': '#311B92',
+  '--sy-sport-ita': '#26C6DA', '--sy-sport-ger': '#000000', '--sy-sport-fra': '#1565C0', '--sy-sport-ksa': '#33691E',
+  '--sy-sport-basket': '#f59e0b', '--sy-sport-volley': '#06b6d4', '--sy-sport-handball': '#8b5cf6', '--sy-sport-baseball': '#ef4444',
+  '--sy-sport-f1': '#dc2626', '--sy-sport-motogp': '#ea580c', '--sy-sport-cars': '#3b82f6', '--sy-sport-martial': '#7c2d12',
+  '--sy-sport-boxing': '#dc2626', '--sy-sport-wrestling': '#92400e', '--sy-sport-ufc': '#1e1b4b', '--sy-sport-judo': '#0369a1',
+  '--sy-sport-tabletennis': '#dc2626', '--sy-sport-badminton': '#f59e0b', '--sy-sport-squash': '#0284c7', '--sy-sport-athletics': '#f59e0b',
+  '--sy-sport-swim': '#0ea5e9', '--sy-sport-gym': '#8b5cf6', '--sy-sport-bodybuilding': '#ef4444', '--sy-sport-videogames': '#dc2626',
+  '--sy-sport-chessmasters': '#3b82f6',
   // فروع الاقتصاد (26 أكتوبر 2026) — متغيرات cat.econXxx في «تخصيص» بلوغر
   '--sy-econ-syria': '#00838F', '--sy-econ-markets': '#1E8449', '--sy-econ-fx': '#16A085',
   '--sy-econ-metals': '#D4AF37', '--sy-econ-crypto': '#5B2C6F', '--sy-econ-world': '#1A5276',
