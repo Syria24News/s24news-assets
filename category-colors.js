@@ -38,7 +38,7 @@ document.addEventListener("DOMContentLoaded", function() {
     Object.keys(panelBranches).forEach(function (k) { tagColors[k] = 'var(' + panelBranches[k].color + ')'; });
     window.S24_CATEGORY_COLORS = window.S24_CATEGORY_COLORS || Object.assign({
         // فروع الرياضة (8 نوفمبر 2026): لكل لون متغيّر في «تخصيص» بلوغر، والرقم احتياط
-        "الرياضة في سوريا": "var(--sy-sport-syria, #AD1457)",
+        "الرياضة السورية": "var(--sy-sport-syria, #AD1457)",
         "الكرة السورية": "var(--sy-sport-syria, #AD1457)",
         "كرة قدم": "var(--sy-sport-football, #004D40)",
         "رياضة جماعية": "var(--sy-sport-team, #0277BD)",
@@ -334,8 +334,8 @@ document.addEventListener("DOMContentLoaded", function() {
             // 🎯 المستوى 3: تخصصات دقيقة (نيش) — محجوز، لا عناصر بعد
 
             // ⚽ المستوى 4: فروع الأقسام (Broad Sub-categories)
-            // فروع الرياضة (8 نوفمبر 2026): «الرياضة في سوريا» أولاً، ثم الفرع الدقيق قبل فرعه الأب
-            "الرياضة في سوريا",
+            // فروع الرياضة (8 نوفمبر 2026): «الرياضة السورية» أولاً، ثم الفرع الدقيق قبل فرعه الأب
+            "الرياضة السورية",
             "الكرة السورية",
             "دوري الأبطال",
             "الدوري الأوروبي",
