@@ -5118,14 +5118,14 @@ body #comments .comment-thread .comment-thread { padding-right: 12px !important;
 
 .right-area { gap: 8px; }
  .left-area { gap: 9px; }
- .logo-sy { inline-size: 72px !important; }
  .btn-live { min-width: 3.6rem; padding: 0 0.6rem; }
  .mobile-search-icon { padding-block: 5px !important; padding-inline-start: 14px !important; padding-inline-end: 2px !important; }
 
 }
 
-/* أضيق الهواتف (أقل من 360px): تصغير زر الوضع الليلي والمسافات حتى تتسع الأدوات الثلاث */
+/* أضيق الهواتف (أقل من 360px): تصغير الشعار وزر الوضع الليلي والمسافات حتى تتسع الأدوات الثلاث */
 @media screen and (max-width: 359px) {
+ .logo-sy { inline-size: 72px !important; }
  .left-area { gap: 4px; }
  .theme-toggle-wrapper { width: 44px; }
  .mobile-search-icon { padding-inline-start: 8px !important; margin-inline-end: 4px; }
