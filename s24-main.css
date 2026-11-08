@@ -4399,6 +4399,16 @@ body.s24-video-article .post-body iframe[id^="BLOGGER-video"]:first-of-type {
     margin: 30px auto !important;
 }
 
+/* الفيديو القائد يبدأ من أعلى المتن مباشرة، بالمسافة نفسها تحت العنوان في صورة الغلاف.
+   يجب أن تبقى هذه القاعدة بعد القاعدة السابقة لتغلبها في فيديو بلوجر المرفوع */
+body.item-page.s24-video-article .post-body .s24-lead-video-wrapper,
+body.item-page.s24-video-article .post-body .s24-lead-video-wrapper iframe,
+body.item-page.s24-video-article .post-body .s24-lead-video-wrapper object.BLOG_video_class,
+body.item-page.s24-video-article .post-body .s24-lead-video-wrapper video,
+body.item-page.s24-video-article .post-body .s24-lead-video-wrapper embed {
+    margin-top: 0 !important;
+}
+
 
 body.item-page.s24-video-article .post-body .separator.s24-lead-video-wrapper .s24-video-poster-wrapper .s24-video-poster-overlay img {
     width: 100% !important;
