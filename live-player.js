@@ -1191,7 +1191,9 @@ document.addEventListener("DOMContentLoaded", function() {
     if (document.querySelector('.live-tv-widget')) {
         var sp = document.getElementById('fake-poster-img');
         s24SetPoster(sp);
-        loadVideoLibs();
+        // المكتبات (نحو 170KB) بعد اكتمال الصفحة لا أثناءها (8 نوفمبر 2026)
+        if (document.readyState === 'complete') loadVideoLibs();
+        else window.addEventListener('load', loadVideoLibs, { once: true });
     }
 });
 
@@ -1389,6 +1391,7 @@ function playSidebarFast() {
     if (sidebarPlayerActive) return;
     if (!S24Live.state.onAir) return;   // البث متوقف من اللوحة
     sidebarPlayerActive = true;
+    loadVideoLibs(); // إن ضغط القارئ قبل اكتمال الصفحة (الدالة لا تكرر التحميل إن سبق)
     sidebarRegister();
     S24Live.claim('sidebar');   // مشغّل واحد يعمل (منسّق المشغّلات 2.11)
     var oldError = document.getElementById('sidebar-load-error');
@@ -1494,10 +1497,20 @@ function initMiniLive() {
         if (iframe.src && iframe.src !== 'about:blank') return;
         iframe.src = S24Live.embedUrl(S24Live.MINI_PARAMS);
     }
+    // يبدأ بعد اكتمال تحميل الصفحة حتى تظهر الأخبار أولاً (8 نوفمبر 2026)
+    // مع حد أقصى 10 ثوانٍ إن تأخر حدث load بسبب ملف عالق
+    function afterLoad(fn) {
+        var done = false;
+        function run() { if (!done) { done = true; fn(); } }
+        if (document.readyState === 'complete') run();
+        else { window.addEventListener('load', run, { once: true }); setTimeout(run, 10000); }
+    }
     S24Live.whenReady(function () {
-        if (window.innerWidth <= 768) start();
-        else window.addEventListener('resize', function () {
+        afterLoad(function () {
             if (window.innerWidth <= 768) start();
+            else window.addEventListener('resize', function () {
+                if (window.innerWidth <= 768) start();
+            });
         });
     });
 }
