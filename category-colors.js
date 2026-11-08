@@ -324,7 +324,6 @@ document.addEventListener("DOMContentLoaded", function() {
             "رياضة",
             "*S",
             "تكنولوجيا",
-            "*T",
             "اقتصاد",
             "*E",
             "صحة",
