@@ -4847,7 +4847,7 @@ body {  padding-top: 80px; overflow-x: clip; } /* clip لا hidden: hidden يج�
 .left-area { width: auto; order: 2; display: flex; align-items: center; margin-inline-start: 40px; }
 
 /* --- إخفاء العناصر غير الضرورية --- */
-.top-date-bar, .desktop-search-container, .icon-satellite, .language-selector, .sidebar-left, .main-layout__column, #force-left-sidebar, #HTML505, .live-tv-widget { display: none !important; }
+.top-date-bar, .desktop-search-container, .language-selector, .sidebar-left, .main-layout__column, #force-left-sidebar, #HTML505, .live-tv-widget { display: none !important; }
 
 /* --- عناصر الموبايل الظاهرة --- */
 .menu-toggle, #sidebar-toggle-btn { display: block; font-size: 26px; cursor: pointer; margin-inline-start: 15px !important; }
@@ -4868,7 +4868,7 @@ body.most-read-page.sidebar-toggled #main-right-sidebar, body.saved-page-mode.si
 
 /* إخفاء العناصر عند فتح القائمة */
 body.sidebar-toggled .mini-live__wrapper, body.sidebar-toggled #miniLiveWidget, body.sidebar-toggled .nav-arrow { display: none !important; }
-body.sidebar-toggled .btn-live, body.sidebar-toggled .mobile-search-icon, body.sidebar-toggled #themeToggle { display: none !important; }
+body.sidebar-toggled .btn-live, body.sidebar-toggled .mobile-search-icon, body.sidebar-toggled .icon-satellite, body.sidebar-toggled #themeToggle { display: none !important; }
 body.sidebar-toggled .main-layout, body.sidebar-toggled .rt-footer, body.sidebar-toggled .s24-ad, body.sidebar-toggled .important-sections { z-index: 1; position: relative; }
 
 body.sidebar-toggled .breaking-news-container, body.sidebar-toggled #breakingNewsContainer { opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; z-index: -1 !important; }
@@ -5116,7 +5116,8 @@ body #comments .comment-thread .comment-thread { padding-right: 12px !important;
 @media screen and (max-width: 480px) {
 
 .right-area { gap: 8px; }
- .left-area { margin-inline-start: 10px; }
+ .left-area { margin-inline-start: 10px; gap: 8px; }
+ .icon-satellite { padding: 2px; }
  .logo-sy { inline-size: 72px !important; }
  .btn-live { min-width: 3.6rem; padding: 0 0.6rem; }
  .mobile-search-icon { padding-block: 5px !important; padding-inline-start: 0 !important; padding-inline-end: 2px !important; }
