@@ -4033,8 +4033,10 @@ body.item-page .post-body > .s24-cover-injected:has(~ div[dir="rtl"] .s24-galler
 /* 5. تفاعلات الماوس (Hover Effects)           */
 .sy-mosaic-item:hover { background-color: var(--bg-body) !important; border-color: var(--mosaic-color) !important; color: var(--mosaic-color) !important; box-shadow: none !important; transform: none !important; }
 .sy-related-btn:hover { background-color: var(--bg-body) !important; border-color: var(--btn-hover, var(--sy-green)) !important; color: var(--btn-hover, var(--sy-green)) !important; box-shadow: none !important; transform: none !important; }
-/* زر الصفحة الحالية في قوائم المحافظات والدول: يضيف القالب is-active — لون فقط بلا حركة */
+/* زر الصفحة الحالية في ترويسات الأقسام: يضيف label-header.js الصنف is-active، وis-active-dark للألوان الفاتحة — لون فقط بلا حركة */
+.sy-mosaic-item.is-active, .sy-mosaic-item.is-active:hover { background-color: var(--mosaic-color) !important; border-color: var(--mosaic-color) !important; color: #fff !important; }
 .sy-related-btn.is-active, .sy-related-btn.is-active:hover { background-color: var(--sy-green) !important; border-color: var(--sy-green) !important; color: #fff !important; }
+.sy-mosaic-item.is-active.is-active-dark, .sy-mosaic-item.is-active.is-active-dark:hover, .sy-related-btn.is-active.is-active-dark, .sy-related-btn.is-active.is-active-dark:hover { color: #111 !important; }
 
 /* 6. مكتبة أعلام الدول (Country Flags)        */
 /* دول عربية */

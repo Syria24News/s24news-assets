@@ -1,7 +1,29 @@
 /* ============================================================
    S24News — رأس صفحة التسمية (عنوان القسم في صفحات /search/label/)
    ملف خارجي — لا يُعدَّل داخل قالب بلوجر
+   يميّز أيضاً زر الصفحة الحالية في الترويسة (.sy-mosaic-item و.sy-related-btn) في كل الأقسام:
+   خلفية بلون الزر، والنص أبيض أو داكن تلقائياً حسب وضوحه على ذلك اللون
    ============================================================ */
+
+// تمييز زر الصفحة الحالية. يُستدعى قبل حدث load لأن config.js يبدّل بعده الرابط الظاهر إلى الاسم العربي
+function s24MarkActiveButton(header) {
+    function clean(p) { try { return decodeURIComponent(p).replace(/\/$/, ''); } catch (e) { return p; } }
+    var here = clean(location.pathname);
+    header.querySelectorAll('a.sy-mosaic-item, a.sy-related-btn').forEach(function (a) {
+        if (clean(a.pathname) !== here) return;
+        a.classList.add('is-active');
+        a.setAttribute('aria-current', 'page');
+        var varName = a.classList.contains('sy-mosaic-item') ? '--mosaic-color' : '--sy-green';
+        var hex = getComputedStyle(a).getPropertyValue(varName).trim();
+        if (!/^#[0-9a-f]{6}$/i.test(hex)) return;
+        // اللمعان النسبي: فوق 0.179 يكون النص الداكن أوضح من الأبيض
+        var l = [1, 3, 5].map(function (i) {
+            var c = parseInt(hex.substr(i, 2), 16) / 255;
+            return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+        });
+        if (0.2126 * l[0] + 0.7152 * l[1] + 0.0722 * l[2] > 0.179) a.classList.add('is-active-dark');
+    });
+}
 
 document.addEventListener("DOMContentLoaded", function() {
     if (window.location.href.indexOf("/search/label/") > -1) {  
@@ -11,6 +33,7 @@ document.addEventListener("DOMContentLoaded", function() {
             var existingHeader = document.querySelector('.sy-section-header');
             
             if (existingHeader) {
+                s24MarkActiveButton(existingHeader);
                 if (storiesSection) {
                     storiesSection.insertAdjacentElement('afterend', existingHeader);
                 } else if (blogPostsArea) {
