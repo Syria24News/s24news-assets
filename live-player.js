@@ -2,6 +2,8 @@
    S24News — مشغّل البث المباشر (playFast / loadVideoLibs)
    playFast تُستدعى من onclick داخل HTML القالب — يجب أن تبقى دالة عامة
 
+   الإصدار 2.14 — 9 نوفمبر 2026: شكل ثابت للمشغّل — النقطة الحمراء موحّدة داخل s24Skin، وانتظار ملف يوتيوب قبل التشغيل،
+                ومهلة 15 ثانية للمرافق قبل الرجوع إلى مشغّل يوتيوب
    الإصدار 2.13 — 8 نوفمبر 2026: مكتبات VideoJS في الرئيسية تُحمَّل عند الضغط على المشغّل الجانبي فقط
    الإصدار 2.11 — 4 نوفمبر 2026: منسّق المشغّلات — مشغّل واحد يعمل في الاتجاهين (المرافق والجانبي)، من أي زر؛
                 والمرافق على البث الرئيسي نفسه يُطوى حين يبدأ الجانبي؛ لا عودة تلقائية (بقرار حسان)
@@ -786,14 +788,14 @@ window.S24Live = (function () {
         var saved = followGet();
         if (!saved || !saved.id) return;
         // بعد اكتمال الصفحة كلها، فلا يبطئ إطار يوتيوب فتح المقالة
-        // VideoJS نفسه الذي في صفحة البث (3 نوفمبر 2026، بطلب حسان: شكل موحّد) — يُنتظر 6 ثوانٍ على الأكثر،
+        // VideoJS نفسه الذي في صفحة البث (3 نوفمبر 2026، بطلب حسان: شكل موحّد) — يُنتظر 15 ثانية على الأكثر (كانت 6؛ 9 نوفمبر 2026)،
         // وإلا يُعرض مشغّل يوتيوب المضمّن
         var go = function () {
             setTimeout(function () {
                 loadVideoLibs();
                 var n = 0, t = setInterval(function () {
                     var ok = window.videojs && videojs.getTech && videojs.getTech('Youtube');
-                    if (ok || ++n > 60) { clearInterval(t); whenReady(function () { showFollow(saved, !!ok); }); }
+                    if (ok || ++n > 150) { clearInterval(t); whenReady(function () { showFollow(saved, !!ok); }); }
                 }, 100);
             }, 400);
         };
@@ -1221,9 +1223,28 @@ function loadVideoLibs() {
     }
 }
 
+// جاهزية VideoJS وإضافة يوتيوب معاً: الإضافة تُحمَّل بعد المكتبة، والبدء قبلها يعطي «لا يوجد مصدر متوافق» (9 نوفمبر 2026)
+function s24VjsReady() {
+    return !!(window.videojs && videojs.getTech && videojs.getTech('Youtube'));
+}
+
+// النقطة الحمراء عند حافة البث — مصدر واحد للمشغّلات الثلاثة (صفحة البث والجانبي والمرافق)
+function s24LiveEdge(player) {
+    if (player.s24EdgeOn) return;
+    player.s24EdgeOn = true;
+    player.on('timeupdate', function () {
+        var d = player.duration(), isLive = false;
+        if (d === Infinity) isLive = !player.paused();   // يوتيوب بلّغ بمدة لا نهائية: لا يمكن حساب الموضع
+        else if (player.liveTracker && player.liveTracker.atLiveEdge()) isLive = true;
+        else if (d > 0 && (d - player.currentTime()) < 20) isLive = true;
+        player.toggleClass('is-at-live-edge', isLive);
+    });
+}
+
 // ===== مظهر المشغّل (s24-skin): زرّا رجوع/تقديم 10 ثوانٍ وتعريب «مباشر» =====
 function s24Skin(player) {
     player.addClass('s24-skin');
+    s24LiveEdge(player);
     if (window.videojs && videojs.addLanguage) videojs.addLanguage('ar', { 'LIVE': 'مباشر', 'Play': 'تشغيل', 'Pause': 'إيقاف', 'Mute': 'كتم', 'Unmute': 'صوت', 'Fullscreen': 'ملء الشاشة', 'Non-Fullscreen': 'خروج من ملء الشاشة' });
     var bar = player.getChild('controlBar');
     if (!bar || bar.getChild('s24Back')) return;
@@ -1269,7 +1290,7 @@ function playFast() {
     var mainAttempts = 0;
     var mainMaxAttempts = 100; // 🟢 إصلاح: 100 × 100ms = مهلة 10 ثوانٍ كحد أقصى بدل الانتظار للأبد
     let checkInterval = setInterval(function() {
-        if (typeof videojs !== 'undefined') {
+        if (s24VjsReady() || S24Live.state.mode === 'channel') {
             clearInterval(checkInterval);
             S24Live.whenReady(launchPlayer);
         } else if (++mainAttempts >= mainMaxAttempts) {
@@ -1360,18 +1381,8 @@ function launchPlayer() {
         });
     });
 
-    // تحديث شريط الوقت والنقطة الحمراء
+    // تحديث حالة شاشة القفل (النقطة الحمراء صارت في s24LiveEdge)
     player.on('timeupdate', function() {
-        var isLive = false;
-        if (player.liveTracker && player.liveTracker.atLiveEdge()) { isLive = true; } 
-        else {
-            var duration = player.duration();
-            var currentTime = player.currentTime();
-            if (duration > 0 && (duration - currentTime) < 20) { isLive = true; }
-        }
-        if (isLive) player.addClass('is-at-live-edge');
-        else player.removeClass('is-at-live-edge');
-        
         // تحديث حالة التشغيل لشاشة القفل
         if ('mediaSession' in navigator) {
             navigator.mediaSession.playbackState = player.paused() ? 'paused' : 'playing';
@@ -1400,7 +1411,7 @@ function playSidebarFast() {
     var sbAttempts = 0;
     var sbMaxAttempts = 100; // 100 × 100ms = مهلة 10 ثوانٍ كحد أقصى
     var checkInterval = setInterval(function () {
-        if (typeof videojs !== 'undefined' || S24Live.state.mode === 'channel') {
+        if (s24VjsReady() || S24Live.state.mode === 'channel') {
             clearInterval(checkInterval);
             S24Live.whenReady(launchSidebarPlayer);
         } else if (++sbAttempts >= sbMaxAttempts) {
@@ -1464,19 +1475,6 @@ function launchSidebarPlayer() {
         s24Skin(player);
         player.play();
         player.on('playing', hideCover);
-    });
-
-    // النقطة الحمراء عند حافة البث
-    player.on('timeupdate', function () {
-        var isLive = false;
-        if (player.liveTracker && player.liveTracker.atLiveEdge()) { isLive = true; }
-        else {
-            var duration = player.duration();
-            var currentTime = player.currentTime();
-            if (duration > 0 && (duration - currentTime) < 20) { isLive = true; }
-        }
-        if (isLive) player.addClass('is-at-live-edge');
-        else player.removeClass('is-at-live-edge');
     });
 }
 

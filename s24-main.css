@@ -5649,4 +5649,7 @@ a.s24-imp-item:hover .s24-imp-title{color:var(--sy-green,#77bd1d)}
 .video-js.s24-skin .vjs-volume-panel { display: flex; align-items: center; }
 .video-js.s24-skin .vjs-volume-control.vjs-volume-horizontal { display: flex; align-items: center; height: 100%; }
 .video-js.s24-skin .vjs-volume-bar.vjs-slider-horizontal { margin: 0 .45em; }
+/* شكل ثابت مهما بلّغ يوتيوب عن المدة (9 نوفمبر 2026): عند المدة اللانهائية يضيف VideoJS كتابة LIVE فتأخذ نصف الشريط ويبقى فارغاً */
+.video-js.s24-skin .vjs-live-control { display: none !important; }
+.video-js.s24-skin.vjs-live .vjs-play-progress { width: 100% !important; }
 @media (max-width: 768px) { .video-js.s24-skin .vjs-control-bar { font-size: 12px; } .video-js.s24-skin .s24-seek { width: 2.6em; } }
