@@ -2,6 +2,7 @@
    S24News — مشغّل البث المباشر (playFast / loadVideoLibs)
    playFast تُستدعى من onclick داخل HTML القالب — يجب أن تبقى دالة عامة
 
+   الإصدار 2.15 — 9 نوفمبر 2026: معرّف القناة بالمشغّل المتفق عليه نفسه (VideoJS)، ويرجع إلى إطار يوتيوب إن رفضه يوتيوب
    الإصدار 2.14 — 9 نوفمبر 2026: شكل ثابت للمشغّل — النقطة الحمراء موحّدة داخل s24Skin، وانتظار ملف يوتيوب قبل التشغيل،
                 ومهلة 15 ثانية للمرافق قبل الرجوع إلى مشغّل يوتيوب
    الإصدار 2.13 — 8 نوفمبر 2026: مكتبات VideoJS في الرئيسية تُحمَّل عند الضغط على المشغّل الجانبي فقط
@@ -58,7 +59,7 @@ function s24ShowDown(host) {
 }
 function s24WatchDown(player, loaderId) {
     function down() {
-        if (player.isDisposed && player.isDisposed()) return;
+        if ((player.isDisposed && player.isDisposed()) || player.s24Guard) return;   // s24Guard: محاولة القناة ما زالت جارية
         try { player.pause(); } catch (e) {}
         var l = loaderId && document.getElementById(loaderId);
         if (l) l.style.display = 'none';
@@ -814,8 +815,9 @@ window.S24Live = (function () {
         var url = base + 'autoplay=1&mute=1&playsinline=1&rel=0&modestbranding=1&enablejsapi=1&origin=' +
             encodeURIComponent(location.origin);
         if (src.kind === 'video' && resumeTime(src.id)) url += '&start=' + Math.floor(resumeTime(src.id));
-        // فيديو برقم ← VideoJS كصفحة البث؛ «قناة» بلا رقم بث ← مشغّل يوتيوب المضمّن (كما في صفحة البث نفسها)
-        var useVjs = !!vjsOK && src.kind === 'video';
+        // VideoJS كصفحة البث، للفيديو برقم وللقناة معاً (9 نوفمبر 2026)؛ وإطار يوتيوب إن تعذّرت المكتبات
+        var useVjs = !!vjsOK;
+        var vjsSource = s24VjsSource(src.kind, src.id);
         // held: أوقفه مشغّل آخر — لا يعمل حتى يشغّله القارئ بنفسه (ولو وصل تشغيله التلقائي متأخراً).
         // إن كان مشغّل آخر يعمل لحظة ظهوره (الجانبي مثلاً) يظهر متوقفاً
         var held = !!(active && active !== 'follow' && players[active]);
@@ -877,11 +879,19 @@ window.S24Live = (function () {
             ifr.appendChild(v);
             vp = videojs(v, {
                 techOrder: ['youtube'],
-                sources: [{ type: 'video/youtube', src: 'https://www.youtube.com/watch?v=' + src.id }],
-                youtube: { iv_load_policy: 3, modestbranding: 1, rel: 0, autoplay: 1, playsinline: 1, fs: 0 },
+                sources: [{ type: 'video/youtube', src: vjsSource.src }],
+                youtube: s24YtOpts({ iv_load_policy: 3, modestbranding: 1, rel: 0, autoplay: 1, playsinline: 1, fs: 0 }, vjsSource),
                 controlBar: { pictureInPictureToggle: false, liveDisplay: true },
                 controls: true, liveui: true, language: 'ar', muted: true, autoplay: 'muted', fill: true
             });
+            if (src.kind === 'channel') s24ChannelGuard(vp, function () {   // رفض يوتيوب القناة داخل VideoJS: يُعاد المرافق بإطار يوتيوب
+                vp = null;
+                window.removeEventListener('resize', queue);
+                box.remove();
+                follow = null;
+                unregister('follow');
+                showFollow(saved, false);
+            }, held);
             s24WatchDown(vp);
             vp.ready(function () {
                 setTimeout(function () { vjsArmed = true; }, 1500);
@@ -890,10 +900,10 @@ window.S24Live = (function () {
                 if (held) { resumeBtn.hidden = false; return; }   // مشغّل آخر يعمل: لا تشغيل تلقائي
                 var pr = vp.play(); if (pr && pr.catch) pr.catch(function () {});
                 // الاستئناف من الموضع السابق (فيديو ثابت فقط)
-                var rt = resumeTime(src.id);
+                var rt = src.kind === 'video' ? resumeTime(src.id) : 0;
                 if (rt) vp.one('playing', function () { try { vp.currentTime(rt); } catch (e) {} });
             });
-            window.addEventListener('pagehide', function () { if (vp && !mini) saveTime(src.id, vp); });
+            window.addEventListener('pagehide', function () { if (vp && !mini && src.kind === 'video') saveTime(src.id, vp); });
             // بدأ المرافق: يتوقف غيره؛ وإن كان موقوفاً بمشغّل آخر ولم يشغّله القارئ بنفسه يُعاد إيقافه
             vp.on('play', function () {
                 if (held) { vp.pause(); resumeBtn.hidden = false; return; }
@@ -1228,6 +1238,33 @@ function s24VjsReady() {
     return !!(window.videojs && videojs.getTech && videojs.getTech('Youtube'));
 }
 
+// مصدر VideoJS (9 نوفمبر 2026): معرّف القناة يعمل كتضمين /embed/live_stream?channel= داخل VideoJS،
+// فيظهر الشكل المتفق عليه نفسه بلا رقم بث وبلا أي حصة من يوتيوب
+function s24VjsSource(kind, id) {
+    return kind === 'channel'
+        ? { src: 'https://www.youtube.com/embed/live_stream?channel=' + encodeURIComponent(id), vars: { channel: id } }
+        : { src: 'https://www.youtube.com/watch?v=' + id, vars: null };
+}
+function s24YtOpts(opts, source) {
+    if (source.vars) opts.customVars = source.vars;
+    return opts;
+}
+// حارس القناة: إن رفض يوتيوب التشغيل أو لم يبدأ خلال 15 ثانية، يرجع إلى إطار يوتيوب كما كان (fallback)
+function s24ChannelGuard(player, fallback, noTimer) {
+    var done = false, t = 0;
+    player.s24Guard = true;
+    function end() { done = true; clearTimeout(t); player.s24Guard = false; }
+    function go() {
+        if (done || player.isDisposed()) return;
+        end();
+        try { player.dispose(); } catch (e) {}
+        fallback();
+    }
+    if (!noTimer) t = setTimeout(go, 15000);
+    player.one('playing', end);
+    player.one('error', go);
+}
+
 // النقطة الحمراء عند حافة البث — مصدر واحد للمشغّلات الثلاثة (صفحة البث والجانبي والمرافق)
 function s24LiveEdge(player) {
     if (player.s24EdgeOn) return;
@@ -1290,11 +1327,12 @@ function playFast() {
     var mainAttempts = 0;
     var mainMaxAttempts = 100; // 🟢 إصلاح: 100 × 100ms = مهلة 10 ثوانٍ كحد أقصى بدل الانتظار للأبد
     let checkInterval = setInterval(function() {
-        if (s24VjsReady() || S24Live.state.mode === 'channel') {
+        if (s24VjsReady()) {
             clearInterval(checkInterval);
             S24Live.whenReady(launchPlayer);
         } else if (++mainAttempts >= mainMaxAttempts) {
             clearInterval(checkInterval);
+            if (S24Live.state.mode === 'channel') { S24Live.whenReady(launchPlayer); return; }   // إطار يوتيوب لا يحتاج المكتبات
             var loader = document.getElementById('fast-loader');
             if (loader) {
                 loader.style.display = 'none';
@@ -1310,34 +1348,37 @@ function playFast() {
 function launchPlayer() {
     const target = document.getElementById('main-real-player-target');
 
-    // وضع القناة: البث الجاري للقناة لا رقم له، فيُعرض بمشغّل يوتيوب المضمّن بدل VideoJS
-    if (S24Live.state.mode === 'channel') {
+    var isChannel = S24Live.state.mode === 'channel';
+    // إطار يوتيوب: للقناة إن تعذّرت المكتبات أو رفض يوتيوب التشغيل داخل VideoJS
+    function channelFrame() {
         target.innerHTML = '<iframe id="rt-live-page-iframe" src="' + S24Live.embedUrl('autoplay=1&rel=0&modestbranding=1&playsinline=1') +
             '" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen frameborder="0" title="البث المباشر"></iframe>';
         target.querySelector('iframe').addEventListener('load', function () {
             document.getElementById('fast-loader').style.display = 'none';
             document.getElementById('main-fake-poster').style.display = 'none';
         });
-        return;
     }
+    if (isChannel && !s24VjsReady()) { channelFrame(); return; }
+    var liveSource = s24VjsSource(isChannel ? 'channel' : 'video', isChannel ? S24Live.state.channelId : window.LIVE_CONFIG.videoId);
     target.innerHTML = `<video id="rt-live-page-player" class="video-js vjs-default-skin vjs-big-play-centered" controls autoplay preload="auto" disablePictureInPicture playsinline webkit-playsinline></video>`;
 
     var player = videojs('rt-live-page-player', {
         techOrder: ["youtube"],
-        sources: [{ "type": "video/youtube", "src": getLiveUrl() }],
-        youtube: { 
+        sources: [{ "type": "video/youtube", "src": liveSource.src }],
+        youtube: s24YtOpts({ 
             "iv_load_policy": 3, 
             "modestbranding": 1, 
             "rel": 0, 
             "autoplay": 1,
             "playsinline": 1, // مهم جداً للموبايل
             "fs": 0 // منع ملء الشاشة التلقائي
-        },
+        }, liveSource),
         controlBar: { pictureInPictureToggle: false, liveDisplay: true },
         liveui: true,
         language: 'ar'
     });
 
+    if (isChannel) s24ChannelGuard(player, channelFrame);
     s24WatchDown(player, 'fast-loader');   // انقطاع مفاجئ ← رسالة الموقع (3 نوفمبر 2026)
     player.ready(function() {
         s24Skin(player);
@@ -1411,11 +1452,12 @@ function playSidebarFast() {
     var sbAttempts = 0;
     var sbMaxAttempts = 100; // 100 × 100ms = مهلة 10 ثوانٍ كحد أقصى
     var checkInterval = setInterval(function () {
-        if (s24VjsReady() || S24Live.state.mode === 'channel') {
+        if (s24VjsReady()) {
             clearInterval(checkInterval);
             S24Live.whenReady(launchSidebarPlayer);
         } else if (++sbAttempts >= sbMaxAttempts) {
             clearInterval(checkInterval);
+            if (S24Live.state.mode === 'channel') { S24Live.whenReady(launchSidebarPlayer); return; }   // إطار يوتيوب لا يحتاج المكتبات
             var loader = document.getElementById('sidebar-loader');
             if (loader) {
                 loader.style.display = 'none';
@@ -1447,8 +1489,9 @@ function launchSidebarPlayer() {
         document.getElementById('fake-poster-img').style.display = 'none';
     }
 
-    // وضع القناة: مشغّل يوتيوب المضمّن (البث الجاري للقناة لا رقم له)
-    if (S24Live.state.mode === 'channel') {
+    var isChannel = S24Live.state.mode === 'channel';
+    // إطار يوتيوب: للقناة إن تعذّرت المكتبات أو رفض يوتيوب التشغيل داخل VideoJS
+    function channelFrame() {
         // enablejsapi: ليستطيع المنسّق إيقافه، ويعرف متى يبدأ (2.11)
         container.innerHTML = '<iframe id="rt-sidebar-iframe" src="' + S24Live.embedUrl('autoplay=1&rel=0&modestbranding=1&playsinline=1&enablejsapi=1&origin=' +
             encodeURIComponent(location.origin)) +
@@ -1456,19 +1499,21 @@ function launchSidebarPlayer() {
         var sf = container.querySelector('iframe');
         sf.addEventListener('load', hideCover);
         S24Live.ytWatch(sf, 'sidebar');
-        return;
     }
+    if (isChannel && !s24VjsReady()) { channelFrame(); return; }
+    var sideSource = s24VjsSource(isChannel ? 'channel' : 'video', isChannel ? S24Live.state.channelId : window.LIVE_CONFIG.videoId);
 
     container.innerHTML = '<video id="rt-sidebar-player" class="video-js vjs-default-skin" controls autoplay preload="auto" disablePictureInPicture></video>';
     var player = videojs('rt-sidebar-player', {
         techOrder: ["youtube"],
-        sources: [{ "type": "video/youtube", "src": getLiveUrl() }],
-        youtube: { "iv_load_policy": 3, "modestbranding": 1, "rel": 0, "autoplay": 1 },
+        sources: [{ "type": "video/youtube", "src": sideSource.src }],
+        youtube: s24YtOpts({ "iv_load_policy": 3, "modestbranding": 1, "rel": 0, "autoplay": 1 }, sideSource),
         controlBar: { pictureInPictureToggle: false, liveDisplay: true },
         liveui: true,
         language: 'ar'
     });
 
+    if (isChannel) s24ChannelGuard(player, channelFrame);
     s24WatchDown(player, 'sidebar-loader');   // انقطاع مفاجئ ← رسالة الموقع (3 نوفمبر 2026، بطلب حسان)
     player.on('play', function () { S24Live.claim('sidebar'); });   // كل تشغيل للجانبي يوقف غيره (2.11)
     player.ready(function () {
