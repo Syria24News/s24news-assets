@@ -1,0 +1,97 @@
+/* ==========================================================
+   s24-en.css — قلب القالب إلى LTR للموقع الإنجليزي فقط
+   يُحمَّل بعد s24-main.css، ولا يؤثر في الموقع العربي
+   ========================================================== */
+
+/* 1) الاتجاه العام */
+body { direction: ltr; text-align: left; }
+
+/* 2) الحاويات المكتوب عليها rtl صراحةً */
+.sy-inline-search, .stories-container, .sy-related-grid, .poll__wrapper,
+.poll-skeleton-container, .progress-bg, .poll-pagination, .news-themes__wrapper,
+.s24-gallery-wrapper, .s24-gallery-wrapper .s24-slide-caption, .sy-slider-container,
+.sy-section-header, .sy-mosaic-container, .sy-related-list, .live-stream-wrapper,
+.s24-follow, .mini-live__wrapper, .s24-enc-related, .s24team, .s24p,
+.live-coverage-wrapper, .play-slider__wrapper, .play-slider__dots, .rt-video-title,
+.sy-article-tools, .custom-videoclub-header, .sy-videoclub-wrapper,
+.rotator-slider__wrapper, .sy-video-grid, body #comments .comment-header {
+  direction: ltr !important;
+}
+
+/* 3) محاذاة النصوص */
+h3.post-title, .post-title, .post-title a, .ajax-result-info, .hero-content,
+.result-label, .poll__wrapper, .sy-section-header, .rt-video-title, .sy-v-title,
+.s24-gallery-wrapper .s24-slide-caption, .dropdown-btn, .s24m-head,
+.s24n-cookie-container, .custom-videoclub-header,
+.FeaturedPost .post-info, .FeaturedPost .summary-content, .FeaturedPost .post-summary,
+.sy-tooltip::after {
+  text-align: left !important;
+}
+.total-votes-container, .s24-toc-back { text-align: right; }
+body.most-read-page h3.post-title, body.most-read-page .post-title,
+body.most-read-page .post-title a { text-align: left !important; }
+
+/* 4) الهوامش والمواضع الجانبية */
+.ajax-result-img { margin-left: 0; margin-right: 12px; }
+.sy-sidebar-icon, .sy-color-box { margin-left: 0; margin-right: 12px; }
+.sy-side-chevron { margin-right: 0; margin-left: 12px; }
+.main-layout__column h3.title, .sidebar-left h3.title { padding-right: 0; padding-left: 5px; }
+.sy-related-main-title { padding-right: 0; padding-left: 10px; }
+.grid-tag { right: auto; left: 10px; }
+.sy-inline-search button { left: auto; right: 5px; }
+.sy-post-meta { padding-right: 0; padding-left: 30px; }
+.sy-meta-label { margin-left: 0; margin-right: 50px; }
+.sy-end-diamond { margin-right: 0; margin-left: 3px; }
+.note-box { border-right: 0; border-left: 5px solid var(--sy-green); }
+.s24-enc-related { border-right: 0; border-left: 4px solid var(--sy-green, #77bd1d); }
+.live-event-arrow { margin-left: 0 !important; margin-right: 8px !important; transform: scaleX(-1); }
+.live-pro-signal { margin-left: 0; margin-right: 12px; }
+.live-event-row:hover { box-shadow: inset 3px 0 0 #77bd1d !important; padding-right: 20px; padding-left: 20px; }
+.poll-label input[type="radio"] { margin-left: 0; margin-right: 15px; }
+.total-label, .total-number { margin-right: 0; margin-left: 5px; }
+.dropdown-content a:hover { padding-right: 20px !important; padding-left: 25px !important; }
+.dropdown-content ul.s24m-sub { padding: 4px 0 6px 14px; }
+a.sy-news-link:hover { padding-right: 0 !important; padding-left: 15px !important; }
+.s24-read-time { padding-right: 0; padding-left: 5px; }
+
+/* 5) التعليقات */
+body #comments .comment { padding-right: 0 !important; padding-left: 55px !important; }
+body #comments .avatar-image-container { right: auto !important; left: 0 !important; }
+body #comments .comment-thread .comment-thread {
+  margin-right: 0 !important; padding-right: 0 !important; border-right: 0;
+  margin-left: 0 !important; padding-left: 15px !important;
+  border-left: 2px solid var(--cmt-thread-line);
+}
+body #comments .comment-actions { margin-right: 0; margin-left: 15px; }
+
+/* 6) سلايدر الفيديو: إلغاء القلب المستخدم للعربية */
+.play-slider__track-container { transform: none !important; margin-left: 0 !important; width: 100% !important; }
+.rt-video-card { transform: none !important; }
+
+/* أسهم القائمة العلوية: تبديل الموضع يصحح شكل السهم واتجاه التمرير معاً */
+#topMenuBtnRight { order: 1 !important; }
+#topMenuBtnLeft { order: 3 !important; }
+
+/* 7) زر الصعود للأعلى في الجهة المقابلة */
+body .progress-wrap { left: auto !important; right: 14px !important; }
+@media only screen and (min-width: 1580px) {
+  body .progress-wrap { right: calc((100% - 1552px) / 2 + 20px) !important; }
+}
+
+@media only screen and (max-width: 1023px) {
+  body #comments .comment { padding-left: 48px !important; }
+  body #comments .comment-thread .comment-thread { padding-left: 12px !important; }
+}
+
+/* 8) الموسوعة وصناديق المعلومات (encyclopedia.css يُحمَّل داخل الصفحة، لذلك !important) */
+.s24-enc-body, .s24-bio-infobox, .s24-bio-table { direction: ltr !important; }
+.s24-bio-table th, .s24-bio-table td, .s24-place-table th, .s24-place-table td,
+.s24-enc-table th, .s24-enc-table td, .s24-enc-data th, .s24-enc-data td { text-align: left !important; }
+.s24-enc-quote { border-right: 0 !important; border-left: 4px solid var(--bs-main, #77bd1d) !important; }
+.s24-enc-links ul { padding-right: 0 !important; padding-left: 20px !important; }
+.s24-enc-refs ol { padding-right: 0 !important; padding-left: 22px !important; }
+.s24-enc-note { border-right: 0 !important; border-left: 4px solid var(--bs-main, #77bd1d) !important; }
+.s24-enc-note.warn { border-left-color: #e0a800 !important; }
+.s24-enc-note.dispute { border-left-color: #c0392b !important; }
+.s24-enc-timeline li { border-right: 0 !important; border-left: 2px solid var(--border-color, #dddddd) !important; }
+.s24-enc-timeline li:last-child { border-left-color: transparent !important; }
