@@ -4061,6 +4061,8 @@ body.item-page .post-body > .s24-cover-injected:has(~ div[dir="rtl"] .s24-galler
 .flag-mauritania{ background-image: url('https://flagcdn.com/w40/mr.png'); }
 .flag-djibouti  { background-image: url('https://flagcdn.com/w40/dj.png'); }
 .flag-comoros   { background-image: url('https://flagcdn.com/w40/km.png'); }
+/* علم الدولة داخل أزرار قائمة الدول العربية (يضيفه label-header.js) */
+.sy-btn-flag { flex: 0 0 20px; width: 20px; height: 14px; margin-inline-end: 6px; border-radius: 2px; background-size: cover; background-position: center; background-repeat: no-repeat; }
 /* دول العالم */
 .flag-usa      { background-image: url('https://flagcdn.com/w40/us.png'); }
 .flag-russia   { background-image: url('https://flagcdn.com/w40/ru.png'); }
