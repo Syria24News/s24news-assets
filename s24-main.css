@@ -1957,7 +1957,9 @@ body.saved-page-mode .rt-footer .rt-icon-group[title="مشاهدات"], body.mos
 
 
 /*  1. تنسيق العناوين (لجميع الصفحات - يمين دائماً)  */
-h3.post-title, .post-title, .post-title a { order: 1; font-size: 24px; font-weight: 900; color: var(--text-main); line-height: 1.4; margin: 5px 0 8px 0; text-align: right; text-decoration: none; display: block; cursor: pointer; width: 100%; padding: 15px 8px; box-sizing: border-box; }
+h3.post-title, .post-title, .post-title a { order: 1; font-size: 24px; font-weight: 900; color: var(--text-main); line-height: 1.4; margin: 5px 0 8px 0; text-align: right; text-decoration: none; display: block; cursor: pointer; width: 100%; padding: 15px 8px 6px; box-sizing: border-box; }
+/* الرابط داخل العنوان بلا مسافات رأسية: العنوان وحده يملك المسافة */
+.post-title a { margin: 0; padding: 0 8px; }
 
 /* 🖼️ إصلاح الصور: إظهار الصورة الأولى فقط في الرئيسية وإخفاء الباقي */
 
@@ -4838,8 +4840,6 @@ header { position: fixed; top: 40px; width: 100%; z-index: 1000; background-colo
 body.item-page h1.post-title,
 body.item-page h3.post-title,
 body.item-page .post-body > *:not(.separator):not(img) { padding-right: 65px; padding-left: 65px; }
-body.item-page h1.post-title,
-body.item-page h3.post-title { font-size: 31px; margin-bottom: 20px; margin-top: 10px; }
 
 /* 6. إضافات الفيديو والحاويات */
 .video-container { top: 142px !important; }
@@ -5498,7 +5498,7 @@ body.item-page .post-body .separator:not(:first-of-type) img:not(.swiper-slide i
 body.item-page h1.post-title,
 body.item-page h3.post-title {
     font-size: 31px;
-    margin: 10px 0 10px 0;
+    margin: 10px 0 8px 0;
     padding-right: 65px;
     padding-left: 65px;
 }
