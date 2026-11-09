@@ -4027,7 +4027,7 @@ body.item-page .post-body > .s24-cover-injected:has(~ div[dir="rtl"] .s24-galler
 .sy-related-list { gap: 8px; margin-bottom: 20px; }
 
 /* 4. تصميم الكبسولات (Unified Buttons)        */
-.sy-mosaic-item, .sy-related-btn { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; width: auto; min-width: 0; gap: 0px; position: relative; overflow: hidden; outline: none; background-color: var(--bg-card); border: 1px solid currentColor; color: var(--color-grey-65); border-radius: .25rem; padding: .38rem .75rem; font-size: 1rem; font-weight: 400; text-decoration: none; white-space: nowrap; line-height: 1.125rem; transition: color .3s ease-in-out, border-color .3s ease-in-out, background-color .3s ease-in-out; box-shadow: none !important; }
+.sy-mosaic-item, .sy-related-btn { display: inline-flex; align-items: center; justify-content: center; flex: 0 0 auto; width: auto; min-width: 0; gap: 0px; position: relative; overflow: hidden; outline: none; background-color: var(--bg-card); border: 1px solid currentColor; color: var(--color-grey-65); border-radius: .25rem; padding: 4px 10px; font-size: 14px; font-weight: 400; text-decoration: none; white-space: nowrap; line-height: 1.125rem; transition: color .3s ease-in-out, border-color .3s ease-in-out, background-color .3s ease-in-out; box-shadow: none !important; }
 .sy-mosaic-icon { font-size: 18px; line-height: 1; margin: 0; display: flex; }
 
 /* 5. تفاعلات الماوس (Hover Effects)           */
