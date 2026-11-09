@@ -4053,6 +4053,10 @@ body.item-page .post-body > .s24-cover-injected:has(~ div[dir="rtl"] .s24-galler
 .flag-tunisia  { background-image: url('https://flagcdn.com/w40/tn.png'); }
 .flag-libya    { background-image: url('https://flagcdn.com/w40/ly.png'); }
 .flag-sudan    { background-image: url('https://flagcdn.com/w40/sd.png'); }
+.flag-somalia   { background-image: url('https://flagcdn.com/w40/so.png'); }
+.flag-mauritania{ background-image: url('https://flagcdn.com/w40/mr.png'); }
+.flag-djibouti  { background-image: url('https://flagcdn.com/w40/dj.png'); }
+.flag-comoros   { background-image: url('https://flagcdn.com/w40/km.png'); }
 /* دول العالم */
 .flag-usa      { background-image: url('https://flagcdn.com/w40/us.png'); }
 .flag-russia   { background-image: url('https://flagcdn.com/w40/ru.png'); }
