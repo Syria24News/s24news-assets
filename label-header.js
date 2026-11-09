@@ -3,7 +3,6 @@
    ملف خارجي — لا يُعدَّل داخل قالب بلوجر
    يميّز أيضاً زر الصفحة الحالية في الترويسة (.sy-mosaic-item و.sy-related-btn) في كل الأقسام:
    خلفية بلون الزر، والنص أبيض أو داكن تلقائياً حسب وضوحه على ذلك اللون
-   ويضيف علم كل دولة إلى أزرار قائمة الدول العربية (أصناف .flag-* في s24-main.css)
    ============================================================ */
 
 // تمييز زر الصفحة الحالية. يُستدعى قبل حدث load لأن config.js يبدّل بعده الرابط الظاهر إلى الاسم العربي
@@ -26,26 +25,6 @@ function s24MarkActiveButton(header) {
     });
 }
 
-// علم الدولة قبل اسمها في أزرار قائمة الدول العربية (اسم الزر = اسم الوسم)
-function s24AddCountryFlags(header) {
-    var flags = {
-    'مصر': 'egypt', 'السعودية': 'saudi', 'الإمارات العربية المتحدة': 'uae', 'الأردن': 'jordan',
-    'لبنان': 'lebanon', 'العراق': 'iraq', 'فلسطين': 'palestine', 'الكويت': 'kuwait',
-    'قطر': 'qatar', 'البحرين': 'bahrain', 'سلطنة عمان': 'oman', 'اليمن': 'yemen',
-    'الجزائر': 'algeria', 'المغرب': 'morocco', 'تونس': 'tunisia', 'ليبيا': 'libya',
-    'السودان': 'sudan', 'موريتانيا': 'mauritania', 'الصومال': 'somalia', 'جيبوتي': 'djibouti',
-    'جزر القمر': 'comoros'
-    };
-    header.querySelectorAll('a.sy-related-btn').forEach(function (a) {
-        var flag = flags[a.textContent.trim()];
-        if (!flag) return;
-        var icon = document.createElement('span');
-        icon.className = 'sy-btn-flag flag-' + flag;
-        icon.setAttribute('aria-hidden', 'true');
-        a.insertBefore(icon, a.firstChild);
-    });
-}
-
 document.addEventListener("DOMContentLoaded", function() {
     if (window.location.href.indexOf("/search/label/") > -1) {  
         try {
@@ -55,7 +34,6 @@ document.addEventListener("DOMContentLoaded", function() {
             
             if (existingHeader) {
                 s24MarkActiveButton(existingHeader);
-                s24AddCountryFlags(existingHeader);
                 if (storiesSection) {
                     storiesSection.insertAdjacentElement('afterend', existingHeader);
                 } else if (blogPostsArea) {
