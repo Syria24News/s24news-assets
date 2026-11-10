@@ -300,6 +300,9 @@ document.addEventListener("DOMContentLoaded", function() {
     var openEl      = null;
 
     function place(el) {
+        // إن انقسمت العبارة على أكثر من سطر نجمعها مؤقتاً ليبقى للصندوق مرجع واحد
+        el.classList.remove('sy-tt-block');
+        if (el.getClientRects().length > 1) el.classList.add('sy-tt-block');
         var r  = el.getBoundingClientRect();
         var vw = window.innerWidth;
 
@@ -313,7 +316,7 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 
     function close() {
-        if (openEl) { openEl.classList.remove('is-open'); openEl = null; }
+        if (openEl) { openEl.classList.remove('is-open', 'sy-tt-block'); openEl = null; }
     }
 
     // الماوس: يُحسب الموضع قبل ظهور الصندوق
@@ -322,6 +325,12 @@ document.addEventListener("DOMContentLoaded", function() {
         if (el) place(el);
     }, true);
 
+    // عند مغادرة الماوس تعود العبارة إلى انسيابها الطبيعي
+    document.addEventListener('mouseout', function (e) {
+        var el = e.target && e.target.closest ? e.target.closest('.sy-tooltip') : null;
+        if (el && el !== openEl) el.classList.remove('sy-tt-block');
+    }, true);
+   
     // اللمس/النقر: فتح وإغلاق صريح لا يعتمد على :hover
     document.addEventListener('click', function (e) {
         var el = e.target && e.target.closest ? e.target.closest('.sy-tooltip') : null;
