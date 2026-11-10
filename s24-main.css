@@ -4892,6 +4892,7 @@ body.most-read-page.sidebar-toggled #main-right-sidebar, body.saved-page-mode.si
 
 /* إخفاء العناصر عند فتح القائمة */
 body.sidebar-toggled .mini-live__wrapper, body.sidebar-toggled #miniLiveWidget, body.sidebar-toggled .nav-arrow { display: none !important; }
+body.sidebar-toggled #s24-progress-container { display: none !important; } /* شريط تقدّم القراءة لا يظهر فوق القائمة */
 body.sidebar-toggled .btn-live, body.sidebar-toggled .mobile-search-icon, body.sidebar-toggled .icon-satellite, body.sidebar-toggled #themeToggle { display: none !important; }
 body.sidebar-toggled .main-layout, body.sidebar-toggled .rt-footer, body.sidebar-toggled .s24-ad, body.sidebar-toggled .important-sections { z-index: 1; position: relative; }
 
