@@ -2,6 +2,8 @@
    S24News — محرّك الشبكات المميزة (الرئيسية + صفحات الأقسام)
    ملف خارجي — لا يُعدَّل داخل قالب بلوجر
 
+   الإصدار 2.4 — 10 نوفمبر 2026: جاهز للتحميل async — شبكة الرئيسية تُبنى فور وجود حاويتها (لا تنتظر نهاية الصفحة
+     ولا ملف بلوغر المتزامن widgets.js)، وكاش احتياطي إن سبق utils.js. شبكة الأقسام بعد قراءة الصفحة كما كانت.
    الإصدار 2.3 — 10 نوفمبر 2026: يبني الشبكة فور تنفيذه (readyState = interactive) بدل انتظار DOMContentLoaded؛
      ومع نقل سطره في القالب إلى ما بعد utils.js يسبق بقية ملفات defer.
    الإصدار 2.2 — 10 نوفمبر 2026: يستعمل window.S24GridPrefetch إن وُجد (جلب مبكر لخلاصة *Fa وhome-grid.json
@@ -23,12 +25,12 @@
 // ==========================================
 // 5. Special Grids Engine (مصدر موحّد - الرئيسية + صفحات الأقسام)
 // ==========================================
-// (2.3) يعمل فور تنفيذ الملف إن كانت الصفحة قد قُرئت (ملفات defer تعمل وdocument.readyState = interactive)،
-// بدل انتظار DOMContentLoaded الذي لا يقع إلا بعد تنفيذ كل ملفات defer الأخرى
-(function (boot) {
-    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
-    else boot();
-})(function() {
+// (2.4) الملف يُحمَّل async: يعمل فور وصوله، وقد تكون الصفحة ما زالت تُقرأ، وقد يسبق utils.js.
+//  - شبكة الرئيسية (early): تُبنى فور وجود حاويتها؛ إن وصل الملف قبلها ترك window.S24GridContainerReady
+//    فيستدعيها السكربت المضمّن بعد الحاوية في القالب (واحتياطاً عند DOMContentLoaded).
+//  - شبكة صفحات الأقسام: بعد قراءة الصفحة كاملة (تحتاج قائمة Blog1 لحذف المكرر).
+//  - يعمل كما هو مع defer أيضاً.
+(function () {
 
     // 📋 كل شبكة مميزة (رئيسية أو قسم) = عنصر واحد هنا فقط
     const SPECIAL_GRIDS_CONFIG = [
@@ -37,6 +39,7 @@
             containerId: 'special-news-grid',
             cacheKey: 's24_special_grid_v2',
             eager: true, // فوق الطيّة: لا تأجيل — هي عنصر LCP
+            early: true, // (2.4) تُبنى فور وجود حاويتها دون انتظار نهاية الصفحة
             // اختيارك من لوحة التحكم (قسم «الشبكة المميزة»)؛ يُقرأ من GitHub Pages مجاناً
             pinsUrl: 'https://syria24news.github.io/s24news-assets/home-grid.json',
             titleElId: 'grid-label-title',
@@ -66,7 +69,35 @@
 
     const CACHE_DURATION = 2 * 60 * 1000; // تحديث كل دقيقتين
 
-    SPECIAL_GRIDS_CONFIG.forEach(initOneGrid);
+    // (2.4) قد يعمل الملف قبل utils.js: كاش احتياطي بالصيغة نفسها ({ts, data} في localStorage)
+    const localCache = {
+        get: function(key, ttlMs) {
+            try {
+                const record = JSON.parse(localStorage.getItem(key));
+                if (!record || (Date.now() - record.ts) >= ttlMs) return null;
+                return record.data;
+            } catch (e) { return null; }
+        },
+        set: function(key, data) {
+            try { localStorage.setItem(key, JSON.stringify({ ts: Date.now(), data: data })); } catch (e) {}
+        }
+    };
+    function cache() { return window.S24Cache || localCache; }
+
+    function whenParsed(fn) {
+        if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', fn);
+        else fn();
+    }
+
+    SPECIAL_GRIDS_CONFIG.forEach(function(cfg) {
+        if (!cfg.early) { whenParsed(function() { initOneGrid(cfg); }); return; }
+        if (document.getElementById(cfg.containerId)) { initOneGrid(cfg); return; }
+        if (document.readyState !== 'loading') return; // قُرئت الصفحة ولا حاوية: ليست الرئيسية
+        let done = false;
+        function go() { if (done) return; done = true; window.S24GridContainerReady = null; initOneGrid(cfg); }
+        window.S24GridContainerReady = go;                    // يستدعيها السكربت المضمّن بعد الحاوية
+        document.addEventListener('DOMContentLoaded', go);     // احتياط: قالب بلا ذلك السطر
+    });
 
     function initOneGrid(cfg) {
         const gridContainer = document.getElementById(cfg.containerId);
@@ -80,7 +111,7 @@
             if (gridTitle) gridTitle.textContent = labelName;
         }
 
-        const cachedData = window.S24Cache.get(cfg.cacheKey, CACHE_DURATION);
+        const cachedData = cache().get(cfg.cacheKey, CACHE_DURATION);
 
         function triggerLoad() {
             if (cachedData) {
@@ -129,7 +160,7 @@
                 const auto = (data.feed && data.feed.entry ? data.feed.entry : []).map(entryToItem);
                 const items = mergeItems(pins, auto);
                 if (items.length > 0) {
-                    window.S24Cache.set(cfg.cacheKey, items);
+                    cache().set(cfg.cacheKey, items);
                     if (!isSilent || JSON.stringify(items) !== JSON.stringify(cachedData)) {
                          renderGrid(items);
                     }
@@ -260,4 +291,4 @@
         });
     }
 
-});
+})();
