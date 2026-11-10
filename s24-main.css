@@ -4231,7 +4231,7 @@ body.item-page .post-body > .s24-cover-injected:has(~ div[dir="rtl"] .s24-galler
 /* --- تنسيق التلميح الذكي (Tooltip) المطور --- */
 .sy-tooltip {
     position: relative;
-    display: inline-block;   /* يمنع انقسام العبارة على سطرين فيبقى للصندوق مرجع موضع واحد */
+    display: inline;         /* تنكسر العبارة طبيعياً فلا تترك فراغاً مع المحاذاة الكاملة */
     max-width: 100%;         /* العبارة الأطول من العمود تلتفّ داخل إطارها بدل الخروج منه */
     border-bottom: none;
     cursor: help;
@@ -4241,6 +4241,9 @@ body.item-page .post-body > .s24-cover-injected:has(~ div[dir="rtl"] .s24-galler
     font-size: inherit !important;
     line-height: inherit !important;
 }
+
+/* العبارة المنقسمة على سطرين تُجمَع كتلة واحدة أثناء فتح الصندوق فقط */
+.sy-tooltip.sy-tt-block { display: inline-block; max-width: 100%; }
 
 /* شكل الصندوق الأساسي */
 .sy-tooltip::after {
