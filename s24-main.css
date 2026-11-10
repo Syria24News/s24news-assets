@@ -4115,7 +4115,7 @@ body.item-page .post-body > .s24-cover-injected:has(~ div[dir="rtl"] .s24-galler
 .sy-bc-current { color: var(--text-main); font-weight: 400; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; flex-shrink: 1; opacity: 0.8; }
 
 /* --- شريط معلومات المقال --- */
-.sy-post-meta { display: flex; align-items: center; justify-content: flex-start; flex-wrap: wrap; margin-top: 20px; margin-bottom: 15px; padding-right: 30px; color: var(--text-sec); line-height: 1.5; gap: 0; }
+.sy-post-meta { display: flex; align-items: center; justify-content: flex-start; flex-wrap: wrap; margin-top: 20px; margin-bottom: 8px; padding-right: 30px; color: var(--text-sec); line-height: 1.5; gap: 0; }
 .meta-inner { order: 3; color: var(--text-sec); line-height: 1.5; margin-top: 2px; margin-bottom: 1px; padding: 2px 25px 15px 25px; box-sizing: border-box; display: flex; align-items: center; flex-wrap: wrap; font-size: 16px; }
 .post-body .meta-inner { margin-right: -65px; margin-left: -65px; }
 @media only screen and (max-width: 768px) {
@@ -4123,9 +4123,6 @@ body.item-page .post-body > .s24-cover-injected:has(~ div[dir="rtl"] .s24-galler
 }
 .meta-el.meta-update::before { content: '|'; margin: 0 8px; opacity: 0.5; }
 .meta-label { font-size: 12px; }
-
-/* تنسيق التاريخ المعكوس - بدون لون أخضر */
-.sy-static-text { font-weight: 700 !important; }
 
 .sy-published-date,
 .sy-updated-date {
@@ -4138,16 +4135,8 @@ body.item-page .post-body > .s24-cover-injected:has(~ div[dir="rtl"] .s24-galler
 
 
 /* 1. تنسيق اسم القسم (مربع اللون + النص) */
-.sy-meta-label { display: flex; align-items: center; gap: 4px; color: var(--text-main); text-decoration: none; margin-left: 50px; }
-/* 2. تنسيق التاريخ وكلمة "آخر تحديث" */
-.sy-static-text { margin: 0px 18px 0px 5px; opacity: 0.9; }
-.sy-date-only { direction: ltr; color: var(--text-sec); margin-left: 0px; }
-/* 3. الفاصل العمودي (|) */
-.sy-meta-separator {  color: var(--text-sec); opacity: 0.4; font-size: 12px !important; margin: 0 10px; }
-/* 4. تنسيق توقيت دمشق (ص / م) */
-.sy-time-only { display: inline-flex; flex-direction: row; align-items: center; gap: 4px; color: var(--text-sec); direction: ltr; }
-.sy-t-city, .sy-t-ampm, .sy-t-num { color: var(--text-sec); } /* الخط والحجم والوزن محسومة في القاعدة الموحّدة أسفل الملف */
-.sy-t-num { letter-spacing: 0.5px; }
+.sy-meta-label { display: flex; align-items: center; gap: 4px; color: var(--text-main); text-decoration: none; }
+/* قواعد التاريخ والتوقيت والفاصل حُذفت (10 نوفمبر 2026): التاريخ انتقل إلى أسفل المقالة (.meta-inner) ولا عنصر لها في القالب */
 /* --- نهاية شريط معلومات المقال --- */
 
 
@@ -4790,9 +4779,6 @@ h1, h2, h3, h4, .post-title, .post-title a, .sy-section-title-text, .grid-title,
 .main-layout__column a, .main-layout__column a, #force-left-sidebar a, .dropdown-btn, .sy-standard-pill,.sy-label-text { font-family: var(--font-main) !important; font-weight: 700 !important; /* جعل أسماء الأقسام بارزة */ font-size: 14.5px !important; /* حجم متناسق مع القوائم الجانبية */ }
 .sy-standard-pill { font-family: var(--font-main) !important; font-weight: normal !important; /* جعل أسماء الأقسام بارزة */ font-size: 13px !important; /* حجم متناسق مع القوائم الجانبية */ }
 
-/* 4. إصلاح فني لتوقيت دمشق والبيانات الثابتة */
-.sy-t-city, .sy-t-ampm, .sy-t-num, .sy-date-only, .sy-static-text { font-family: var(--font-main) !important; font-size: 13.5px !important; font-weight: 400; opacity: 0.9; }
-
 /* 5. أزرار التحكم وتحميل المزيد */
 #load-more-btn, .home-link, .sy-more-btn, .poll__submit-button { font-family: var(--font-title) !important; font-weight: 700; font-size: 15px !important; text-transform: none; }
 
@@ -5007,10 +4993,7 @@ body.item-page .post-body .tiktok-embed {
 .sy-bc-current { max-width: 160px; }
 
 /* شريط معلومات المقال */
-.sy-post-meta { font-size: 13px !important; margin-top: 15px; margin-bottom: 10px; }
-.sy-meta-label { margin-left: 10px !important; }
-.sy-meta-separator { margin: 0 5px !important; }
-.sy-date-only, .sy-time-only, .sy-static-text, .sy-t-city, .sy-t-ampm, .sy-t-num { font-size: 13px !important; }
+.sy-post-meta { font-size: 13px !important; margin-top: 15px; margin-bottom: 6px; }
 
 /* تحسينات وإصلاحات التعليقات والردود */
 .comments, #comments { padding-right: 20px !important; padding-left: 20px !important; box-sizing: border-box !important; width: 100% !important; }
@@ -5499,7 +5482,8 @@ body.item-page .post-body .separator:not(:first-of-type) img:not(.swiper-slide i
 body.item-page h1.post-title,
 body.item-page h3.post-title {
     font-size: 31px;
-    margin: 10px 0 8px 0;
+    margin: 0 0 8px 0;
+    padding-top: 4px; /* تلغي حشوة 15px الموروثة من بطاقات الرئيسية — تقليص الفراغ تحت مربع القسم (10 نوفمبر 2026) */
     padding-right: 65px;
     padding-left: 65px;
 }
