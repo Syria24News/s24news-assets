@@ -2,6 +2,8 @@
    S24News — محرّك الشبكات المميزة (الرئيسية + صفحات الأقسام)
    ملف خارجي — لا يُعدَّل داخل قالب بلوجر
 
+   الإصدار 2.2 — 10 نوفمبر 2026: يستعمل window.S24GridPrefetch إن وُجد (جلب مبكر لخلاصة *Fa وhome-grid.json
+     يبدأ من القالب أثناء تحميل الصفحة)، فتصل بيانات الشبكة قبل DOMContentLoaded. بلا تغيير في الشكل.
    الإصدار 2.1 — 8 نوفمبر 2026: سرعة LCP على الموبايل
      - بطاقات الشبكة كلها بلا loading=lazy (عنصر LCP على الموبايل قد يكون أي بطاقة: الصور بقياس واحد)،
        وfetchpriority=high لأول بطاقتين.
@@ -101,13 +103,20 @@ document.addEventListener("DOMContentLoaded", function() {
             // مع ملف التثبيت نجلب 10 من *Fa احتياطاً لما يُستبعد منها لأنه مثبّت
             const feedUrl = '/feeds/posts/summary/-/' + encodeURIComponent(labelName) + '?alt=json&max-results=' + (cfg.pinsUrl ? 10 : 5);
 
+            // (2.2) الجلب المبكر من القالب: سكربت صغير بعد حاوية الشبكة يبدأ الطلبين أثناء تحميل الصفحة
+            // (window.S24GridPrefetch)، فلا ننتظر DOMContentLoaded لنبدأ. يُستعمل مرة واحدة وللتسمية نفسها فقط؛
+            // وإن غاب (قالب قديم) نجلب هنا كما كان
+            const pre = (cfg.pinsUrl && window.S24GridPrefetch && !window.S24GridPrefetch.used
+                         && window.S24GridPrefetch.label === labelName) ? window.S24GridPrefetch : null;
+            if (pre) pre.used = true;
+
             Promise.all([
                 // فشل الخلاصة لا يُسقط المثبّت: تُعرض الخانات المثبّتة وحدها
-                fetch(feedUrl).then(res => {
+                pre ? pre.feed : fetch(feedUrl).then(res => {
                     if (!res.ok) throw new Error("HTTP error " + res.status);
                     return res.json();
                 }).catch(err => { console.error(err); return {}; }),
-                fetchPins()
+                pre ? pre.pins : fetchPins()
             ])
             .then(([data, pins]) => {
                 const auto = (data.feed && data.feed.entry ? data.feed.entry : []).map(entryToItem);
