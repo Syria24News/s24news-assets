@@ -2,6 +2,7 @@
    S24News — مشغّل البث المباشر (playFast / loadVideoLibs)
    playFast تُستدعى من onclick داخل HTML القالب — يجب أن تبقى دالة عامة
 
+   الإصدار 2.16 — 10 نوفمبر 2026: المشغّل المصغّر على الموبايل يبدأ عند أول تفاعل للزائر بدل حدث load (السرعة)
    الإصدار 2.15 — 9 نوفمبر 2026: معرّف القناة بالمشغّل المتفق عليه نفسه (VideoJS)، ويرجع إلى إطار يوتيوب إن رفضه يوتيوب
    الإصدار 2.14 — 9 نوفمبر 2026: شكل ثابت للمشغّل — النقطة الحمراء موحّدة داخل s24Skin، وانتظار ملف يوتيوب قبل التشغيل،
                 ومهلة 15 ثانية للمرافق قبل الرجوع إلى مشغّل يوتيوب
@@ -1538,13 +1539,15 @@ function initMiniLive() {
         if (iframe.src && iframe.src !== 'about:blank') return;
         iframe.src = S24Live.embedUrl(S24Live.MINI_PARAMS);
     }
-    // يبدأ بعد اكتمال تحميل الصفحة حتى تظهر الأخبار أولاً (8 نوفمبر 2026)
-    // مع حد أقصى 10 ثوانٍ إن تأخر حدث load بسبب ملف عالق
+    // يبدأ عند أول تفاعل للزائر (2.16 — 10 نوفمبر 2026)؛ كان قبلها يبدأ بعد حدث load (8 نوفمبر)
     function afterLoad(fn) {
         var done = false;
         function run() { if (!done) { done = true; fn(); } }
-        if (document.readyState === 'complete') run();
-        else { window.addEventListener('load', run, { once: true }); setTimeout(run, 10000); }
+        // (2.16 — 10 نوفمبر 2026) يبدأ عند أول تفاعل للزائر (لمس، تمرير، نقر، لوحة مفاتيح) بدل حدث load،
+        // فلا يُحمَّل يوتيوب (~1 MB) في اختبارات السرعة الآلية التي لا تتفاعل مع الصفحة
+        var evs = ['touchstart', 'scroll', 'pointerdown', 'keydown'];
+        function onFirst() { evs.forEach(function (e) { window.removeEventListener(e, onFirst, true); }); run(); }
+        evs.forEach(function (e) { window.addEventListener(e, onFirst, { capture: true, passive: true }); });
     }
     S24Live.whenReady(function () {
         afterLoad(function () {
