@@ -2,6 +2,8 @@
    S24News — محرّك الشبكات المميزة (الرئيسية + صفحات الأقسام)
    ملف خارجي — لا يُعدَّل داخل قالب بلوجر
 
+   الإصدار 2.3 — 10 نوفمبر 2026: يبني الشبكة فور تنفيذه (readyState = interactive) بدل انتظار DOMContentLoaded؛
+     ومع نقل سطره في القالب إلى ما بعد utils.js يسبق بقية ملفات defer.
    الإصدار 2.2 — 10 نوفمبر 2026: يستعمل window.S24GridPrefetch إن وُجد (جلب مبكر لخلاصة *Fa وhome-grid.json
      يبدأ من القالب أثناء تحميل الصفحة)، فتصل بيانات الشبكة قبل DOMContentLoaded. بلا تغيير في الشكل.
    الإصدار 2.1 — 8 نوفمبر 2026: سرعة LCP على الموبايل
@@ -21,7 +23,12 @@
 // ==========================================
 // 5. Special Grids Engine (مصدر موحّد - الرئيسية + صفحات الأقسام)
 // ==========================================
-document.addEventListener("DOMContentLoaded", function() {
+// (2.3) يعمل فور تنفيذ الملف إن كانت الصفحة قد قُرئت (ملفات defer تعمل وdocument.readyState = interactive)،
+// بدل انتظار DOMContentLoaded الذي لا يقع إلا بعد تنفيذ كل ملفات defer الأخرى
+(function (boot) {
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', boot);
+    else boot();
+})(function() {
 
     // 📋 كل شبكة مميزة (رئيسية أو قسم) = عنصر واحد هنا فقط
     const SPECIAL_GRIDS_CONFIG = [
