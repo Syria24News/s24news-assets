@@ -193,11 +193,12 @@ a {
   box-shadow: 0 0 0 3px rgba(119, 189, 29, 0.1);
 }
 
-/* كتابة إنجليزية داخل موقع عربي (مثلاً بعد Ctrl+Shift في ويندوز): المربع يصير LTR
-   والمكبّرة تبقى يساراً، فننقل المسافة المحجوزة إلى اليسار حتى لا يقع النص تحت المكبّرة */
-[dir='rtl'] .search-form__input:dir(ltr) {
-  padding-inline-start: 2.8rem;
-  padding-inline-end: .938rem;
+/* Ctrl+Shift في ويندوز يضع dir="ltr" على المربع، فينتقل النص يساراً تحت المكبّرة
+   (المكبّرة تبقى يساراً لأن موضعها من الغلاف العربي). مسافة المكبّرة على الجهتين
+   تحمي النص أينما كانت المكبّرة، دون الاعتماد على اتجاه وسم <html> */
+.search-form__input[dir='ltr'] {
+  padding-left: 2.8rem;
+  padding-right: 2.8rem;
 }
 
 .search-form__submit {
