@@ -2,6 +2,7 @@
    S24News — مشغّل البث المباشر (playFast / loadVideoLibs)
    playFast تُستدعى من onclick داخل HTML القالب — يجب أن تبقى دالة عامة
 
+   الإصدار 2.17 — 10 نوفمبر 2026: حُذف حدث scroll من بدء المصغّر (سلايدر الفيديو كان يطلقه وحده)
    الإصدار 2.16 — 10 نوفمبر 2026: المشغّل المصغّر على الموبايل يبدأ عند أول تفاعل للزائر بدل حدث load (السرعة)
    الإصدار 2.15 — 9 نوفمبر 2026: معرّف القناة بالمشغّل المتفق عليه نفسه (VideoJS)، ويرجع إلى إطار يوتيوب إن رفضه يوتيوب
    الإصدار 2.14 — 9 نوفمبر 2026: شكل ثابت للمشغّل — النقطة الحمراء موحّدة داخل s24Skin، وانتظار ملف يوتيوب قبل التشغيل،
@@ -1543,9 +1544,11 @@ function initMiniLive() {
     function afterLoad(fn) {
         var done = false;
         function run() { if (!done) { done = true; fn(); } }
-        // (2.16 — 10 نوفمبر 2026) يبدأ عند أول تفاعل للزائر (لمس، تمرير، نقر، لوحة مفاتيح) بدل حدث load،
+        // (2.16 — 10 نوفمبر 2026) يبدأ عند أول تفاعل للزائر (لمس، نقر، عجلة الفأرة، لوحة مفاتيح) بدل حدث load،
         // فلا يُحمَّل يوتيوب (~1 MB) في اختبارات السرعة الآلية التي لا تتفاعل مع الصفحة
-        var evs = ['touchstart', 'scroll', 'pointerdown', 'keydown'];
+        // (2.17) بلا 'scroll': سلايدر الفيديو (#rt-video-track) يطلق scroll بنفسه عند التهيئة (~1 ث) فيبدأ المشغّل دون تفاعل؛
+        // والتمرير باللمس يطلق touchstart أصلاً
+        var evs = ['touchstart', 'pointerdown', 'keydown', 'wheel'];
         function onFirst() { evs.forEach(function (e) { window.removeEventListener(e, onFirst, true); }); run(); }
         evs.forEach(function (e) { window.addEventListener(e, onFirst, { capture: true, passive: true }); });
     }
