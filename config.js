@@ -174,8 +174,10 @@ window.labelMap = window.S24TagNames('full');
    1) يبدّل اسم التبويب فوراً دون انتظار اكتمال بقية الملفات.
    2) بعد اكتمال تحميل الصفحة يعرض في الشريط /search/label/رياضة (عرض فقط، بلا إعادة تحميل)؛
       تأجيله حتى load مقصود لأن ملفات أخرى تقرأ الرابط أثناء التحميل (label-header.js وغيره).
-   3) من يفتح الرابط العربي (تحديث الصفحة أو رابط منسوخ) يُحوَّل فوراً إلى الرابط الحقيقي،
-      لأن بلوغر لا يعرف وسماً بهذا الاسم.
+   3) من يفتح الرابط العربي (تحديث الصفحة أو رابط منسوخ) يُحوَّل إلى الرابط الحقيقي، لأن بلوغر لا يعرف
+      وسماً بهذا الاسم. (10 نوفمبر 2026) التحويل نُقل من هنا إلى سكربت صغير أول <head> في القالب، لأن
+      هذا الملف defer فكانت صفحة «لم نعثر على نتائج» تظهر لحظة قبل التحويل. قائمة map هناك تنسخ الأسماء
+      القصيرة أدناه: أي قسم جديد أو اسم قصير يتغيّر يُضاف إليها أيضاً (التذكير ظاهر في لوحة 24 ← الأقسام).
    الأسماء من القاموس نفسه (الاسم القصير). الرابط الرسمي (Canonical) يبقى كما هو.
    تنبيه: أي قسم جديد بنجمة يجب ألا يطابق اسمه القصير وسماً عادياً عليه مقالات، وإلا أضيفوه إلى SKIP. */
 (function () {
@@ -185,11 +187,6 @@ window.labelMap = window.S24TagNames('full');
   try { current = decodeURIComponent(location.pathname.slice(PREFIX.length)); } catch (e) { return; }
 
   function aliasOf(k) { return String(window.S24_TAGS[k][0]).trim().replace(/\s+/g, '-'); }
-  var tail = location.search + location.hash, aliases = {};
-  Object.keys(window.S24_TAGS).forEach(function (k) { if (!SKIP[k]) aliases[aliasOf(k)] = k; });
-
-  // فُتح الرابط العربي: تحويل إلى الرابط الحقيقي دون إضافة خطوة في سجل التصفح
-  if (aliases[current]) { location.replace(PREFIX + encodeURIComponent(aliases[current]) + tail); return; }
   if (!window.S24_TAGS[current] || SKIP[current]) return;
 
   document.title = document.title.replace(current, window.S24_TAGS[current][1]);
