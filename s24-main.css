@@ -4880,7 +4880,7 @@ body {  padding-top: 80px; overflow-x: clip; } /* clip لا hidden: hidden يج�
 .theme-toggle-wrapper { display: flex; }
 
 /* --- القوائم الجانبية (Logic) --- */
-#main-right-sidebar { display: none; position: fixed; top: 80px; bottom: 0; left: 0; right: 0; width: 100%; height: auto; background: var(--bg-card); z-index: 99999; overflow-y: auto; -webkit-overflow-scrolling: touch; padding: 20px 20px 100px 20px; flex-direction: column; border-top: 1px solid var(--border-color); }
+#main-right-sidebar { display: none; position: fixed; top: 80px; bottom: auto; left: 0; right: 0; width: 100%; height: calc(100vh - 80px); height: calc(100lvh - 80px); background: var(--bg-card); z-index: 99999; overflow-y: auto; overscroll-behavior: contain; -webkit-overflow-scrolling: touch; padding: 20px 20px 160px 20px; flex-direction: column; border-top: 1px solid var(--border-color); }
 body.sidebar-toggled #main-right-sidebar { display: flex !important; }
 #main-right-sidebar > .language-selector { align-self: flex-start; flex-shrink: 0; margin-bottom: 20px; } /* زر اللغة أعلى القائمة الجانبية (ينقله mobile-nav.js) */
 body.sidebar-toggled { overflow: hidden !important; }
