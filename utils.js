@@ -166,6 +166,11 @@ function s24MarkListThumbnail() {
             if (img) {
                 var target = (el.classList && el.classList.contains('separator')) ? el : (img.closest('.separator') || el);
                 target.classList.add('s24-list-thumb');
+                // صورة القائمة تُعرض بعرض نحو 720px: نطلب نسخة بلوغر بعرض 720 بدل الأصل s1600
+                var s24ThumbSrc = img.getAttribute('src') || '';
+                if (/googleusercontent\.com|bp\.blogspot\.com/.test(s24ThumbSrc)) {
+                    img.setAttribute('src', s24ThumbSrc.replace(/\/[swh]\d+(?:-[a-z0-9-]*)?\/(?=[^\/]+$)/, '/w720-rw/'));
+                }
                 break;
             }
             if (textLen > 0) break; // نص حقيقي بلا صورة قبل أي صورة = لا صورة غلاف لهذا المنشور
