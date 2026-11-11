@@ -23,7 +23,6 @@ h3.post-title, .post-title, .post-title a, .ajax-result-info, .hero-content,
 .result-label, .poll__wrapper, .sy-section-header, .rt-video-title, .sy-v-title,
 .s24-gallery-wrapper .s24-slide-caption, .dropdown-btn, .s24m-head,
 .s24n-cookie-container, .custom-videoclub-header,
-.FeaturedPost .post-info, .FeaturedPost .summary-content, .FeaturedPost .post-summary,
 .sy-tooltip::after {
   text-align: left !important;
 }

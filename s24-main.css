@@ -2034,9 +2034,6 @@ body.saved-page-mode .post-body .separator {
 }
 
 
-/* تخصيص المشاركة المميزة */
-.FeaturedPost{order:-10!important;margin-bottom:30px!important;width:100%!important}.FeaturedPost>h3.title,.FeaturedPost>.title{display:none!important}.FeaturedPost .widget-content,.FeaturedPost article{display:block!important;background-color:var(--bg-card)!important;border:0 solid var(--border-color)!important;border-radius:8px!important;position:relative!important;width:100%!important;box-sizing:border-box!important;margin:0!important;padding:0!important;overflow:hidden!important;transition:box-shadow .3s!important}.FeaturedPost .widget-content:hover,.FeaturedPost article:hover{box-shadow:0 5px 15px rgba(0,0,0,.08)!important}.FeaturedPost img,.FeaturedPost .post-image-link,.FeaturedPost .summary-img,.FeaturedPost .post-summary-image-container,.FeaturedPost .image-wrap,.FeaturedPost .thumbnail,.FeaturedPost .post-snippet,.FeaturedPost .summary-snippet{display:none!important;visibility:hidden!important;width:0!important;height:0!important;margin:0!important;padding:0!important}.FeaturedPost .post-info,.FeaturedPost .summary-content,.FeaturedPost .post-summary{width:100%!important;padding:20px!important;display:block!important;text-align:right!important;box-sizing:border-box!important;margin:0!important;border:none!important;float:none!important}.FeaturedPost h3.post-title,.FeaturedPost .post-title,.FeaturedPost h3{font-size:18px!important;font-weight:900!important;margin:0!important;line-height:1.5!important;display:-webkit-box!important;-webkit-line-clamp:2!important;-webkit-box-orient:vertical!important;overflow:hidden!important}.FeaturedPost h3.post-title a,.FeaturedPost .post-title a,.FeaturedPost h3 a{color:var(--text-main)!important;text-decoration:none!important}
-
 /* تخصيص المشاركة المثبتة */
 .pinned-hero-card{display:flex;flex-direction:row;background-color:var(--bg-card);border:1px solid var(--border-color);border-radius:8px;overflow:hidden;text-decoration:none;align-items:stretch;width:100%!important;box-sizing:border-box;position:relative;margin-bottom:30px}.hero-img{width:190px;height:125px;flex:0 0 190px;background-size:cover;background-position:center}.hero-content{width:calc(100% - 190px);padding:15px 20px;display:flex;flex-direction:column;justify-content:center;align-items:flex-start;text-align:right;box-sizing:border-box;min-width:0;position:relative}.hero-title{font-size:18px;font-weight:900;color:var(--text-main);margin:0;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden} #HTML6 .title,#HTML6 h2{display:none!important}
 
@@ -5063,9 +5060,6 @@ body #comments .comment-thread .comment-thread { padding-right: 12px !important;
 /* شبكة الأخبار المميزة (الرئيسية والأقسام) */
 #special-news-grid .grid-item img,#category-special-grid .grid-item img{width:160px !important;height:110px !important}
 
-
-/* تخصيص المشاركة المميزة */
-.FeaturedPost .post-info,.FeaturedPost .summary-content,.FeaturedPost .post-summary{padding:15px!important}.FeaturedPost h3.post-title,.FeaturedPost .post-title,.FeaturedPost h3{font-size:15px!important;-webkit-line-clamp:3!important}
 
 /* تخصيص المشاركة المثبتة */
 .hero-img{width:160px;height:110px;flex:0 0 160px}.hero-content{width:calc(100% - 160px);padding:10px 12px}.hero-title{font-size:14px;-webkit-line-clamp:3}
