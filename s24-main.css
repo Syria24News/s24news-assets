@@ -1311,11 +1311,52 @@ body#layout #grid-label-config { display: block; border: 2px dashed orange; back
     flex-shrink: 0;
 }
 
-/* 6. تحسين شكل القائمة المنسدلة (General Info) */
+/* 6. قائمة «معلومات عامة» (أداة LinkList3) — نُقلت من القالب في 11 نوفمبر 2026
+   (كانت كتلتَي <style> داخل الأداة). الطيّ والمجموعات الفرعية يبنيها misc2.js.
+   الخط والوزن العامّان لروابط العمود يأتيان من قاعدة «إصلاح القائمة الجانبية» (‎14.5px عريض !important) */
+.custom-dropdown-container { position: relative; width: 100%; }
+
 .dropdown-btn {
-    background-color: var(--color-white-f7);
+    background-color: transparent;
+    color: var(--text-main, #000);
+    width: 100%; padding: 14px 16px 16px 8px;
     margin-bottom: 5px;
+    font-family: inherit; font-size: 15px; font-weight: bold;
+    border: none; border-radius: 0; cursor: pointer;
+    display: flex; justify-content: flex-start; gap: 15px; /* السهم قريب من النص */
+    align-items: center; text-align: right;
+    transition: opacity 0.3s ease;
 }
+.dropdown-btn:hover { background-color: transparent; color: var(--text-main, #000); opacity: 0.7; }
+
+/* السهم الرئيسي: يدور للأسفل عند فتح القائمة */
+.btn-icon { font-size: 18px; transition: transform 0.3s ease; }
+.dropdown-btn.active .btn-icon { transform: rotate(90deg); }
+
+.dropdown-content { display: none; background-color: transparent; border: none; width: 100%; box-sizing: border-box; }
+.dropdown-content ul { list-style: none; margin: 0; padding: 0; }
+.dropdown-content li { border-bottom: none; margin: 0; }
+.dropdown-content a { display: flex; align-items: center; gap: 10px; padding: 12px 20px; font-family: inherit; text-decoration: none; color: var(--text-sec, #555); font-size: 15px; transition: color 0.2s; }
+/* اللون فقط عند التمرير، بلا إزاحة (حُذفت padding-right: 25px التي كانت تحرّك الرابط) */
+.dropdown-content a:hover { background-color: transparent; color: var(--text-main, #000); }
+
+/* رؤوس المجموعات (الروابط التي عنوانها «#») */
+.s24m-group { margin: 2px 0; }
+.s24m-head { width: 100%; display: flex; align-items: center; justify-content: flex-start; gap: 10px; padding: 12px 20px; border: 0; border-radius: 8px; background: transparent; color: var(--text-main, #000); font-family: inherit; font-size: 15px; font-weight: 700; text-align: right; cursor: pointer; transition: background-color 0.2s; }
+.s24m-head:hover { background-color: var(--border-color); }
+.s24m-head svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.5; stroke-linecap: round; stroke-linejoin: round; transition: transform 0.25s; flex-shrink: 0; }
+.s24m-group.is-open > .s24m-head { background-color: var(--border-color); }
+.s24m-group.is-open > .s24m-head svg { transform: rotate(180deg); }
+.dropdown-content ul.s24m-sub { display: none; padding: 4px 14px 6px 0; }
+.s24m-group.is-open > .s24m-sub { display: block; }
+
+/* الروابط الفرعية تحت المجموعة: خط أخفّ ولون ثانوي — مثل تفريعات «برامج القناة» في القائمة اليمنى.
+   #force-left-sidebar للكمبيوتر، و.main-layout__column للموبايل (mobile-nav.js ينقل القائمة إلى العمود الأيمن) */
+#force-left-sidebar .s24m-sub a, .main-layout__column .s24m-sub a { font-size: 14px !important; font-weight: 500 !important; color: var(--text-sec); }
+#force-left-sidebar .s24m-sub a:hover, .main-layout__column .s24m-sub a:hover { color: var(--text-main); }
+
+/* رابط الصفحة الحالية أخضر عريض — بمحدّد المعرّف لأن «#force-left-sidebar a» كان يغلب لونه على الكمبيوتر */
+#force-left-sidebar a.s24m-current, .main-layout__column a.s24m-current { color: var(--sy-green, #77bd1d); font-weight: 700 !important; }
 
 
 /* إصلاح مشكلة المسافة المضاعفة (الفراغات الوهمية) في الحاوية الرئيسية */

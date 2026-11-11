@@ -10,7 +10,10 @@
    • الرابط الذي يبدأ اسمه بشرطة «-» يدخل تحت أقرب رأس مجموعة فوقه (وتُحذف الشرطة من العرض)
    • الرابط بلا شرطة يبقى مستقلاً في القائمة الرئيسية، ويُنهي المجموعة التي قبله
      (تُدار كلها من «التنسيق» ← أداة «معلومات عامة»، والفرز «بلا فرز»)
-   • فتح مجموعة يغلق الأخرى، والمجموعة التي فيها الصفحة الحالية تُفتح تلقائياً وتُميَّز الصفحة */
+   • فتح مجموعة يغلق الأخرى، والمجموعة التي فيها الصفحة الحالية تُفتح تلقائياً وتُميَّز الصفحة
+   • (11 نوفمبر 2026) الرابط إلى موقع آخر — ومنه النطاقات الفرعية مثل mysnaplinks.syria24.news —
+     يُفتح في صفحة جديدة، والرابط داخل الموقع يُفتح في الصفحة نفسها. تلقائي، بلا أي علامة في الأداة
+   • خط الروابط الفرعية وألوانها في s24-main.css (قسم «قائمة معلومات عامة») */
 function toggleLinkList3(btn) {
   var content = document.getElementById('linklist3-content');
   if (content.style.display === 'block') {
@@ -58,10 +61,14 @@ document.addEventListener('DOMContentLoaded', function () {
       head.addEventListener('click', function () { toggle(li); });
       return;
     }
-    // تمييز رابط الصفحة الحالية
+    // تمييز رابط الصفحة الحالية، وفتح روابط المواقع الأخرى في صفحة جديدة
     if (a) {
       try {
-        if (new URL(a.href, location.href).pathname.replace(/\/$/, '') === here) {
+        var u = new URL(a.href, location.href);
+        if (u.host !== location.host) {
+          a.target = '_blank';
+          a.rel = 'noopener';
+        } else if (u.pathname.replace(/\/$/, '') === here) {
           a.classList.add('s24m-current');
           if (group) currentGroup = group.li;
         }
