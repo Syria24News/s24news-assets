@@ -2,6 +2,8 @@
    S24News — مشغّل البث المباشر (playFast / loadVideoLibs)
    playFast تُستدعى من onclick داخل HTML القالب — يجب أن تبقى دالة عامة
 
+   الإصدار 2.19 — 11 نوفمبر 2026: إخفاء لوحة يوتيوب الرمادية عُمّم على المشغّلين الجانبي (الرئيسية) والمرافق،
+                بدالة واحدة مشتركة s24HideUntilPlaying
    الإصدار 2.18 — 11 نوفمبر 2026: (1) شاشة صفحة البث تبقى على صورة الغلاف ودائرة التحميل حتى يبدأ الفيديو فعلاً،
                 فلا تظهر لوحة يوتيوب الرمادية (النقاط الثلاث) أثناء التحميل. (2) زر ⤒ في العائم يُرجع الصندوق كاملاً
                 تحت الهيدر بدل أن يُخفي الهيدرُ رأسه؛ وارتفاع الهيدر يُقرأ قيمةً فعلية (كان يُقرأ صفراً)
@@ -913,6 +915,8 @@ window.S24Live = (function () {
                 unregister('follow');
                 showFollow(saved, false);
             }, held);
+            // لا لوحة يوتيوب الرمادية أثناء التحميل (2.19). الموقوف بمشغّل آخر (held) لا يبدأ وحده، فيظهر فوراً
+            if (!held) s24HideUntilPlaying(vp);
             s24WatchDown(vp);
             vp.ready(function () {
                 setTimeout(function () { vjsArmed = true; }, 1500);
@@ -1270,6 +1274,27 @@ function s24YtOpts(opts, source) {
     if (source.vars) opts.customVars = source.vars;
     return opts;
 }
+// إخفاء لوحة تحميل يوتيوب الرمادية (2.18 لصفحة البث، وعُمّمت في 2.19 على الجانبي والمرافق):
+// المشغّل شفاف حتى يبدأ الفيديو فعلاً، فيبقى ما تحته ظاهراً (صورة الغلاف ودائرة التحميل).
+// يظهر أيضاً عند خطأ، أو بعد 8 ثوانٍ إن منع المتصفح التشغيل التلقائي كي يضغط القارئ زر التشغيل بنفسه.
+// loaderId اختياري: دائرة التحميل تُخفى لحظة الظهور
+function s24HideUntilPlaying(player, loaderId) {
+    var el = player.el(), t = 0;
+    el.style.opacity = '0';
+    el.style.transition = 'opacity .3s ease';
+    function reveal() {
+        clearTimeout(t);
+        if (player.isDisposed()) return;
+        el.style.opacity = '';
+        var l = loaderId && document.getElementById(loaderId);
+        if (l) l.style.display = 'none';
+    }
+    player.one('playing', reveal);
+    player.one('error', reveal);
+    t = setTimeout(reveal, 8000);
+    return reveal;
+}
+
 // حارس القناة: إن رفض يوتيوب التشغيل أو لم يبدأ خلال 15 ثانية، يرجع إلى إطار يوتيوب كما كان (fallback)
 function s24ChannelGuard(player, fallback, noTimer) {
     var done = false, t = 0;
@@ -1399,22 +1424,7 @@ function launchPlayer() {
         language: 'ar'
     });
 
-    // 2.18: المشغّل مخفي (شفاف) حتى يبدأ الفيديو فعلاً، فتبقى صورة الغلاف ودائرة التحميل ظاهرتين
-    // بدل لوحة يوتيوب الرمادية. يظهر أيضاً عند خطأ، أو بعد 8 ثوانٍ إن منع المتصفح التشغيل التلقائي
-    // كي يضغط القارئ زر التشغيل بنفسه
-    var vjsEl = player.el();
-    vjsEl.style.opacity = '0';
-    vjsEl.style.transition = 'opacity .3s ease';
-    var revealT = 0;
-    function reveal() {
-        clearTimeout(revealT);
-        if (player.isDisposed()) return;
-        vjsEl.style.opacity = '';
-        document.getElementById('fast-loader').style.display = 'none';
-    }
-    player.one('playing', reveal);
-    player.one('error', reveal);
-    revealT = setTimeout(reveal, 8000);
+    s24HideUntilPlaying(player, 'fast-loader');   // لا لوحة يوتيوب الرمادية أثناء التحميل (2.18)
 
     if (isChannel) s24ChannelGuard(player, channelFrame);
     s24WatchDown(player, 'fast-loader');   // انقطاع مفاجئ ← رسالة الموقع (3 نوفمبر 2026)
@@ -1550,6 +1560,8 @@ function launchSidebarPlayer() {
         liveui: true,
         language: 'ar'
     });
+
+    s24HideUntilPlaying(player, 'sidebar-loader');   // لا لوحة يوتيوب الرمادية أثناء التحميل (2.19)
 
     if (isChannel) s24ChannelGuard(player, channelFrame);
     s24WatchDown(player, 'sidebar-loader');   // انقطاع مفاجئ ← رسالة الموقع (3 نوفمبر 2026، بطلب حسان)
