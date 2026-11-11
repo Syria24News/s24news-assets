@@ -299,10 +299,11 @@ document.addEventListener("DOMContentLoaded", function() {
     var BOX_HALF    = 150;  // نصف أقصى عرض للصندوق + هامش
     var openEl      = null;
 
-    function place(el) {
+    function place(el, gather) {
         // إن انقسمت العبارة على أكثر من سطر نجمعها مؤقتاً ليبقى للصندوق مرجع واحد
+        // (عند اللمس/النقر فقط؛ التجميع مع التحويم يحرّك العبارة من تحت الماوس فتتكرر الدورة ويرتجّ النص)
         el.classList.remove('sy-tt-block');
-        if (el.getClientRects().length > 1) el.classList.add('sy-tt-block');
+        if (gather !== false && el.getClientRects().length > 1) el.classList.add('sy-tt-block');
         var r  = el.getBoundingClientRect();
         var vw = window.innerWidth;
 
@@ -322,7 +323,7 @@ document.addEventListener("DOMContentLoaded", function() {
     // الماوس: يُحسب الموضع قبل ظهور الصندوق
     document.addEventListener('mouseover', function (e) {
         var el = e.target && e.target.closest ? e.target.closest('.sy-tooltip') : null;
-        if (el) place(el);
+        if (el) place(el, false);   // التحويم: تموضع فقط بلا تجميع
     }, true);
 
     // عند مغادرة الماوس تعود العبارة إلى انسيابها الطبيعي
