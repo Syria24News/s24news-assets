@@ -4398,16 +4398,6 @@ body.s24-glossary-article #comments {
 
 /* 🆕 معرض الصور والفيديو: لا شيء يُخفى — كل شيء ظاهر مثل المقال العادي تماماً */
 
-/* 🆕 صورة غلاف الفيديو + زر التشغيل المخصص (مستوحى من مرجع سانا، بهوية الموقع)
-   نفس لغة التصميم المستخدمة أصلاً بكرت الفيديو بالرئيسية (خلفية داكنة + أيقونة بيضاء + sy-green عند التمرير) */
-
-.s24-video-poster-wrapper { position: relative; width: 100%; }
-.s24-video-poster-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; cursor: pointer; }
-.s24-video-poster-overlay img { width: 100%; height: 100%; object-fit: cover; display: block; }
-.s24-video-play-btn { position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; align-items: center; justify-content: center; background: rgba(0,0,0,0.2); transition: background 0.2s ease; }
-.s24-video-play-btn svg { width: 64px; height: 64px; fill: #fff; filter: drop-shadow(0 2px 6px rgba(0,0,0,0.5)); transition: fill 0.2s ease; }
-.s24-video-poster-overlay:hover .s24-video-play-btn { background: rgba(255,255,255,0.1); }
-.s24-video-poster-overlay:hover .s24-video-play-btn svg { fill: var(--sy-green); }
 
 
 /* ===== الفيديو القائد: عرض كامل 100% مطابق تماماً لمعاملة الصورة الأولى =====
@@ -4415,7 +4405,6 @@ body.s24-glossary-article #comments {
    الكشف، ويشمل الحالتين معاً (مرفوع من الجهاز عبر object.BLOG_video_class، ويوتيوب
    عبر iframe) بصرف النظر عمّا إذا استبدل بلوجر الـobject بـiframe داخلياً أم لا */
 body.s24-video-article .s24-lead-video-wrapper,
-body.s24-video-article .s24-lead-video-wrapper .s24-video-poster-wrapper,
 body.s24-video-article .s24-lead-video-wrapper object.BLOG_video_class,
 body.item-page.s24-video-article .s24-lead-video-wrapper iframe,
 body.s24-video-article .s24-lead-video-wrapper video,
@@ -4478,13 +4467,6 @@ body.item-page.s24-video-article .post-body .s24-lead-video-wrapper embed {
 }
 
 
-body.item-page.s24-video-article .post-body .separator.s24-lead-video-wrapper .s24-video-poster-wrapper .s24-video-poster-overlay img {
-    width: 100% !important;
-    height: 100% !important;
-    max-width: 100% !important;
-    object-fit: cover !important;
-    display: block !important;
-}
 
 
 /* عند التفاعل */
