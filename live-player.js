@@ -2,6 +2,9 @@
    S24News — مشغّل البث المباشر (playFast / loadVideoLibs)
    playFast تُستدعى من onclick داخل HTML القالب — يجب أن تبقى دالة عامة
 
+   الإصدار 2.18 — 11 نوفمبر 2026: (1) شاشة صفحة البث تبقى على صورة الغلاف ودائرة التحميل حتى يبدأ الفيديو فعلاً،
+                فلا تظهر لوحة يوتيوب الرمادية (النقاط الثلاث) أثناء التحميل. (2) زر ⤒ في العائم يُرجع الصندوق كاملاً
+                تحت الهيدر بدل أن يُخفي الهيدرُ رأسه؛ وارتفاع الهيدر يُقرأ قيمةً فعلية (كان يُقرأ صفراً)
    الإصدار 2.17 — 10 نوفمبر 2026: حُذف حدث scroll من بدء المصغّر (سلايدر الفيديو كان يطلقه وحده)
    الإصدار 2.16 — 10 نوفمبر 2026: المشغّل المصغّر على الموبايل يبدأ عند أول تفاعل للزائر بدل حدث load (السرعة)
    الإصدار 2.15 — 9 نوفمبر 2026: معرّف القناة بالمشغّل المتفق عليه نفسه (VideoJS)، ويرجع إلى إطار يوتيوب إن رفضه يوتيوب
@@ -35,6 +38,17 @@
 /* ============ الغلاف ورسالة الانقطاع (3 نوفمبر 2026) ============
    الغلاف: رابط «صورة الغلاف» من اللوحة، وإلا صورة البث نفسه من يوتيوب (فيديو برقم)، وإلا خلفية داكنة بلا صورة.
    الانقطاع: حين يُبلغ VideoJS أن البث انتهى أو تعذّر تشغيله، تظهر رسالة الموقع بدل رسالة يوتيوب. */
+// ارتفاع الهيدر المثبّت + شريط العاجل بالبكسل (2.18). المتغيّر --sticky-top-offset مكتوب بصيغة calc()،
+// وقراءته بـ getPropertyValue تعيد النص لا الرقم، فيلزم قياسه على عنصر مؤقت
+function s24StickyTop() {
+    var p = document.createElement('div');
+    p.style.cssText = 'position:absolute;visibility:hidden;pointer-events:none;top:0;width:0;' +
+        'height:calc(var(--sticky-top-offset, 0px) + var(--s24-breaking-h, 0px))';
+    document.body.appendChild(p);
+    var h = p.offsetHeight;
+    p.remove();
+    return h;
+}
 function s24Poster() {
     var c = window.LIVE_CONFIG || {};
     if (c.posterImage) return c.posterImage;
@@ -564,18 +578,19 @@ window.S24Live = (function () {
         }
         function check() {
             if (!mq.matches) return setFloat(false);
-            var top = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--sticky-top-offset')) || 0;
+            if (stickyH < 0) stickyH = s24StickyTop();
+            var top = stickyH;
             var out = box.getBoundingClientRect().bottom < top + 60;
             if (!out) dismissed = false;
             setFloat(out && !dismissed && started());
         }
-        var queued = false;
+        var queued = false, stickyH = -1;   // ارتفاع الهيدر يُحسب مرة ويُعاد عند تغيّر حجم النافذة
         window.addEventListener('scroll', function () {
             if (queued) return;
             queued = true;
             requestAnimationFrame(function () { queued = false; check(); });
         }, { passive: true });
-        window.addEventListener('resize', function () { if (floating) place(); check(); });
+        window.addEventListener('resize', function () { stickyH = -1; if (floating) place(); check(); });
 
         // السحب من الشريط إلى أي مكان، فوق كل شيء حتى الهيدر (لا من الفيديو، كي تبقى أزرار المشغّل تعمل)
         var drag = null;
@@ -641,7 +656,11 @@ window.S24Live = (function () {
             var b = e.target.closest('button');
             if (!b) return;
             if (b.getAttribute('data-a') === 'x') { dismissed = true; setFloat(false); ss(FOLLOW_OFF, '1'); ss(FOLLOW, null); }
-            else box.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            else {
+                // ⤒: رأس الصندوق (العنوان وشارة «مباشر») يظهر كاملاً تحت الهيدر المثبّت، لا تحته (2.18)
+                var y = box.getBoundingClientRect().top + window.pageYOffset - s24StickyTop() - 10;
+                window.scrollTo({ top: Math.max(0, y), behavior: 'smooth' });
+            }
         });
     }
 
@@ -1379,6 +1398,23 @@ function launchPlayer() {
         liveui: true,
         language: 'ar'
     });
+
+    // 2.18: المشغّل مخفي (شفاف) حتى يبدأ الفيديو فعلاً، فتبقى صورة الغلاف ودائرة التحميل ظاهرتين
+    // بدل لوحة يوتيوب الرمادية. يظهر أيضاً عند خطأ، أو بعد 8 ثوانٍ إن منع المتصفح التشغيل التلقائي
+    // كي يضغط القارئ زر التشغيل بنفسه
+    var vjsEl = player.el();
+    vjsEl.style.opacity = '0';
+    vjsEl.style.transition = 'opacity .3s ease';
+    var revealT = 0;
+    function reveal() {
+        clearTimeout(revealT);
+        if (player.isDisposed()) return;
+        vjsEl.style.opacity = '';
+        document.getElementById('fast-loader').style.display = 'none';
+    }
+    player.one('playing', reveal);
+    player.one('error', reveal);
+    revealT = setTimeout(reveal, 8000);
 
     if (isChannel) s24ChannelGuard(player, channelFrame);
     s24WatchDown(player, 'fast-loader');   // انقطاع مفاجئ ← رسالة الموقع (3 نوفمبر 2026)
