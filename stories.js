@@ -397,7 +397,8 @@ document.addEventListener("DOMContentLoaded", function() {
     // ============================================================
     // 4. تحميل مجموعة كاملة
     // ============================================================
-    function loadStoryGroup(groupIndex, direction) {
+    // startAtEnd: عند الرجوع من مجموعة لاحقة تبدأ المجموعة السابقة من آخر قصة فيها
+    function loadStoryGroup(groupIndex, direction, startAtEnd) {
         direction = (direction === undefined) ? 1 : direction;
         if (groupIndex < 0 || groupIndex >= storyItemsArray.length) {
             closeOverlay();
@@ -409,7 +410,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
         getGroupData(groupIndex, function(groupData) {
             if (!groupData || groupData.posts.length === 0) {
-                loadStoryGroup(groupIndex + direction, direction);
+                loadStoryGroup(groupIndex + direction, direction, startAtEnd);
                 return;
             }
 
@@ -424,7 +425,7 @@ document.addEventListener("DOMContentLoaded", function() {
             catEl.innerText = groupData.sectionName;
             iconEl.src = groupData.sectionIcon;
             createSegments(posts.length);
-            currentIndex = 0;
+            currentIndex = startAtEnd ? posts.length - 1 : 0;
             showSlide();
 
             prefetchAdjacentGroups(groupIndex);
@@ -633,7 +634,7 @@ document.addEventListener("DOMContentLoaded", function() {
             currentIndex--;
             showSlide();
         } else if (currentGroupIndex > 0) {
-            loadStoryGroup(currentGroupIndex - 1, -1);
+            loadStoryGroup(currentGroupIndex - 1, -1, true);
         } else {
             showSlide();
         }
