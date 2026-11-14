@@ -640,7 +640,7 @@ document.addEventListener("DOMContentLoaded", function() {
     }
     window.nextSlide = nextSlide; window.prevSlide = prevSlide;
 
-    function openOverlay() { overlay.style.display = 'flex'; setTimeout(() => overlay.classList.add('active'), 10); document.body.style.overflow = 'hidden'; }
+    function openOverlay() { overlay.style.display = 'flex'; setTimeout(() => overlay.classList.add('active'), 10); document.documentElement.style.overflow = 'hidden'; /* القفل على html لا body: قفل body يكسر التصاق شريط العاجل */ }
     function closeOverlay() {
         currentLoadTicket++;
         overlay.classList.remove('active');
@@ -648,7 +648,7 @@ document.addEventListener("DOMContentLoaded", function() {
         clearInterval(progressInterval);
         stopCurrentMedia();
         fullImg.src = '';
-        document.body.style.overflow = '';
+        document.documentElement.style.overflow = ''; /* يعود html إلى قاعدته في CSS (overflow-x: hidden) */
         isHoveringCard = false;
     }
 
