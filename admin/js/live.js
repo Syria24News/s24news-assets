@@ -1,5 +1,10 @@
 /* ============================================================
    S24News — وحدة التغطية الحية في لوحة التحكم (admin/js/live.js)
+   الإصدار 1.6 — 14 نوفمبر 2026 (وقت الخبر السريع: حقل «وقت الخبر» تاريخاً وساعةً معاً، عند النشر وعند التعديل.
+     فارغ = الآن؛ وقت سابق يُقبل حتى بداية التغطية الحالية؛ لا وقت لاحق (التغطية لا تدعم الجدولة).
+     الربط بمقالة لا يغيّر الوقت. lastAt.grN يُضبط معه (يرتفع إن صار الخبر الأحدث، ويُعاد حسابه إن تأخّر آخر خبر).
+     خبر من تغطية سابقة وقته ثابت. يتطلب في قواعد Firestore: 'timestamp' ضمن حقول تعديل الخبر السريع،
+     ومنع الوقت اللاحق في validQuick. شريط العاجل لا يتأثر: الخبر الجديد العاجل يبقى فيه ساعة من لحظة النشر)
    الإصدار 1.5 — 19 أكتوبر 2026 (حذف تغطية مؤرشفة نهائياً: زر «حذف» في جدول الأرشيف فقط — يحذف بطاقتها
      وكل أخبارها في فترتها من live_coverage، ويزيل خبرها السريع العاجل من الشريط إن بقي. مقالات بلوغر لا تُمسّ.
      يتطلب قاعدة Firestore تسمح للمشرف بحذف أخبار live_coverage؛ إن رفضتها القواعد لا يُحذف شيء)
@@ -30,9 +35,10 @@
    الأخبار (live_coverage): عرض آخر 50 لكل مجموعة + إخفاء/إظهار (حقل hidden فقط).
    الخبر السريع: مستند live_coverage/q_<وقت> بالحقل quick: true، تكتبه اللوحة وحدها
      { postId, title, content:'', timestamp, url, groupId, groupName, isUrgent, hidden, quick, linkedPostId, createdAt }
+     - timestamp = «وقت الخبر» الذي يختاره المحرر (فارغ = الآن)، ويُعدَّل لاحقاً من «تعديل / ربط» (1.6).
      - ينشر فوراً ويحدّث lastAt.grN (ليظهر في صندوق الرئيسية) في دفعة كتابة واحدة.
      - الربط بمقالة: url = رابطها؛ وإن كانت المقالة نفسها خبراً في التغطية تُخفى (hidden) حتى لا يتكرر الخبر،
-       ويصبح الخبر السريع قابلاً للضغط في وقته الأصلي. فك الربط أو حذف الخبر السريع يعيد إظهارها.
+       ويصبح الخبر السريع قابلاً للضغط في وقته («وقت الخبر»، لا وقت المقالة). فك الربط أو حذف الخبر السريع يعيد إظهارها.
      - Apps Script لا يحذفه في التنظيف (معرّف يبدأ بـ q_).
    زر "زامن الآن": يستدعي تطبيق الويب لمشروع Syria24_Coverage_Migration (?action=sync).
 
@@ -42,7 +48,7 @@
 import { db, $, esc, clean, fmtDate, fmtAgo, toast, errText, smartLoad, commit, callDeferred,
   requireOnline, isOnline, collection, doc, updateDoc, deleteDoc, writeBatch, query, where, orderBy, limit,
   serverTimestamp, getDocsFromServer } from './core.js';
-import { deleteField } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
+import { deleteField, getDocFromServer } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 import { addBreakingToBatch, quickBreakingId, syncQuickToBreaking, removeQuickFromBreaking,
   endQuickInBreaking, setPostHiddenInBreaking } from './breaking.js';
 
@@ -113,6 +119,8 @@ const MARKUP = `
         <li><b>خبر سريع عاجل:</b> يصل إلى شريط العاجل تحت الهيدر لمدة ساعة (يُلغى من نافذته)، ويُدار هناك من قسم «الخبر العاجل».</li>
         <li><b>خبر سريع بلا مقالة:</b> زر «+ خبر سريع» في المجموعة. يظهر فوراً دون مزامنة، ونصه غير قابل للضغط.
           حين تنشر مقالته لاحقاً: «الأخبار» ← «تعديل» على الخبر السريع ← اختر المقالة، فيصبح قابلاً للضغط ولا يتكرر.</li>
+        <li><b>وقت الخبر السريع:</b> حقل «وقت الخبر» (التاريخ والساعة معاً) عند النشر، ويُعدَّل لاحقاً من «تعديل / ربط».
+          فارغ = الآن، ويُقبل وقت سابق حتى بداية التغطية الحالية، ولا يُقبل وقت لاحق. الربط بمقالة لا يغيّر الوقت.</li>
       </ol>
     </details>
 
@@ -194,13 +202,20 @@ const MARKUP = `
           <label id="lvQBarWrap" style="display:flex;gap:8px;align-items:center;cursor:pointer" hidden>
             <input type="checkbox" id="lvQBar" checked> يظهر أيضاً في شريط العاجل تحت الهيدر لمدة ساعة
           </label>
+          <div style="display:flex;gap:8px;align-items:flex-end;flex-wrap:wrap">
+            <label class="field" style="flex:1;min-width:200px"><span>وقت الخبر — التاريخ والساعة (فارغ = الآن، بتوقيت جهازك)</span>
+              <input class="input" id="lvQTime" type="datetime-local">
+            </label>
+            <button class="btn" id="lvQTimeNow" type="button">الآن</button>
+          </div>
+          <div class="hint" id="lvQTimeHint">يُرتَّب الخبر في الخط الزمني بهذا الوقت ويظهر به. يُقبل وقت سابق حتى بداية التغطية الحالية، ولا يُقبل وقت لاحق.</div>
           <label class="field"><span>ربط بمقالة من التغطية (اختياري)</span>
             <select class="input" id="lvQPick"></select>
           </label>
           <label class="field"><span>أو الصق رابط مقالة من الموقع (اختياري)</span>
             <input class="input" id="lvQUrl" type="url" dir="ltr" placeholder="https://www.syria24.news/...">
           </label>
-          <div class="hint">بلا ربط: يظهر الخبر نصاً غير قابل للضغط. مع الربط: يصبح قابلاً للضغط ويبقى في وقته الأصلي،
+          <div class="hint">بلا ربط: يظهر الخبر نصاً غير قابل للضغط. مع الربط: يصبح قابلاً للضغط ويبقى في «وقت الخبر» أعلاه (لا يأخذ وقت المقالة)،
             وإن كانت المقالة المختارة خبراً في التغطية تُخفى تلقائياً حتى لا يتكرر الخبر.</div>
         </div>
       </div>
@@ -216,6 +231,12 @@ const MARKUP = `
 const groupsRef = () => doc(db, 'coverage_groups', 'current');
 const num = (v) => Number(v) || 0;
 const tagOf = (id) => '<!-- COVERAGE: ' + id + ' -->';
+const FUTURE_SLACK = 60 * 1000;            // سماحية دقيقة لفرق ساعة الجهاز (القواعد تسمح بعشر دقائق)
+// قيمة datetime-local من وقت (بتوقيت الجهاز) — كما في وحدة «هام»
+function toLocalInput(ms) {
+  const d = new Date(ms - new Date(ms).getTimezoneOffset() * 60000);
+  return d.toISOString().slice(0, 16);
+}
 
 // ترتيب gr1، gr2 … gr10 رقمياً
 function sortIds(ids) {
@@ -700,6 +721,18 @@ export default {
       $('lvQBarWrap').hidden = !!item || !$('lvQUrgent').checked;
       $('lvQSave').textContent = item ? 'حفظ' : 'نشر';
       $('lvQMsg').textContent = '';
+      // وقت الخبر: الجديد فارغ (= الآن)، والمعدَّل بوقته الحالي. خبر من تغطية سابقة وقته ثابت
+      const qStart = num((data.since || {})[id]);
+      const fixed = !!(item && qStart && num(item.timestamp) < qStart);
+      $('lvQTime').value = item ? toLocalInput(num(item.timestamp)) : '';
+      $('lvQTime').disabled = fixed;
+      $('lvQTimeNow').disabled = fixed;
+      $('lvQTime').max = toLocalInput(Date.now() + 5 * 60 * 1000);
+      $('lvQTime').min = qStart ? toLocalInput(qStart) : '';
+      $('lvQTimeHint').textContent = fixed
+        ? 'هذا الخبر من تغطية سابقة، ووقته ثابت حتى لا يخرج من فترتها في الأرشيف.'
+        : 'يُرتَّب الخبر في الخط الزمني بهذا الوقت ويظهر به. يُقبل وقت سابق حتى بداية التغطية الحالية' +
+          (qStart ? ' (' + fmtDate(qStart) + ')' : '') + '، ولا يُقبل وقت لاحق.';
 
       // قائمة المقالات: أخبار بلوغر في التغطية الحالية (الأحدث أولاً)
       const start = num((data.since || {})[id]);
@@ -725,6 +758,7 @@ export default {
     }
 
     $('lvQText').addEventListener('input', () => { $('lvQCount').textContent = $('lvQText').value.length; });
+    $('lvQTimeNow').addEventListener('click', () => { $('lvQTime').value = toLocalInput(Date.now()); });
     $('lvQUrgent').addEventListener('change', () => { $('lvQBarWrap').hidden = !!qItem || !$('lvQUrgent').checked; });
     // اختيار مقالة من القائمة يُفرغ حقل الرابط، والعكس
     $('lvQPick').addEventListener('change', () => { if ($('lvQPick').value) $('lvQUrl').value = ''; });
@@ -744,11 +778,47 @@ export default {
       const now = Date.now();
       const old = qItem;
 
+      // وقت الخبر (تاريخ + ساعة معاً من حقل واحد): فارغ = الآن للخبر الجديد، ويبقى كما هو للمعدَّل
+      const start = num((data.since || {})[gid]);
+      const tVal = $('lvQTime').value;
+      let ts;
+      if ($('lvQTime').disabled) ts = num(old && old.timestamp);
+      else if (!tVal) ts = old ? num(old.timestamp) : now;
+      else {
+        ts = Date.parse(tVal);
+        if (isNaN(ts)) { msg.textContent = 'وقت الخبر غير صالح'; return; }
+        // الدقيقة نفسها التي كان عليها الخبر = بلا تغيير (الحقل لا يحمل الثواني)
+        if (old && Math.floor(num(old.timestamp) / 60000) === Math.floor(ts / 60000)) ts = num(old.timestamp);
+      }
+      if (ts > now + FUTURE_SLACK) { msg.textContent = 'لا يُقبل وقت لاحق — التغطية لا تدعم النشر المجدول'; return; }
+      if (start && ts < start && !(old && ts === num(old.timestamp))) {
+        msg.textContent = 'الوقت قبل بداية التغطية الحالية (' + fmtDate(start) + ')، فلن يظهر الخبر';
+        return;
+      }
+      const timeChanged = !!old && ts !== num(old.timestamp);
+      // آخر خبر في التغطية (lastAt): يرتفع فقط ولا ينقص — إن صار هذا الخبر أحدث من آخر خبر.
+      // القيمة تُقرأ من الخادم أولاً (قراءة واحدة) حتى لا تُكتب فوق خبر وصل من بلوغر بعد آخر تحميل.
+      // وإن تأخّر وقت آخر خبر يعيد Apps Script حساب lastAt من الأخبار نفسها عند التنظيف.
+      let newLast = null;
+      if ((!old || timeChanged) && ts > num((data.lastAt || {})[gid])) {
+        let srvLast = num((data.lastAt || {})[gid]);
+        if (isOnline()) {
+          $('lvQSave').disabled = true;   // منع الضغط المزدوج أثناء القراءة
+          try {
+            const g = await getDocFromServer(groupsRef());
+            srvLast = num(((g.exists() ? g.data() : {}).lastAt || {})[gid]);
+            applyLocal({ ['lastAt.' + gid]: srvLast });
+          } catch (e) { /* تبقى القيمة المحلية */ }
+          $('lvQSave').disabled = false;
+        }
+        if (ts > srvLast) newLast = ts;
+      }
+
       const b = writeBatch(db);
       let qid, fields;
       if (!old) {
         qid = 'q_' + now;
-        fields = { postId: qid, title, content: '', timestamp: now, url: url || '', groupId: gid,
+        fields = { postId: qid, title, content: '', timestamp: ts, url: url || '', groupId: gid,
           groupName: (data.groups || {})[gid] || gid, isUrgent, hidden: false, quick: true,
           linkedPostId, createdAt: now };
         b.set(doc(db, 'live_coverage', qid), fields);
@@ -756,11 +826,10 @@ export default {
         if (isUrgent && $('lvQBar').checked) {
           addBreakingToBatch(b, { id: quickBreakingId(qid), title, url: url || '', minutes: 60, src: 'live', ref: qid });
         }
-        // آخر خبر = الآن ← تظهر التغطية في صندوق الرئيسية وصفحة التغطيات فوراً
-        b.update(groupsRef(), { ['lastAt.' + gid]: now, updatedAt: serverTimestamp() });
       } else {
         qid = old.id;
         fields = { title, isUrgent, url: url || '', linkedPostId, updatedAt: now };
+        if (timeChanged) fields.timestamp = ts;
         b.update(doc(db, 'live_coverage', qid), fields);
         // المقالة المرتبطة سابقاً تعود للظهور إن تغيّر الربط (وكانت محمّلة = موجودة)
         if (old.linkedPostId && old.linkedPostId !== linkedPostId && news.some((x) => x.id === old.linkedPostId)) {
@@ -769,27 +838,32 @@ export default {
       }
       // المقالة المختارة تُخفى حتى لا يتكرر الخبر في الخط الزمني
       if (picked && picked.hidden !== true) b.update(doc(db, 'live_coverage', picked.id), { hidden: true });
+      // آخر خبر ← تظهر التغطية في صندوق الرئيسية وصفحة التغطيات فوراً (وفي الدفعة نفسها)
+      if (newLast !== null) b.update(groupsRef(), { ['lastAt.' + gid]: newLast, updatedAt: serverTimestamp() });
 
       $('lvQSave').disabled = true;
       try {
         const w = commit(b.commit());
         // تحديث العرض فوراً
+        if (!old) news.unshift({ id: qid, ...fields });
+        if (newLast !== null) { applyLocal({ ['lastAt.' + gid]: newLast }); render(); }
         if (!old) {
-          news.unshift({ id: qid, ...fields });
-          applyLocal({ ['lastAt.' + gid]: now });
-          render();
+          // الترتيب بالوقت كما في صفحة التغطية (الخبر بوقت سابق لا يبقى في الأعلى)
+          news.sort((a2, b2) => num(b2.timestamp) - num(a2.timestamp));
         } else {
           const prev = old.linkedPostId;
           Object.assign(old, fields);
           const back = prev && prev !== linkedPostId && news.find((x) => x.id === prev);
           if (back) back.hidden = false;
+          if (timeChanged) news.sort((a2, b2) => num(b2.timestamp) - num(a2.timestamp));
         }
         if (picked) picked.hidden = true;
         $('lvDlgQuick').close();
         if ($('lvDlgNews').open) renderNews();
         const r = await w;
         toast(r.queued ? 'حُفظ على الجهاز — يُنشر عند عودة الاتصال'
-          : (old ? 'حُفظ الخبر السريع' : 'نُشر الخبر السريع') + (url ? ' (مرتبط بمقالة)' : ''));
+          : (old ? 'حُفظ الخبر السريع' : 'نُشر الخبر السريع') + (url ? ' (مرتبط بمقالة)' : '') +
+            (timeChanged || (!old && tVal) ? ' — بوقت ' + fmtDate(ts) : ''));
         // تعديل النص أو الربط ← تحديثه في شريط العاجل إن كان فيه (قراءة واحدة)
         if (old && isOnline()) {
           syncQuickToBreaking(qid, { title, url: url || '', isUrgent }).catch((e) =>
