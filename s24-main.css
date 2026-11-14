@@ -5568,10 +5568,12 @@ body.item-page h3.post-title {
    الألوان من متغيرات القالب فيتبع الوضع الليلي تلقائياً.
    ============================================================ */
 #s24ImportantBox[hidden]{display:none!important}
-/* نفس هيكل الصندوق القديم (زوايا 10px، ظل خفيف، ترويسة بخلفية هادئة) مع الشارة الخضراء */
-#s24ImportantBox{width:100%;clear:both;background:var(--bg-card,#fff);border:1px solid var(--border-color,#eee);
-  border-radius:10px;box-shadow:0 1px 3px rgba(0,0,0,.05);margin:0 0 25px;overflow:hidden;font-family:var(--font-main)}
-.s24-imp-head{display:flex;align-items:center;gap:12px;padding:10px 20px;background:var(--hover-bg,#f9f9f9);border-bottom:1px solid var(--border-color,#eee)}
+/* المعالجة نفسها لبطاقة التغطية المباشرة فوقه (14 نوفمبر 2026): بلا إطار، وظل وترويسة شفافان
+   بلون «هام» الأخضر بدل أحمر التغطية — الأحمر للعاجل والتغطية وحدهما */
+#s24ImportantBox{width:100%;clear:both;background:var(--bg-card,#fff);border:0;
+  border-radius:10px;box-shadow:0 4px 15px rgba(119,189,29,.10);margin:0 0 25px;overflow:hidden;font-family:var(--font-main)}
+.s24-imp-head{display:flex;align-items:center;gap:12px;padding:10px 20px;background:rgba(119,189,29,.06);border-bottom:1px solid var(--border-color,#eee)}
+[data-theme="dark"] .s24-imp-head{background:rgba(119,189,29,.15)}
 .s24-imp-badge{background:var(--sy-green,#77bd1d);color:#fff;font-family:var(--font-title);font-weight:700;font-size:15px;
   line-height:1;padding:7px 14px;border-radius:4px}
 .s24-imp-sub{color:var(--text-sec,#666);font-size:14px;font-weight:500}
