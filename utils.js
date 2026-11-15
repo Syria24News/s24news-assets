@@ -1,6 +1,6 @@
 /* ============================================================
    S24News — أدوات مشتركة (تُحمَّل قبل كل الملفات الأخرى)
-   S24Cache · showToast · getSkeletonHTML · s24MarkListThumbnail
+   S24Cache · S24Feed · S24Util · showToast · getSkeletonHTML · s24MarkListThumbnail
    ⚠️ سطر استدعاء هذا الملف يجب أن يبقى الأول في القالب
    ============================================================ */
 
@@ -89,6 +89,26 @@
 
     return { get: get, fsVal: fsVal, source: function () { return source; } };
   })();
+
+/* ============ 1-ج) دوال مساعدة مشتركة S24Util (15 نوفمبر 2026) ============
+   بدل نسخها في كل ملف. utils.js يُحمَّل أول الملفات المؤجَّلة (defer)،
+   فهي جاهزة لكل ملف بعده. لا تُستخدم من special-grids.js لأنه async. */
+  window.S24Util = {
+    // تنقية النص قبل إدراجه في HTML (نصاً أو داخل سمة) — حماية من XSS
+    esc: function (s) {
+      return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+      });
+    },
+    // توحيد الرابط للمقارنة: بلا بروتوكول ولا www ولا ?m=1 ولا # ولا / أخيرة.
+    // الرابط الفارغ أو «#» وحده يعيد '' (لا يُطابق شيئاً)
+    normUrl: function (u) {
+      if (!u || u === '#' || /^https?:\/\/#?$/.test(u)) return '';
+      return String(u).trim().toLowerCase()
+        .replace(/^https?:\/\//, '').replace(/^www\./, '')
+        .split('#')[0].split('?')[0].replace(/\/$/, '');
+    }
+  };
 
 /* ===================== 2) الإشعار المؤقت ===================== */
 // دالة عرض الإشعار المؤقت
