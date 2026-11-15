@@ -478,7 +478,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 firebase.initializeApp(window.S24_FIREBASE_CONFIG);
             }
             var urlObj = new URL(postUrl);
-            var cleanPath = urlObj.pathname.replace(/\./g, '_').replace(/\//g, '-');
+            var cleanPath = window.S24Util.viewsKey(urlObj.pathname);
             firebase.database().ref('views/' + cleanPath).once('value').then(function(snapshot) {
                 viewsEl.innerText = snapshot.val() || 0;
             }).catch(function() { viewsEl.innerText = '0'; });
@@ -502,7 +502,7 @@ document.addEventListener("DOMContentLoaded", function() {
                 firebase.initializeApp(window.S24_FIREBASE_CONFIG);
             }
             var urlObj = new URL(postUrl);
-            var cleanPath = urlObj.pathname.replace(/\./g, '_').replace(/\//g, '-');
+            var cleanPath = window.S24Util.viewsKey(urlObj.pathname);
             var dbRef = firebase.database().ref('views/' + cleanPath);
             dbRef.once('value').then(function(snapshot) {
                 if (currentIndex !== requestedIndex || currentGroupIndex !== requestedGroup) return;

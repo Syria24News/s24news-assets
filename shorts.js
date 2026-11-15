@@ -56,7 +56,7 @@
     function cleanPathFromUrl(url) {
         try {
             var u = new URL(url);
-            return u.pathname.replace(/\./g, '_').replace(/\//g, '-');
+            return window.S24Util.viewsKey(u.pathname);
         } catch (e) { return ''; }
     }
     function fetchViews(cleanUrl, el) {

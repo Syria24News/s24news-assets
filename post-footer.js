@@ -176,7 +176,7 @@ function initFirebaseCounter() {
             firebase.initializeApp(window.S24_FIREBASE_CONFIG);
         }
         
-        var cleanPath = window.location.pathname.replace(/\./g, '_').replace(/\//g, '-');
+        var cleanPath = window.S24Util.viewsKey(window.location.pathname);
         var dbRef = firebase.database().ref('views/' + cleanPath);
         
         dbRef.transaction(function(curr) { return (curr || 0) + 1; })
