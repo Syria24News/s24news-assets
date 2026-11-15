@@ -107,6 +107,12 @@
       return String(u).trim().toLowerCase()
         .replace(/^https?:\/\//, '').replace(/^www\./, '')
         .split('#')[0].split('?')[0].replace(/\/$/, '');
+    },
+    // مفتاح عدّاد المشاهدات في Firebase (views/<المفتاح>) من مسار الصفحة (pathname):
+    // النقطة ← _ والشرطة المائلة ← - . ⚠️ لا تُغيَّر هذه الصيغة أبداً: تغييرها يفصل
+    // كل المقالات عن أرقام مشاهداتها المسجّلة. يستخدمها post-footer.js وshorts.js وstories.js
+    viewsKey: function (pathname) {
+      return pathname.replace(/\./g, '_').replace(/\//g, '-');
     }
   };
 
