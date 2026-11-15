@@ -435,56 +435,6 @@ a {
   text-decoration-color: rgba(119, 189, 29, 0.3);
 }
 
-/* ترويسة البحث (نسخة بديلة) */
-.custom-search-header {
-  background: var(--bg-card);
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  padding: 20px;
-  margin-bottom: 25px;
-  display: flex;
-  align-items: center;
-  gap: 15px;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.03);
-}
-
-.search-icon-box {
-  width: 50px;
-  height: 50px;
-  background: rgba(109, 178, 0, 0.1);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--sy-green);
-}
-
-.search-icon-box svg {
-  width: 24px;
-  height: 24px;
-  fill: none;
-  stroke: currentColor;
-  stroke-width: 2;
-}
-
-.search-title {
-  font-size: 20px;
-  font-weight: 900;
-  margin: 0 0 5px 0;
-  color: var(--text-main);
-}
-
-.highlight-term {
-  color: var(--sy-green);
-  text-decoration: underline;
-  text-decoration-color: rgba(109, 178, 0, 0.3);
-}
-
-.search-count {
-  font-size: 14px;
-  color: var(--text-sec);
-}
-
 /* --------------------------------------------------------------------------
    4.6 تصميم صفحة "لا توجد نتائج" (نسخة نظيفة)
    -------------------------------------------------------------------------- */
