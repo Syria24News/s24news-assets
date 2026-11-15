@@ -591,7 +591,7 @@ canvas{display:none}
     <div>
       <div class="brand-name">معالج الصور <span>الإخباري</span></div>
       <div class="brand-sub">منصة متكاملة لتجهيز صور السوشيال ميديا</div>
-      <div class="brand-version" id="appVersionLabel">S24News_PE_v3.28</div>
+      <div class="brand-version" id="appVersionLabel">S24News_PE_v3.29</div>
     </div>
   </div>
   <div class="topbar-actions">
@@ -1200,6 +1200,8 @@ canvas{display:none}
       ولا يُستخدم أي اسم عام آخر عند التسليم.
    ──────────────────────────────────────────────────────────────
     سجل التغييرات:
+   v3.29 — زر «↗ نافذة مستقلة» في اللوحة يفتح صفحة المعالج على GitHub مربوطةً تلقائياً (الرابط والمفتاح بعد «#»، يُمحيان فوراً)،
+           فلا حاجة لإدخالهما يدوياً على أي جهاز تسجّل فيه دخولك إلى اللوحة.
    v3.28 — الصفحة المستقلة على GitHub Pages: تكلّم خادم اللوحة مباشرة بمفتاح (زر 🔑)، فتعمل مكتبة الشعارات والحفظ في Drive،
            ومعهما اختيار مجلد على الكمبيوتر يُتذكَّر بين الجلسات؛ وكل صورة تُحفظ في Drive والمجلد المحلي معاً.
    v3.27 — مربع «🏷️ إضافة الشعار إلى الصورة»: يُخفي الشعار من الصورة دون حذفه (لكل صورة وحدها، ويوحّده «تطبيق على الجميع»)،
@@ -1294,7 +1296,7 @@ canvas{display:none}
           للأقسام القابلة للطي وبطاقات الأوضاع والمصغّرات.
    v2.1 — أول اعتماد لمعيار التسمية والإصدار على هذه الأداة.
    ══════════════════════════════════════════════════════════════ */
-var APP_VERSION = 'S24News_PE_v3.28';
+var APP_VERSION = 'S24News_PE_v3.29';
 /* هل الأداة تعمل داخل إطار (لوحة تحكم Syria24News) أم كملف مستقل؟ */
 var IS_EMBEDDED = (function(){ try { return window.self !== window.top; } catch(e){ return true; } })();
 function timeNow(){ return new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'}); }
@@ -2155,6 +2157,18 @@ var LIB_USE_DRIVE = !!LIB_PEER;
 /* v3.28: الربط المباشر بخادم اللوحة — للصفحة المستقلة على GitHub Pages، حيث لا جسر ولا إطار.
    رابط /exec ومفتاح معالج الصور (يُنشأ بـ peMakeKey في المحرر) يُحفظان في هذا المتصفح بزر 🔑. */
 var PE_API_LS = 'sy_pe_api';
+/* v3.29: زر «نافذة مستقلة» في اللوحة يمرّر الرابط والمفتاح بعد «#pe=» — نحفظهما ثم نمحوهما من شريط العنوان فوراً.
+   لا يُقبل إلا رابط خادم Google Apps Script، كي لا يوجّه رابطٌ مصطنع صورك إلى خادم غريب. */
+(function(){
+  var m = /[#&]pe=([^&]+)/.exec(location.hash || '');
+  if (!m) return;
+  try {
+    var c = JSON.parse(decodeURIComponent(m[1]));
+    if (c && c.key && /^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/(exec|dev)$/.test(String(c.url)))
+      localStorage.setItem(PE_API_LS, JSON.stringify({ url:String(c.url), key:String(c.key) }));
+  } catch(e){}
+  try { history.replaceState(null, '', location.pathname + location.search); } catch(e){ location.hash = ''; }
+})();
 function apiCfg(){ try { var c = JSON.parse(localStorage.getItem(PE_API_LS) || 'null'); return (c && c.url && c.key) ? c : null; } catch(e){ return null; } }
 function API_ON(){ return !IS_EMBEDDED && !!apiCfg(); }
 /* صفحة فُتحت من اللوحة يكون لها opener، لكن الربط بالمفتاح أولى منه */
