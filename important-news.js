@@ -33,7 +33,6 @@ document.addEventListener('DOMContentLoaded', function () {
   var box = document.getElementById('s24ImportantBox');
   if (!box) return;
 
-  var DOC_URL = 'https://firestore.googleapis.com/v1/projects/s24n-views/databases/(default)/documents/important_news/current';
   var LABEL = '*I';
   var CACHE_KEY = 's24_important_v1';
   // ⚙️ الجلب حسب النشاط — لتغيير السرعة مستقبلاً عدّل هذه القيم فقط
@@ -69,40 +68,15 @@ document.addEventListener('DOMContentLoaded', function () {
     return (fmtDM ? fmtDM.format(d) + ' ' : '') + hm;
   }
 
-  function escapeHTML(s) {
-    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
-      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
-    });
-  }
+  // الدوال المشتركة من utils.js (يُحمَّل قبل هذا الملف)
+  var escapeHTML = window.S24Util.esc;
+  var normUrl = window.S24Util.normUrl;
+
   // روابط الموقع فقط (حماية من رابط خارجي أو javascript:)
   function safeLink(u) {
     var s = String(u || '').trim();
     return /^https?:\/\/(www\.)?syria24\.news(\/|$)/i.test(s) ? s : '';
   }
-  // مفتاح المقارنة بين رابط خبر اللوحة ورابط المقالة
-  function normUrl(u) {
-    return String(u || '').trim().toLowerCase().replace(/^https?:\/\//, '').replace(/^www\./, '')
-      .split('#')[0].split('?')[0].replace(/\/$/, '');
-  }
-
-  // فك قيم Firestore REST ({stringValue}، {integerValue}، {mapValue}...) إلى قيم عادية
-  function fsVal(v) {
-    if (!v) return null;
-    if ('stringValue' in v) return v.stringValue;
-    if ('integerValue' in v) return Number(v.integerValue);
-    if ('doubleValue' in v) return Number(v.doubleValue);
-    if ('booleanValue' in v) return v.booleanValue;
-    if ('timestampValue' in v) return Date.parse(v.timestampValue);
-    if ('nullValue' in v) return null;
-    if ('arrayValue' in v) return (v.arrayValue.values || []).map(fsVal);
-    if ('mapValue' in v) {
-      var o = {}, f = v.mapValue.fields || {};
-      for (var k in f) o[k] = fsVal(f[k]);
-      return o;
-    }
-    return null;
-  }
-
   // هل في مستند اللوحة خبر ظاهر الآن؟ (بلا شبكة)
   function panelHasLive(panel) {
     var items = (panel && panel.items) || {}, now = Date.now();
@@ -128,21 +102,9 @@ document.addEventListener('DOMContentLoaded', function () {
   // مستند اللوحة: من الكاش إن كان حديثاً (مدته حسب النشاط)، وإلا طلب واحد
   function loadPanelDoc() {
     var ttl = isActive() ? CACHE_ACTIVE_MS : CACHE_IDLE_MS;
-    // طبقة القراءة الموحّدة (utils.js) — والكود أدناه احتياط إن لم تُحمَّل بعد
-    if (window.S24Feed) {
-      return window.S24Feed.get('important_news/current', { key: CACHE_KEY, ttl: ttl })
-        .then(function (d) { return d || {}; });
-    }
-    var c = window.S24Cache ? window.S24Cache.get(CACHE_KEY, ttl) : null;
-    if (c) return Promise.resolve(c);
-    return fetch(DOC_URL).then(function (r) {
-      if (r.status === 404) return {};             // لم يُنشأ المستند بعد
-      if (!r.ok) throw new Error('HTTP ' + r.status);
-      return r.json().then(function (j) { return fsVal({ mapValue: { fields: j.fields || {} } }) || {}; });
-    }).then(function (d) {
-      if (window.S24Cache) window.S24Cache.set(CACHE_KEY, d);
-      return d;
-    }).catch(function () { return {}; });           // الفشل = لا أخبار من اللوحة (ويبقى *I)
+    // طبقة القراءة الموحّدة (utils.js). الفشل = لا أخبار من اللوحة (ويبقى *I)
+    return window.S24Feed.get('important_news/current', { key: CACHE_KEY, ttl: ttl })
+      .then(function (d) { return d || {}; });
   }
 
   // مقالات *I الأخيرة من خلاصة المدونة
