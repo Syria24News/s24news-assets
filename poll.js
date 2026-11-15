@@ -136,12 +136,8 @@
         });
     }
 
-    // 🆕 حماية النص قبل إدراجه في HTML
-    function escapeHTML(t) {
-        return String(t == null ? '' : t)
-            .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-    }
+    // حماية النص قبل إدراجه في HTML — الدالة المشتركة من utils.js (يُحمَّل قبل هذا الملف)
+    const escapeHTML = window.S24Util.esc;
 
     // 🚀 تشغيل النظام عند اكتمال تحميل الصفحة
     document.addEventListener("DOMContentLoaded", function() {
