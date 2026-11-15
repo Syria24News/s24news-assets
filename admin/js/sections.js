@@ -1,5 +1,6 @@
 /* ============================================================
    S24News — وحدة الأقسام في لوحة التحكم (admin/js/sections.js)
+   الإصدار 1.3 — 15 نوفمبر 2026: الاسم المخصّص، واستثناء شارة القسم، وجدول «أماكن الظهور» (places)
    الإصدار 1.2 — 10 نوفمبر 2026: تذكير ظاهر (وفي نافذة القسم) بإضافة الاسم القصير إلى سكربت تحويل
                الرابط العربي أول <head> في القالب
    الإصدار 1.1 — 26 أكتوبر 2026 (اختيار أي متغيّر قالب للأقسام والفروع)
@@ -8,7 +9,9 @@
    دون GitHub ودون القالب.
 
    مستند واحد يقرؤه الموقع: site_settings/sections
-     tags.<رمز>     = { short, full, color, desc, order, active }   ← أقسام رئيسية (*X)
+     tags.<رمز>     = { short, full, custom, badge, color, desc, order, active }   ← أقسام رئيسية (*X)
+                      custom: اسم مخصّص اختياري · badge: استثناء الشارة ('' يتبع الجدول | short | full | custom)
+     places         = { badge, header, tab, catlist, home } ← أيّ اسم يظهر في كل مكان (short | full | custom)
      branches.<اسم> = { color, parent, order, active }               ← فروع (تسميات عادية)
      updatedAt
    color: لون مخصص بصيغة #RRGGBB، أو اسم متغيّر القالب ('--sy-sport') للإبقاء على لون «تخصيص» بلوغر.
@@ -32,12 +35,13 @@ function loadDefaults() {
   defaultsPromise = fetch('../config.js', { cache: 'no-cache' }).then((r) => r.text()).then((t) => {
     const m = t.match(/window\.S24_TAGS\s*=\s*window\.S24_TAGS\s*\|\|\s*(\{[\s\S]*?\n\});/);
     if (!m) throw new Error('لم أجد القاموس في config.js');
-    // مصفوفات نصية فقط: [قصير، كامل، لون، وصف]
+    // مصفوفات نصية فقط: [قصير، كامل، لون، وصف، مخصّص، اسم الشارة]
     const obj = Function('"use strict"; return (' + m[1] + ');')();
     const out = {};
     Object.keys(obj).forEach((k, i) => {
       const a = obj[k] || [];
-      out[k] = { short: a[0] || '', full: a[1] || '', color: a[2] || '', desc: a[3] || '', order: (i + 1) * 10 };
+      out[k] = { short: a[0] || '', full: a[1] || '', color: a[2] || '', desc: a[3] || '',
+        custom: a[4] || '', badge: a[5] || '', order: (i + 1) * 10 };
     });
     return out;
   }).catch((e) => { defaultsPromise = null; throw e; });
@@ -78,6 +82,16 @@ const THEME_COLORS = {
   // فرع «كتب» تحت الثقافة (4 نوفمبر 2026) — متغيّر cat.books في «تخصيص» بلوغر
   '--sy-books': '#9C4A6B'
 };
+// أماكن الظهور: المكان ← [اسمه في اللوحة، الافتراضي (كما في S24_PLACES في config.js)]
+const PLACES = {
+  badge: ['شارة المقال (ومسار التنقّل)', 'short'],
+  header: ['رأس صفحة القسم', 'full'],
+  tab: ['عنوان تبويب المتصفح', 'full'],
+  catlist: ['قائمة الأقسام الثمانية في الرئيسية', 'full'],
+  home: ['الكتل الأربع في الرئيسية', 'short']
+};
+const NAME_KINDS = { short: 'القصير', full: 'الكامل', custom: 'المخصّص' };
+const KIND_RE = /^(short|full|custom)$/;
 const varName = (color) => (String(color || '').match(/--[\w-]+/) || [''])[0];
 // لون قابل للعرض في اللوحة: hex كما هو، أو درجة متغيّر القالب، أو اللون الاحتياطي داخل '--x, #hex'
 function swatchOf(color) {
@@ -112,6 +126,7 @@ const MARKUP = `
       #scView .sc-color input[type=color]{width:56px;height:40px;padding:2px;border-radius:8px;border:1px solid var(--border);background:none}
       #scView .sc-two{display:flex;gap:10px;flex-wrap:wrap}
       #scView .sc-two .field{flex:1 1 200px;min-width:0}
+      #scView .sc-places{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px}
       @media (max-width:640px){#scView .sc-item{flex-wrap:wrap}#scView .sc-acts{width:100%;justify-content:flex-start}}
     </style>
 
@@ -135,6 +150,18 @@ const MARKUP = `
         <b>⚠ تذكير عند إضافة قسم رئيسي أو تغيير اسمه القصير:</b> أضف الاسم القصير ورمزه إلى قائمة <code>map</code>
         في سكربت التحويل أول <code>&lt;head&gt;</code> في القالب (مثل <code>'بيئة': '*N'</code>، والمسافات تُكتب شرطة <code>-</code>).
         بدونه يرى الزائر الجديد صفحة «لم نعثر على نتائج» حين يفتح رابط القسم بالعربية (/search/label/بيئة) أو يعيد تحميله.
+      </div>
+    </div>
+
+    <h3>أماكن الظهور</h3>
+    <div class="card" style="padding:12px 14px;margin-bottom:14px">
+      <div class="hint" style="margin-bottom:10px">أيّ اسم يظهر في كل مكان، لكل الأقسام. «المخصّص» يُستعمل إن كتبته للقسم، وإلا فالقصير.
+        ويمكن لأي قسم أن يخالف الجدول في شارته من نافذة تعديله.
+        القائمة الجانبية اليمنى خارج الجدول (تُعدَّل من «التنسيق» في بلوغر)، ورابط القسم بالعربية في المتصفح يبقى على الاسم القصير.</div>
+      <div class="sc-places" id="scPlaces"></div>
+      <div style="display:flex;gap:10px;align-items:center;margin-top:10px">
+        <button class="btn btn-primary btn-sm" id="scPlacesSave" type="button">حفظ أماكن الظهور</button>
+        <span class="msg" id="scPlacesMsg"></span>
       </div>
     </div>
 
@@ -166,6 +193,19 @@ const MARKUP = `
               </label>
               <label class="field"><span>الاسم الكامل (رأس صفحة القسم)</span>
                 <input class="input" id="scFull" maxlength="${NAME_MAX}" placeholder="البيئة والمناخ">
+              </label>
+            </div>
+            <div class="sc-two">
+              <label class="field"><span>الاسم المخصّص (اختياري)</span>
+                <input class="input" id="scCustom" maxlength="${NAME_MAX}" placeholder="أخبار البيئة">
+              </label>
+              <label class="field"><span>اسم الشارة لهذا القسم</span>
+                <select class="input" id="scBadge">
+                  <option value="">يتبع «أماكن الظهور»</option>
+                  <option value="short">القصير</option>
+                  <option value="full">الكامل</option>
+                  <option value="custom">المخصّص</option>
+                </select>
               </label>
             </div>
             <label class="field"><span>الوصف (تحت رأس صفحة القسم)</span>
@@ -222,7 +262,7 @@ export default {
     mounted = true;
     root.innerHTML = MARKUP;
 
-    let data = { tags: {}, branches: {} };   // ما في الخادم (التعديلات والإضافات فقط)
+    let data = { tags: {}, branches: {}, places: {} };   // ما في الخادم (التعديلات والإضافات فقط)
     let defs = {};                            // القاموس الافتراضي من config.js
     let defsErr = '';
     let edit = null;                          // { kind: 'tag'|'branch', key, isNew }
@@ -237,7 +277,7 @@ export default {
           const th = snap.docs.find((x) => x.id === 'theme');
           if (th) { const tv = th.data(); liveColors = tv.colors || {}; liveAt = tv.at && tv.at.toMillis ? tv.at.toMillis() : 0; }
           const v = d ? d.data() : {};
-          data = { tags: v.tags || {}, branches: v.branches || {}, updatedAt: v.updatedAt };
+          data = { tags: v.tags || {}, branches: v.branches || {}, places: v.places || {}, updatedAt: v.updatedAt };
           render();
         }, { force: force === true });
       } catch (e) {
@@ -283,7 +323,8 @@ export default {
             : t._ovr ? '<span class="badge b-edit">معدّل</span>' : '<span class="badge b-def">افتراضي</span>';
           return '<div class="card sc-item' + (t.active === false ? ' sc-off' : '') + '">' + swHTML(t.color) +
             '<div class="sc-main"><div class="sc-name">' + esc(t.short || k) + ' <span class="sc-code">' + esc(k) + '</span> ' + badge + '</div>' +
-            '<div class="sc-sub">' + esc(t.full || '') + (t.desc ? ' — ' + esc(t.desc) : '') + '</div></div>' +
+            '<div class="sc-sub">' + esc(t.full || '') + (t.custom ? ' · مخصّص: ' + esc(t.custom) : '') +
+              (t.badge ? ' · الشارة: ' + esc(NAME_KINDS[t.badge] || t.badge) : '') + (t.desc ? ' — ' + esc(t.desc) : '') + '</div></div>' +
             '<div class="sc-acts">' +
               '<button class="btn btn-sm" type="button" data-act="edit" data-kind="tag" data-key="' + esc(k) + '">تعديل</button>' +
               '<button class="btn btn-sm" type="button" data-act="toggle" data-kind="tag" data-key="' + esc(k) + '">' + (t.active === false ? 'تشغيل' : 'إيقاف') + '</button>' +
@@ -304,6 +345,13 @@ export default {
           '</div></div>';
       }).join('') : '<div class="card empty">لا فروع مضافة من اللوحة بعد.</div>';
 
+      $('scPlaces').innerHTML = Object.keys(PLACES).map((k) => {
+        const cur = KIND_RE.test(data.places[k]) ? data.places[k] : PLACES[k][1];
+        return '<label class="field"><span>' + esc(PLACES[k][0]) + '</span><select class="input" data-place="' + k + '">' +
+          Object.keys(NAME_KINDS).map((n) => '<option value="' + n + '"' + (n === cur ? ' selected' : '') + '>' +
+            NAME_KINDS[n] + (n === PLACES[k][1] ? ' (الافتراضي)' : '') + '</option>').join('') + '</select></label>';
+      }).join('');
+
       $('scInfo').textContent = (defsErr ? 'تنبيه: تعذّر قراءة القاموس الافتراضي (' + defsErr + '). ' : '') +
         (liveAt ? 'ألوان القالب مزامَنة من بلوغر تلقائياً — آخر تغيير رُصد: ' + fmtDate(liveAt) + '.'
           : 'ألوان القالب: لم تتم المزامنة التلقائية بعد، فتُعرض الدرجات المحفوظة في اللوحة.');
@@ -311,13 +359,15 @@ export default {
 
     /* ============ الحفظ (المستند كاملاً — مستخدم واحد) ============ */
     async function persist(next, okMsg) {
-      const payload = { tags: next.tags, branches: next.branches, updatedAt: serverTimestamp() };
+      const places = next.places || data.places || {};
+      const payload = { tags: next.tags, branches: next.branches, places, updatedAt: serverTimestamp() };
       const r = await commit(setDoc(sectionsRef(), payload));
-      data = { tags: next.tags, branches: next.branches, updatedAt: new Date() };
+      data = { tags: next.tags, branches: next.branches, places, updatedAt: new Date() };
       render();
       toast(r.queued ? 'حُفظ على الجهاز، ويُرسل عند عودة الاتصال' : okMsg);
     }
-    const copy = () => ({ tags: Object.assign({}, data.tags), branches: Object.assign({}, data.branches) });
+    const copy = () => ({ tags: Object.assign({}, data.tags), branches: Object.assign({}, data.branches),
+      places: Object.assign({}, data.places) });
 
     /* ============ النموذج ============ */
     function fillParents(sel) {
@@ -353,6 +403,8 @@ export default {
         $('scCode').disabled = !isNew;
         $('scShort').value = t.short || '';
         $('scFull').value = t.full || '';
+        $('scCustom').value = t.custom || '';
+        $('scBadge').value = KIND_RE.test(t.badge) ? t.badge : '';
         $('scDesc').value = t.desc || '';
         setColor(isNew ? '' : t.color, defs[key] && defs[key].color);
         $('scOrder').value = t.order != null ? t.order : '';
@@ -391,10 +443,13 @@ export default {
         const short = clean($('scShort').value, NAME_MAX);
         const full = clean($('scFull').value, NAME_MAX) || short;
         const desc = clean($('scDesc').value, DESC_MAX);
+        const custom = clean($('scCustom').value, NAME_MAX);
+        const badge = KIND_RE.test($('scBadge').value) ? $('scBadge').value : '';
         if (!CODE_RE.test(code)) { msg.textContent = 'الرمز يبدأ بنجمة ثم 1–4 أحرف لاتينية (مثل *N).'; return; }
         if (edit.isNew && mergedTags()[code]) { msg.textContent = 'هذا الرمز موجود. اختر «تعديل» من القائمة.'; return; }
         if (!short) { msg.textContent = 'اكتب الاسم القصير.'; return; }
-        next.tags[code] = { short, full, desc, color, order, active };
+        if (badge === 'custom' && !custom) { msg.textContent = 'اكتب الاسم المخصّص، أو اختر اسماً آخر للشارة.'; return; }
+        next.tags[code] = { short, full, custom, badge, desc, color, order, active };
       } else {
         const name = edit.isNew ? clean($('scBrName').value, NAME_MAX) : edit.key;
         if (!name) { msg.textContent = 'اكتب اسم التسمية.'; return; }
@@ -418,7 +473,8 @@ export default {
       const next = copy();
       if (kind === 'tag') {
         const cur = mergedTags()[key];
-        const base = next.tags[key] || { short: cur.short, full: cur.full, desc: cur.desc, color: cur.color, order: cur.order };
+        const base = next.tags[key] || { short: cur.short, full: cur.full, custom: cur.custom || '', badge: cur.badge || '',
+          desc: cur.desc, color: cur.color, order: cur.order };
         next.tags[key] = Object.assign({}, base, { active: cur.active === false });
       } else {
         next.branches[key] = Object.assign({}, next.branches[key], { active: next.branches[key].active === false });
@@ -439,6 +495,17 @@ export default {
     $('scAddBr').addEventListener('click', () => openForm('branch'));
     $('scReload').addEventListener('click', () => load(true));
     $('scSave').addEventListener('click', save);
+    $('scPlacesSave').addEventListener('click', async () => {
+      const next = copy(), msg = $('scPlacesMsg'), btn = $('scPlacesSave');
+      next.places = {};
+      root.querySelectorAll('select[data-place]').forEach((sel) => {
+        if (PLACES[sel.dataset.place] && KIND_RE.test(sel.value)) next.places[sel.dataset.place] = sel.value;
+      });
+      btn.disabled = true; msg.textContent = 'جارٍ الحفظ…';
+      try { await persist(next, 'حُفظت أماكن الظهور. تصل إلى الزوار خلال 6 ساعات كحد أقصى.'); msg.textContent = ''; }
+      catch (e) { msg.textContent = ''; toast('تعذّر الحفظ: ' + errText(e), true); }
+      finally { btn.disabled = false; }
+    });
     $('scUseTheme').addEventListener('change', () => { $('scColor').disabled = $('scUseTheme').checked; });
     $('scVar').addEventListener('change', () => {
       const v = $('scVar').value;

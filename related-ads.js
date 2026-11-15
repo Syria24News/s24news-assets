@@ -9,10 +9,17 @@
 document.addEventListener("DOMContentLoaded", function() {
     if (!document.body.classList.contains('item-page')) return;   
     let label = "";
-    const customLabel = document.querySelector('.sy-meta-label .sy-label-text');
-    if (customLabel) {
+    // الوسم من رابط الشارة لا من نصها: category-colors.js يغيّر النص المعروض
+    // (مثل *AN ← «أخبار العالم العربي») فلا يصلح للجلب (15 نوفمبر 2026)
+    const metaLabel = document.querySelector('.sy-meta-label');
+    const customLabel = metaLabel && metaLabel.querySelector('.sy-label-text');
+    const hrefMatch = metaLabel && /\/search\/label\/([^?#]+)/.exec(metaLabel.getAttribute('href') || '');
+    if (hrefMatch) {
+        try { label = decodeURIComponent(hrefMatch[1]).replace(/\+/g, ' '); } catch (e) { label = ''; }
+    }
+    if (!label && customLabel) {
         label = customLabel.innerText.trim();
-    } else {
+    } else if (!label) {
         const standardLabel = document.querySelector('a[rel="tag"]');
         if (standardLabel) {
             label = standardLabel.innerText.trim();

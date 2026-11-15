@@ -77,12 +77,15 @@ window.S24_SPEED = 'activity';
   // ================================================================================
 
 /* ============ 2) قاموس الوسوم — المصدر الوحيد لكل ما يخص الأقسام ============
-   كل وسم: [الاسم القصير, الاسم الكامل, متغيّر اللون, الوصف]
+   كل وسم: [الاسم القصير, الاسم الكامل, متغيّر اللون, الوصف, الاسم المخصّص, اسم الشارة]
      • القصير: شارة المقال ومسار التنقل
      • الكامل: رأس صفحة القسم وعنوان التبويب وقائمة الأقسام
      • اللون: متغيّر CSS من القالب (cat.xxx ← --sy-xxx)، ودرجته تُغيَّر من «تخصيص» بلوغر.
        المتغيّر مع لون احتياطي («--sy-docfilms, #5E35B1») يعمل حتى قبل إضافة المتغيّر إلى القالب.
      • الوصف: السطر تحت رأس صفحة القسم
+     • الاسم المخصّص (اختياري): اسم ثالث يُستعمل حيث يُختار «مخصّص» (15 نوفمبر 2026)
+     • اسم الشارة (اختياري): استثناء لشارة هذا القسم وحده — 'short' أو 'full' أو 'custom'،
+       وفارغ = يتبع جدول «أماكن الظهور» (S24_PLACES أدناه)
    أي تعديل على اسم قسم أو لونه أو وصفه يكون هنا فقط —
    category-colors.js وlabel-header.js يقرآن من هذا القاموس.
    (18 أكتوبر 2026: توحيد بعد أن كانت الأسماء والألوان مكررة ومتضاربة في ثلاثة ملفات) */
@@ -91,7 +94,7 @@ window.S24_TAGS = window.S24_TAGS || {
   '*L':  ['محلي',          'الشأن المحلي',     '--sy-light-green',         'أخبار محلية ومستجدات الساحة السورية'],
   '*P':  ['سياسي',         'سياسة',            '--sy-dark-green',          'تحليل الأحداث السياسية والقرارات'],
   '*SW': ['سوريا والعالم', 'سوريا والعالم',    '--sy-syworld, #8E1B2E',    'تغطية شاملة لسوريا والعالم'],
-  '*AN': ['عربي',          'العالم العربي',    '--sy-ArabNews',            'أخبار العالم العربي والقضايا العربية'],
+  '*AN': ['عربي',          'العالم العربي',    '--sy-ArabNews',            'أخبار العالم العربي والقضايا العربية', 'أخبار العالم العربي', 'custom'],
   '*WN': ['أخبار العالم',  'أخبار العالم',     '--sy-INT',                 'تغطية شاملة لأبرز الأحداث في العالم'],
   '*E':  ['اقتصاد',        'اقتصاد',           '--sy-Econ',                'متابعة الأسواق والاقتصاد والاستثمارات'],
   '*S':  ['رياضة',         'الرياضة',          '--sy-sport',               'آخر أخبار الرياضة والدوريات والبطولات'],
@@ -111,6 +114,18 @@ window.S24_TAGS = window.S24_TAGS || {
    - إن تعذّر الجلب أو لم يوجد مستند: يبقى القاموس أعلاه كما هو.
    لون مخصص #RRGGBB يُحوَّل إلى '--sy-none, #RRGGBB' ليعمل داخل var() كبقية المتغيرات. */
 window.S24_BRANCHES = window.S24_BRANCHES || {};
+/* ============ 2-أ) أماكن الظهور — أيّ اسم يظهر في كل مكان (15 نوفمبر 2026) ============
+   القيم: 'short' (القصير) أو 'full' (الكامل) أو 'custom' (المخصّص، وإن كان فارغاً فالقصير).
+   تُغيَّر من تبويب «الأقسام» في لوحة 24 (حقل places)، وهذه القيم الافتراضية.
+   رابط القسم بالعربية في شريط المتصفح خارج هذا الجدول: مربوط بالاسم القصير دائماً (انظر 2-ج).
+   القائمة الجانبية اليمنى خارجه أيضاً: أسماؤها مكتوبة في أداة LinkList2 في «التنسيق». */
+window.S24_PLACES = window.S24_PLACES || {
+  badge: 'short',    // شارة المقال فوق العنوان (ومسار التنقّل يتبعها)
+  header: 'full',    // رأس صفحة القسم
+  tab: 'full',       // عنوان تبويب المتصفح في صفحة القسم
+  catlist: 'full',   // قائمة الأقسام الثمانية في الرئيسية
+  home: 'short'      // الكتل الأربع في الرئيسية (اقتصاد، منوعات، صحة، تعليم)
+};
 (function () {
   var KEY = 's24_sections_v1', TTL = 6 * 60 * 60 * 1000;
   var DOC = 'https://firestore.googleapis.com/v1/projects/s24n-views/databases/(default)/documents/site_settings/sections';
@@ -127,14 +142,18 @@ window.S24_BRANCHES = window.S24_BRANCHES || {};
   }
   function apply(d) {
     if (!d || typeof d !== 'object') return;
-    var t = d.tags || {}, b = d.branches || {};
+    var t = d.tags || {}, b = d.branches || {}, pl = d.places || {};
+    Object.keys(window.S24_PLACES).forEach(function (k) {
+      if (/^(short|full|custom)$/.test(pl[k])) window.S24_PLACES[k] = pl[k];
+    });
     Object.keys(t).forEach(function (k) {
       var x = t[k] || {};
       if (!/^\*[A-Za-z]{1,4}$/.test(k)) return;
       if (x.active === false) { delete window.S24_TAGS[k]; return; }
       var base = window.S24_TAGS[k] || [];
       window.S24_TAGS[k] = [x.short || base[0] || k, x.full || base[1] || x.short || k,
-        col(x.color) || base[2] || '--sy-green', x.desc != null ? x.desc : (base[3] || '')];
+        col(x.color) || base[2] || '--sy-green', x.desc != null ? x.desc : (base[3] || ''),
+        x.custom != null ? x.custom : (base[4] || ''), x.badge != null ? x.badge : (base[5] || '')];
     });
     Object.keys(b).forEach(function (k) {
       var x = b[k] || {};
@@ -166,6 +185,15 @@ window.S24TagNames = function (kind) {
   Object.keys(window.S24_TAGS).forEach(function (k) { out[k] = window.S24_TAGS[k][i]; });
   return out;
 };
+// اسم القسم في مكان معيّن حسب «أماكن الظهور»: S24TagName('*AN', 'badge') ← 'أخبار العالم العربي'
+// للشارة: استثناء القسم (العنصر السادس) يغلب الجدول العام. يُرجع '' إن لم يكن الرمز قسماً.
+window.S24TagName = function (code, place) {
+  var t = window.S24_TAGS[code];
+  if (!t) return '';
+  var how = (place === 'badge' && t[5]) || window.S24_PLACES[place] || 'full';
+  if (how === 'custom') return t[4] || t[0];
+  return how === 'short' ? t[0] : (t[1] || t[0]);
+};
 // الأسماء الكاملة متاحة فوراً لكل الأسكريبتات (قائمة الأقسام في category-colors.js تستخدمها)
 window.labelMap = window.S24TagNames('full');
 
@@ -189,7 +217,7 @@ window.labelMap = window.S24TagNames('full');
   function aliasOf(k) { return String(window.S24_TAGS[k][0]).trim().replace(/\s+/g, '-'); }
   if (!window.S24_TAGS[current] || SKIP[current]) return;
 
-  document.title = document.title.replace(current, window.S24_TAGS[current][1]);
+  document.title = document.title.replace(current, window.S24TagName(current, 'tab'));
 
   function showArabic() {
     try { history.replaceState(history.state, '', PREFIX + encodeURIComponent(aliasOf(current)) + location.search + location.hash); } catch (e) {}

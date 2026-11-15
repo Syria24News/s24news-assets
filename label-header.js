@@ -59,7 +59,9 @@ document.addEventListener("DOMContentLoaded", function() {
                 var cleanTagName = tagName.replace(/#/g, "");
                 
                 // 🔴 جديد: ترجمة إذا كان كوداً
-                var displayName = labelTranslations[cleanTagName] || cleanTagName;
+                // اسم رأس الصفحة حسب «أماكن الظهور» في لوحة 24 (15 نوفمبر 2026)
+                var displayName = (window.S24TagName && window.S24TagName(cleanTagName, 'header'))
+                    || labelTranslations[cleanTagName] || cleanTagName;
                 var pageColor = colorMap[cleanTagName] || "--sy-green";
                 var description = descriptionMap[cleanTagName] || 
                     ("أنت تتصفح آخر الأخبار والمستجدات الخاصة بـ " + displayName);

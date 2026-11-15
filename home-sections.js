@@ -43,7 +43,8 @@ document.addEventListener("DOMContentLoaded", function() {
             // العنوان رابط إلى صفحة القسم (نفس وجهة زر «المزيد من الأخبار»)
             const titleLink = document.createElement('a');
             titleLink.href = '/search/label/' + encodeURIComponent(conf.label);
-            titleLink.textContent = conf.displayTitle;
+            // الاسم حسب «أماكن الظهور» في لوحة 24 (15 نوفمبر 2026)، وdisplayTitle احتياطي فقط
+            titleLink.textContent = (window.S24TagName && window.S24TagName(conf.label, 'home')) || conf.displayTitle;
             titleEl.replaceChildren(titleLink);
         }
 

@@ -155,10 +155,10 @@ document.addEventListener("DOMContentLoaded", function() {
    
 
     function buildItemHTML(it) {
-    // استخدم window.labelMap لتحويل الرموز إلى أسماء جميلة
-    const displayLabel = window.labelMap && window.labelMap[it.safeLabel] 
-        ? window.labelMap[it.safeLabel] 
-        : it.safeLabel;
+    // اسم القسم حسب «أماكن الظهور» (قائمة الأقسام الثمانية)، ثم الاسم الكامل، ثم التسمية كما هي
+    const displayLabel = (window.S24TagName && window.S24TagName(it.safeLabel, 'catlist'))
+        || (window.labelMap && window.labelMap[it.safeLabel])
+        || it.safeLabel;
     
     return `
                 <div class="custom-cat-item" style="order:${it.index};" data-cat-last="${it.isLast ? 'true' : 'false'}">
@@ -292,18 +292,22 @@ document.addEventListener("DOMContentLoaded", function() {
    // ============================================================
     // 📝 قاموس ترجمة الأكواز إلى أسماء واضحة (حرف واحد فقط)
     // ============================================================
-    // الوسوم (*X) تأخذ الاسم القصير من القاموس الموحد في config.js، والتسميات العادية تبقى هنا
-    const labelTranslations = Object.assign(
-        (window.S24TagNames ? window.S24TagNames('short') : {}),
-        {
-            "الطقس": "الطقس اليوم",
-            // شارة المقال لأخبار العالم العربي بالاسم الكامل (15 نوفمبر 2026) — للشارة ومسار التنقل فقط،
-            // الاسم القصير «عربي» في config.js يبقى كما هو لأن رابط القسم العربي في المتصفح مبني عليه
-            "*AN": "أخبار العالم العربي",
-            "عربي": "أخبار العالم العربي",
-            "صرف العملات والذهب": "سعر صرف العملات والذهب"
-        }
-    );
+    // الوسوم (*X) تأخذ اسم الشارة من config.js حسب «أماكن الظهور» واستثناء القسم (لوحة 24 ← الأقسام)،
+    // والتسمية العادية المطابقة للاسم القصير (مثل «عربي») تأخذ اسم شارة قسمها (15 نوفمبر 2026)
+    const labelTranslations = {};
+    if (window.S24TagName) {
+        Object.keys(window.S24_TAGS || {}).forEach(function (k) {
+            const name = window.S24TagName(k, 'badge');
+            labelTranslations[k] = name;
+            labelTranslations[window.S24_TAGS[k][0]] = name;
+        });
+    } else if (window.S24TagNames) {
+        Object.assign(labelTranslations, window.S24TagNames('short'));
+    }
+    Object.assign(labelTranslations, {
+        "الطقس": "الطقس اليوم",
+        "صرف العملات والذهب": "سعر صرف العملات والذهب"
+    });
 
     /* --- دالة تنظيف النصوص العربية --- */
     function normalizeArabic(text) {
