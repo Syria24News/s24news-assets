@@ -34,9 +34,8 @@ body.most-read-page .post-title a { text-align: left !important; }
 .ajax-result-img { margin-left: 0; margin-right: 12px; }
 .sy-sidebar-icon, .sy-color-box { margin-left: 0; margin-right: 12px; }
 .sy-side-chevron { margin-right: 0; margin-left: 12px; }
-.main-layout__column h3.title, .sidebar-left h3.title { padding-right: 0; padding-left: 5px; }
+.main-layout__column h3.title { padding-right: 0; padding-left: 5px; }
 .sy-related-main-title { padding-right: 0; padding-left: 10px; }
-.grid-tag { right: auto; left: 10px; }
 .sy-inline-search button { left: auto; right: 5px; }
 .sy-post-meta { padding-right: 0; padding-left: 30px; }
 .sy-meta-label { margin-left: 0; margin-right: 50px; }

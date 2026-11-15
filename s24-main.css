@@ -48,7 +48,6 @@ a {
 .blog-feeds,
 .post-footer,
 .post-footer-line,
-.bg-photo-container,
 .post-timestamp,
 .post-author,
 .post-snippet {
@@ -289,11 +288,6 @@ a {
   color: var(--text-main, #000);
   line-height: 1.4;
   margin-bottom: 3px;
-}
-
-.ajax-result-date {
-  font-size: 11px;
-  color: var(--text-sec, #777);
 }
 
 .ajax-view-all {
@@ -1177,7 +1171,6 @@ section.important-sections {
 .grid-item:hover .grid-title { color: var(--text-main) !important; }
 .main-story .grid-title { font-size: 20px; }
 .small-story .grid-title { font-size: 15px; }
-.grid-tag { background:var(--color-red); color: #fff; font-size: 10px; padding: 3px 8px; position: absolute; top: 10px; right: 10px; z-index: 5; border-radius: 4px; box-shadow: 0 2px 4px rgba(0,0,0,0.3); pointer-events: none; }
 .loading-spinner { padding: 20px; text-align: center; color: var(--text-sec); width: 100%; }
 #grid-label-config { display: none; }
 body#layout #grid-label-config { display: block; border: 2px dashed orange; background: #fff3e0; padding: 10px; margin: 10px 0; }
@@ -1236,7 +1229,7 @@ body#layout #grid-label-config { display: block; border: 2px dashed orange; back
 }
 
 /* 3. تحسين عناوين الأدوات (Widgets Titles) */
-.main-layout__column h3.title, .sidebar-left h3.title, .main-layout__column h3.title {
+.main-layout__column h3.title {
     font-size: 16px !important;
     font-weight: 900 !important;
     color: var(--text-sec);
@@ -1249,15 +1242,15 @@ body#layout #grid-label-config { display: block; border: 2px dashed orange; back
 }
 
 /* 4. تنسيق القوائم والروابط (تحويلها لأزرار تفاعلية) */
-.main-layout__column ul, .sidebar-left ul, .main-layout__column ul {
+.main-layout__column ul {
     list-style: none; padding: 0; margin: 0; width: 100%
 }
 
-.main-layout__column li, .sidebar-left li {
+.main-layout__column li {
     margin-bottom: 5px; /* مسافة بسيطة بين الروابط */
 }
 
-.main-layout__column a, .sidebar-left a, .main-layout__column a {
+.main-layout__column a {
     display: flex !important;
     align-items: center;
     gap: 0; /* المسافة ستأتي من الأيقونة */
@@ -1277,7 +1270,7 @@ body#layout #grid-label-config { display: block; border: 2px dashed orange; back
 }
 
 /* تأثير التمرير (Hover) الاحترافي */
-.main-layout__column a:hover, .sidebar-left a:hover, .main-layout__column a:hover {
+.main-layout__column a:hover {
     background-color: var(--color-main-nav-toggler-active-bg);
     border-color: transparent;
     opacity: 1; /* التأكد من عدم الشفافية */
@@ -1609,13 +1602,6 @@ body #comments .comment-actions a:hover { color: var(--sy-green) !important; tex
 .rt-icon-group.copy-btn:hover { color: #8e44ad; }
 .rt-icon-group.save-btn:hover { color: var(--sy-green); }
 
-.rt-copy-link {
-    color: #2980b9;
-    font-size: 13px;
-    font-weight: bold;
-    text-decoration: underline;
-    cursor: pointer !important;
-}
 
 /* 5. قائمة المشاركة المنبثقة (الأيقونات الملونة) */
 .share-btn-wrapper {
@@ -1691,7 +1677,7 @@ body #comments .comment-actions a:hover { color: var(--sy-green) !important; tex
     transform: translateY(-3px);
 }
 
-.si-fb, .si-x, .si-wa, .si-tg, .si-li,.si-vk, .si-more {
+.si-fb, .si-x, .si-wa, .si-tg, .si-li,.si-vk {
     background-color: #000;
 }
 
@@ -1795,24 +1781,6 @@ body #comments .comment-actions a:hover { color: var(--sy-green) !important; tex
 body.maintenance-active { overflow: hidden; }
 
 
-/* عند تفعيل زر القائمة: */
-
-/* 1. العمود الأيمن: اجعله شفافاً تماماً ولكن ابقِ مكانه محجوزاً */
-.main-layout.sidebar-hidden #main-right-sidebar {
-    opacity: 0 ;           /* شفافية كاملة (يختفي عن العين) */
-    pointer-events: none ; /* غير قابل للنقر (الروابط لن تعمل) */
-    visibility: visible ;  /* نبقيه مرئياً للمتصفح ليحجز المساحة */
-    /* نؤكد على العرض الثابت لكي لا يتقلص */
-    width: 250px ;
-    flex-basis: 250px ;
-    flex-shrink: 0;
-}
-
-/* 2. العمود الأوسط: نمنعه من أي تغيير أو حركة */
-.main-layout.sidebar-hidden .main-container {
-    /* لا نغير أي شيء في العرض، نتركه كما هو في الحالة الطبيعية */
-    flex-grow: 1 ;
-}
 
 
 /* تنسيق التاغات الجديد (Custom Tags) */
@@ -1991,11 +1959,6 @@ body.saved-page-mode .post-body img, body.saved-page-mode .post-body .separator 
 
 /* 3. تلوين أيقونة الحفظ بالأخضر عند التفعيل */
 .rt-icon-group[title="حفظ"].saved svg { fill: var(--sy-green) !important; stroke: var(--sy-green) !important; transition: all 0.3s ease; }
-
-/* 4. تنسيقات إضافية للقائمة (احتياطية) */
-.saved-list-ul { list-style: none ; padding: 0; margin: 0 ; }
-.saved-item.text-only { display: flex; justify-content: space-between; align-items: center; padding: 15px; margin-bottom: 10px; border-bottom: 1px solid #eee; background: #fff; transition: background 0.2s; }
-.saved-item.text-only:hover { background: #f9f9f9; }
 
 /* 👁️ إخفاء المشاهدات في (المحفوظات + الأكثر قراءة) */
 body.saved-page-mode .rt-footer .rt-icon-group[title="مشاهدات"], body.most-read-page .rt-footer .rt-icon-group[title="مشاهدات"] { display: none !important; }
@@ -4881,7 +4844,7 @@ body {  padding-top: 80px; overflow-x: clip; } /* clip لا hidden: hidden يج�
 .left-area { width: auto; order: 2; display: flex; align-items: center; margin-inline-start: auto; }
 
 /* --- إخفاء العناصر غير الضرورية --- */
-.top-date-bar, .desktop-search-container, .left-area .language-selector, .sidebar-left, .main-layout__column, #force-left-sidebar, .live-tv-widget { display: none !important; }
+.top-date-bar, .desktop-search-container, .left-area .language-selector, .main-layout__column, #force-left-sidebar, .live-tv-widget { display: none !important; }
 
 /* --- عناصر الموبايل الظاهرة --- */
 .menu-toggle, #sidebar-toggle-btn { display: block; font-size: 26px; cursor: pointer; margin-inline-start: 15px !important; }
