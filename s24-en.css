@@ -40,7 +40,6 @@ body.most-read-page .post-title a { text-align: left !important; }
 .sy-post-meta { padding-right: 0; padding-left: 30px; }
 .sy-meta-label { margin-left: 0; margin-right: 50px; }
 .sy-end-diamond { margin-right: 0; margin-left: 3px; }
-.note-box { border-right: 0; border-left: 5px solid var(--sy-green); }
 .s24-enc-related { border-right: 0; border-left: 4px solid var(--sy-green, #77bd1d); }
 .live-event-arrow { margin-left: 0 !important; margin-right: 8px !important; transform: scaleX(-1); }
 .live-pro-signal { margin-left: 0; margin-right: 12px; }

@@ -3892,28 +3892,6 @@ body.item-page .post-body > .s24-cover-injected:has(~ div[dir="rtl"] .s24-galler
 }
 
 /* ================================================= */
-/* 📱 الكلاس الذكي: إخفاء الأسهم على الموبايل (Utility Class) */
-/* الاستخدام: أضف "sy-hide-mobile-arrows" لأي شريط تريده */
-/* ================================================= */
-
-@media (max-width: 1024px) {
-
-    /* 1. إخفاء أي سهم داخل الحاوية التي تحمل هذا الكلاس */
-    .sy-hide-mobile-arrows .sy-nav-arrow {
-        display: none !important;
-    }
-
-    /* 2. توسيع منطقة التمرير لتملأ الفراغ */
-    .sy-hide-mobile-arrows .sy-scroll-wrapper {
-        width: 100% !important;
-        max-width: 100% !important;
-        flex-basis: 100% !important;
-        margin: 0 !important;
-        padding-left: 0 !important;
-        padding-right: 0 !important;
-    }
-}
-/* ================================================= */
 /* 🧩 نهاية نظام الشريط المتحرك الموحد (Unified Slider System) */
 /* ================================================= */
 
@@ -4147,35 +4125,6 @@ body.item-page .post-body > .s24-cover-injected:has(~ div[dir="rtl"] .s24-galler
 /* نهاية تنسيق ترويسة صفحة البحث (بنفس لون خلفية الموقع تماماً) */
 
 
-/* بداية تنسيق صندوق المعلومات المخصص */
-
-    /* تعريف ألوان خلفية خاصة للصندوق فقط (لأنها غير موجودة في القالب) */
-
-    /* تنسيق الصندوق باستخدام المتغيرات */
-    .note-box {
-        /* الخلفية تأخذ المتغير الذي عرفناه بالأعلى */
-        background-color: var(--sy-note-bg);
-
-        /* النص يأخذ لون نصوص الموقع الرسمي */
-        color: var(--text-main);
-
-        /* الحد يأخذ اللون الأخضر الرسمي للموقع */
-        border-right: 5px solid var(--sy-green);
-
-        padding: 15px;
-        margin: 20px auto;
-        border-radius: 0px;
-        font-size: 14px;
-        line-height: 1.6;
-        width: 80%;
-        max-width: 600px;
-
-        /* إضافة بسيطة: انتقال ناعم عند تغيير الألوان */
-        transition: background-color 0.3s, color 0.3s, border-color 0.3s;
-    }
-
-
-/* نهاية تنسيق صندوق المعلومات المخصص */
 
 
 /* --- تنسيق التلميح الذكي (Tooltip) بداية --- */
@@ -4287,15 +4236,6 @@ a.sy-tooltip {
     text-decoration: none;
     color: var(--sy-tooltip-color) !important;
     font-weight: inherit !important;
-}
-
-a.sy-tooltip .sy-ext-icon {
-    font-size: 0.75em;
-    vertical-align: middle;
-    margin-inline-start: 1px;
-    opacity: 0.85;
-    position: relative;
-    top: -1px;
 }
 
 body.s24-glossary-article .custom-post-tags,
@@ -4488,8 +4428,7 @@ body:not(.item-page) .post-body iframe[src*="instagram.com"],
 body:not(.item-page) .post-body iframe[src*="tiktok.com"],
 body:not(.item-page) .post-body iframe[id^="twitter-widget-"],
 body:not(.item-page) .post-body img,
-body:not(.item-page) .post-body .separator,
-body:not(.item-page) .note-box {
+body:not(.item-page) .post-body .separator {
     display: none !important;
     visibility: hidden !important;
     height: 0 !important;
