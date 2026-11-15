@@ -1296,7 +1296,7 @@ canvas{display:none}
           للأقسام القابلة للطي وبطاقات الأوضاع والمصغّرات.
    v2.1 — أول اعتماد لمعيار التسمية والإصدار على هذه الأداة.
    ══════════════════════════════════════════════════════════════ */
-var APP_VERSION = 'S24News_PE_v3.29';
+var APP_VERSION = 'S24News_PE_v3.30';
 /* هل الأداة تعمل داخل إطار (لوحة تحكم Syria24News) أم كملف مستقل؟ */
 var IS_EMBEDDED = (function(){ try { return window.self !== window.top; } catch(e){ return true; } })();
 function timeNow(){ return new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'}); }
@@ -3396,7 +3396,12 @@ if (dirPickBtn) {
         if (dirStatusEl) dirStatusEl.textContent = '📂 سيتم الحفظ في: '+handle.name;
         addLog('📁','تم اختيار مجلد تنزيل مخصّص: '+handle.name+'.'); toast('✅ تم اختيار مجلد الحفظ: '+handle.name);
       } catch(e) {
-        if (e && e.name === 'AbortError') return; /* المستخدم أغلق نافذة الاختيار */
+        /* v3.30: الإلغاء يأتي أيضاً من رفض كروم إذن «تعديل الملفات» دون أي سؤال، فنشرح السبب بدل الصمت */
+        if (e && e.name === 'AbortError') {
+          if (dirStatusEl) dirStatusEl.textContent = '⚠️ لم يُعتمد مجلد. إن لم تُلغِ أنت النافذة فإذن «تعديل الملفات» محظور في كروم: 🔒 بجانب العنوان ← إعدادات الموقع ← تعديل الملفات ← السماح. واختر مجلداً فرعياً لا سطح المكتب أو المستندات نفسها.';
+          toast('⚠️ لم يُعتمد المجلد — راجع إذن «تعديل الملفات» في كروم', 6000);
+          return;
+        }
         toast('⚠️ المتصفح منع اختيار المجلد هنا — افتح ملف الأداة مباشرة من جهازك');
       }
     });
