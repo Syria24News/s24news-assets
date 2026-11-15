@@ -100,11 +100,6 @@ document.addEventListener("DOMContentLoaded", function() {
         // التحقق: هل يحتوي على * ؟ أو هل الاسم موجود في القائمة بالأعلى؟
         if (text.indexOf('*') > -1 || customHiddenTags.includes(text)) {
             label.style.display = 'none';
-            
-            // إخفاء الفاصل بجانب التاغ (إذا وجد)
-            if(label.nextElementSibling && label.nextElementSibling.classList.contains('sy-meta-separator')) {
-                label.nextElementSibling.style.display = 'none';
-            }
         }
     });
 });
