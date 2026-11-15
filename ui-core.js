@@ -212,8 +212,7 @@ document.addEventListener("DOMContentLoaded", function() {
        مصدر واحد لأقسام الموقع: الأسماء والترتيب من الأداة في «التنسيق»،
        واللون من وسم القسم في قاموس S24_TAGS (config.js) لا من ترتيبه،
        فإضافة قسم أو تغيير ترتيبه لا يخلط الألوان.
-       window.S24Sections() تعيد القائمة لأي سكربت، وكل عنصر فيه data-s24-sections
-       يُملأ تلقائياً بها (مثل صفحة «من نحن»). */
+       وكل عنصر فيه data-s24-sections يُملأ تلقائياً بها (مثل صفحة «من نحن»). */
     var SECTION_EXTRA = { 'video-club': '--sy-video' }; // أقسام بلا وسم: جزء من الرابط ← متغيّر اللون
     function sectionColor(href) {
         var m = /\/search\/label\/([^?#]+)/.exec(href || '');
@@ -255,7 +254,6 @@ document.addEventListener("DOMContentLoaded", function() {
             link.appendChild(arrow);
         });
     }
-    window.S24Sections = function () { return sectionsList.slice(); };
 
     // ملء أي قائمة <ul data-s24-sections="صنف-النقطة"> في الصفحات بأقسام الموقع
     document.querySelectorAll('[data-s24-sections]').forEach(function (ul) {

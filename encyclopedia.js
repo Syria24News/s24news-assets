@@ -245,8 +245,6 @@ document.addEventListener('DOMContentLoaded',function(){
       var btnPrev=bar.querySelector('[data-a="prev"]');
       var hits=[], idx=-1;
 
-      function arNum(n){ return String(n).replace(/[0-9]/g,function(d){return '٠١٢٣٤٥٦٧٨٩'[d];}); }
-
       function updateCount(){
         if(!hits.length){ cnt.textContent = (inp.value||'').trim().length>1 ? 'لا نتائج' : ''; }           
         else{ cnt.textContent = (idx+1)+' من '+hits.length; }      
