@@ -137,14 +137,8 @@ document.addEventListener("DOMContentLoaded", function() {
         '</svg>'
     );
 
-    function escapeHTML(str) {
-        return String(str)
-            .replace(/&/g, '&amp;')
-            .replace(/</g, '&lt;')
-            .replace(/>/g, '&gt;')
-            .replace(/"/g, '&quot;')
-            .replace(/'/g, '&#39;');
-    }
+    // تنقية النص قبل إدراجه في HTML — الدالة المشتركة من utils.js (يُحمَّل قبل هذا الملف)
+    const escapeHTML = window.S24Util.esc;
 
         const configList = document.querySelectorAll('#custom-cat-config-list li');
     const targetContainer = document.getElementById('custom-category-container');
