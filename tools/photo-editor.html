@@ -173,7 +173,6 @@ body{
   display:grid;place-items:center;font-size:13px;flex-shrink:0;
 }
 .ph-green{background:rgba(109,178,0,.12);color:var(--c-accent);border:1px solid rgba(109,178,0,.2)}
-.ph-red{background:rgba(231,20,20,.1);color:var(--c-red);border:1px solid rgba(231,20,20,.2)}
 .ph-purple{background:rgba(155,89,182,.1);color:var(--c-purple);border:1px solid rgba(155,89,182,.2)}
 .ph-blue{background:rgba(52,152,219,.1);color:var(--c-blue);border:1px solid rgba(52,152,219,.2)}
 .ph-gold{background:rgba(243,156,18,.1);color:var(--c-gold);border:1px solid rgba(243,156,18,.2)}
@@ -218,7 +217,8 @@ input[type=file]:hover{border-color:var(--c-accent);color:var(--c-accent)}
 
 .fgroup{margin-bottom:12px}
 .fgroup:last-child{margin-bottom:0}
-.frow{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:10px;align-items:end;margin-bottom:12px}
+.frow>.fgroup{margin-bottom:0} /* v3.31: حقلا الصف على سطر واحد دائماً (كان للأول هامش سفلي وللأخير لا) */
 
 /* ══════════════════════════════
    SLIDERS
@@ -288,7 +288,7 @@ button.chip-neu:hover{color:var(--c-text);border-color:var(--c-muted)}
 .logo-lib{margin-top:12px;background:var(--c-surf2);border:1px solid var(--c-border);border-radius:8px;padding:10px}
 .logo-lib-head{display:flex;justify-content:space-between;align-items:center;gap:6px;font-size:12px;font-weight:900;color:var(--c-text);margin-bottom:8px}
 .logo-lib-src{font-size:10px;font-weight:700;color:var(--c-muted)}
-.logo-lib-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.logo-lib-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px} /* v3.31: minmax(0,…) يمنع الاسم الطويل من دفع الخانة الثالثة خارج اللوحة */
 .logo-lib-item{position:relative;border:1px solid var(--c-border);border-radius:7px;padding:6px 4px 4px;cursor:pointer;text-align:center;
   background:repeating-conic-gradient(rgba(128,128,128,.18) 0 25%,transparent 0 50%) 0 0/12px 12px;transition:border-color .15s}
 .logo-lib-item:hover{border-color:var(--c-accent)}
@@ -298,7 +298,8 @@ button.chip-neu:hover{color:var(--c-text);border-color:var(--c-muted)}
 .logo-lib-del{position:absolute;top:2px;left:2px;width:18px;height:18px;border:none;border-radius:50%;background:var(--c-red);color:#fff;font-size:12px;line-height:18px;cursor:pointer;padding:0;opacity:0;transition:opacity .15s}
 .logo-lib-item:hover .logo-lib-del,.logo-lib-del:focus,.logo-lib-del[data-armed]{opacity:1}
 @media (hover:none){.logo-lib-del{opacity:.85}}
-.logo-lib-add{display:flex;align-items:center;justify-content:center;font-size:20px;color:var(--c-accent);background:transparent;border-style:dashed;min-height:62px}
+.logo-lib-add{display:flex;flex-direction:column;align-items:stretch;justify-content:flex-start;color:var(--c-accent);background:transparent;border-style:dashed;border-color:var(--c-accent)}
+.logo-lib-plus{height:38px;line-height:38px;font-size:28px;font-weight:900;color:var(--c-accent)} /* v3.31: بارتفاع صورة الشعار فتتساوى الخانات */
 .logo-lib-save{display:flex;gap:6px;margin-top:8px}
 .logo-lib-save input{flex:1;min-width:0}
 .logo-lib-save .btn{margin-top:0;white-space:nowrap}
@@ -505,7 +506,6 @@ button.chip-neu:hover{color:var(--c-text);border-color:var(--c-muted)}
 .st-val.red{color:var(--c-red)}
 .st-val.blue{color:var(--c-blue)}
 .st-val.purple{color:var(--c-purple)}
-.st-val.gold{color:var(--c-gold)}
 .st-val.muted{color:var(--c-muted)}
 
 .log-wrap{
@@ -591,7 +591,7 @@ canvas{display:none}
     <div>
       <div class="brand-name">معالج الصور <span>الإخباري</span></div>
       <div class="brand-sub">منصة متكاملة لتجهيز صور السوشيال ميديا</div>
-      <div class="brand-version" id="appVersionLabel">S24News_PE_v3.29</div>
+      <div class="brand-version" id="appVersionLabel">S24News_PE_v3.31</div>
     </div>
   </div>
   <div class="topbar-actions">
@@ -824,7 +824,7 @@ canvas{display:none}
             </div>
             <!-- v3.16: يظهر فقط عندما يكون الشعار الحالي من المكتبة -->
             <button id="logoLibUpdateBtn" class="btn btn-outline btn-sm" type="button" style="display:none;width:100%;margin-top:6px">🔄 تحديث إعدادات الشعار في المكتبة</button>
-            <div class="hint">💡 اضغط أي شعار لاستخدامه فوراً مع إعداداته (الموضع والحجم والشفافية والإزاحة). «➕» يرفع شعاراً جديداً ويحفظه مباشرة. للحذف: × مرتين.</div>
+            <div class="hint">💡 اضغط أي شعار لاستخدامه فوراً مع إعداداته (الموضع والحجم والشفافية والإزاحة). «+ شعار جديد» يرفع شعاراً جديداً ويحفظه مباشرة. للحذف: × مرتين.</div>
           </div>
         </div>
         <div class="divider"></div>
@@ -854,11 +854,11 @@ canvas{display:none}
         <div class="divider"></div>
         <div class="frow">
           <div class="fgroup">
-            <label class="flabel">إزاحة أفقية (يمين/يسار) %</label>
+            <label class="flabel">إزاحة أفقية %</label>
             <input type="number" id="logoOffsetX" value="-12" min="-100" max="100" step="0.5"/>
           </div>
           <div class="fgroup">
-            <label class="flabel">إزاحة عمودية (أعلى/أسفل) %</label>
+            <label class="flabel">إزاحة عمودية %</label>
             <input type="number" id="logoOffsetY" value="12" min="-100" max="100" step="0.5"/>
           </div>
         </div>
@@ -1200,6 +1200,10 @@ canvas{display:none}
       ولا يُستخدم أي اسم عام آخر عند التسليم.
    ──────────────────────────────────────────────────────────────
     سجل التغييرات:
+   v3.31 — تنظيف: حُذف جسر النافذة المستقلة القديمة (blob، v3.22–v3.23) بعدما صار زر «نافذة مستقلة» يفتح صفحة GitHub،
+           وقاعدتا CSS غير مستعملتين. خانة «+ شعار جديد» داخل المكتبة دائماً (لا تخرج مع الأسماء الطويلة)،
+           وحقلا الإزاحة على سطر واحد. رسالة أوضح حين يرفض المتصفح المجلد المختار.
+   v3.30 — رسالة عند إلغاء اختيار المجلد بدل الصمت.
    v3.29 — زر «↗ نافذة مستقلة» في اللوحة يفتح صفحة المعالج على GitHub مربوطةً تلقائياً (الرابط والمفتاح بعد «#»، يُمحيان فوراً)،
            فلا حاجة لإدخالهما يدوياً على أي جهاز تسجّل فيه دخولك إلى اللوحة.
    v3.28 — الصفحة المستقلة على GitHub Pages: تكلّم خادم اللوحة مباشرة بمفتاح (زر 🔑)، فتعمل مكتبة الشعارات والحفظ في Drive،
@@ -1219,84 +1223,10 @@ canvas{display:none}
            (MessageChannel) ترسلها اللوحة عند فتحها. وإن لم تصل خلال 16 ثانية تقول المكتبة صراحة إنها بلا Drive.
    v3.21 — اسم الملف الذكي: أول خمس كلمات من نص الشريط العاجل (أو أول نص حر) تدخل اسم الصورة المحمّلة.
    v3.20 — قوالب جاهزة بضغطة زر في قسم «المنصة والمقاس»: عاجل، عنوان، تصريح، ستوري، صورة نظيفة.
-   v3.19 — الدمج: شريط «تمركز» لكل صورة، أو سحب الصورة داخل نصفها على المعاينة، لإظهار الجزء المطلوب (منع قطع الوجوه).
-           وإصلاح: في الدمج الأفقي صارت الصورة الأولى على اليمين كما يقول عنوان خانتها (كانت تُرسم على اليسار).
-   v3.18 — سحب النصوص الحرة والشعار مباشرة على المعاينة بالماوس أو باللمس؛ تتحدث أشرطة الموضع وخانات الإزاحة وحدها.
-   v3.17 — النصوص الحرة: تلوين ما بين [قوسين] بلون تمييز، وحدّ خارجي (Stroke) وظل لكل نص؛ وخيار «🌑 تظليل سفلي» متدرج.
-   v3.16 — زر «🔄 تحديث إعدادات الشعار في المكتبة»: يحفظ الموضع والحجم والشفافية والإزاحة الحالية للشعار المختار.
-   v3.15 — إصلاح مكتبة الشعارات داخل اللوحة: الحفظ في Drive عبر جسر postMessage مع اللوحة
-           (إطار srcdoc لا تصله google.script.run)، وتذكّر الشعار المختار في الخادم.
-   v3.14 — مكتبة الشعارات: حفظ عدة شعارات مع إعدادات كل منها واختيارها بنقرة، وإضافة شعار جديد بزر «➕».
-           الحفظ في Google Drive (مجلد S24News_PE_Logos) داخل اللوحة، وفي المتصفح عند فتح الملف مستقلاً.
-   v3.13 — الشعار الافتراضي الجديد Syria24.News (أبيض بإطار داكن يظهر على الصور الفاتحة والداكنة، 1200 بكسل)
-           بنفس الإعدادات الافتراضية (أعلى يمين، 17%، 85%، -12، 12)، ويحلّ مرة واحدة محل الشعار القديم المحفوظ في المتصفح.
-   v3.12 — إصلاح: إذا منع المتصفح التخزين المحلي داخل إطار اللوحة كانت الأداة تتوقف كلها؛ صارت تعمل بذاكرة مؤقتة.
-   v3.11 — الإزاحة الافتراضية للشعار: أفقية -12% وعمودية +12% (كانت -7 / 10)،
-          وتُرحَّل القيم القديمة المحفوظة تلقائياً. وزر «اختيار مجلد الحفظ» داخل
-          اللوحة يرشد إلى «↗ نافذة مستقلة» حيث يعمل الاختيار.
-   v3.10 — الدمج في لوحة تحكم Syria24News + تحسينات سير العمل:
-          • لصق الصور مباشرة بـ Ctrl+V (من موقع أو من لقطة شاشة)؛ في الوضع
-            المتكيف تُضاف إلى الدفعة الحالية بدل استبدالها، وفي الدمج/التراكب
-            تذهب الصورة الملصقة إلى خانة الصورة الثانية إن كانت فارغة.
-          • سحب الصور وإفلاتها في أي مكان من الصفحة، لا في خانة الرفع فقط.
-          • التنقل بين صور الدفعة بأسهم لوحة المفاتيح ← →.
-          • مقاسان جديدان: مصغّرة يوتيوب 1280×720، ومنشور X 1600×900.
-          • أوقات سجل النشاط بأرقام إنجليزية (كانت بأرقام عربية مشرقية).
-          • سجل النشاط يُبنى بـ textContent بدل innerHTML (أمان).
-          • عند التشغيل داخل لوحة التحكم: يُعطَّل زر «اختيار مجلد الحفظ»
-            لأن المتصفح يمنعه داخل الإطارات، وتظهر طريقة حفظ بديلة.
-   v3.9 — (إصدار سابق).
-   v3.8 — إصلاح خلل «التصغير الوهمي» في وضع القص اليدوي: كان إعداد
-          viewMode:1 في Cropper.js يمنع الصورة من التصغير عن حجم مربع
-          القص نفسه، فيبدو زر «🔎 تصغير» وكأنه لا يعمل إلا بعد تكبير
-          مسبق (يعيدها فقط لحدّها الأدنى القديم). التعديل إلى viewMode:0
-          يزيل هذا القيد فتصغر الصورة فعلياً كما يريد المستخدم؛ أي فراغ
-          ينتج داخل إطار القص يُملأ تلقائياً باللون الأبيض عند التصدير
-          (fillColor الموجود مسبقاً في getCroppedCanvas).
-   v3.7 — إضافة اختيار مجلد الحفظ (File System Access API): زر «📁 اختيار
-          مجلد الحفظ» في قسم التحميل يتيح تحديد مجلد ثابت تُحفظ فيه كل
-          الملفات (صورة مفردة أو ZIP) مباشرة دون نافذة "حفظ باسم" في كل
-          مرة؛ يعمل حالياً في Chrome/Edge على الحاسوب فقط، ويسقط تلقائياً
-          إلى التحميل الاعتيادي بالمتصفح إن كانت الميزة غير مدعومة أو رفض
-          المستخدم صلاحية الكتابة. أيضاً: أزرار حذف جديدة لتصحيح اختيار
-          خاطئ للصور — «حذف هذه الصورة» بجانب المعاينة الحية (يعمل في كل
-          الأوضاع، صورة مفردة أو دفعة)، «حذف الكل» أعلى شريط المصغّرات
-          لمسح كل صور الدفعة دفعة واحدة، و«إزالة هذه الصورة» بجانب حقل
-          الصورة الثانية في أوضاع الدمج/التراكب.
-   v3.6 — رابط الموقع السفلي أنعم وأكثر شفافية: وزن خط أخف (600
-          بدل 700)، حدّ أرفع وأخف (عرض 2.5 وشفافية .7 بدل 3.5
-          و.9)، وglobalAlpha أقل (0.35 بدل 0.5) لمزيد من الشفافية.
-   v3.5 — رابط الموقع السفلي: شفافية أكبر (50% من قيمة v3.4، أي
-          globalAlpha=0.5 بدل 1)، وارتفاع أكبر عن الحافة السفلية
-          (0.075 من الارتفاع بدل 0.045).
-   v3.4 — تعديلات على رابط الموقع السفلي: مسافة أكبر عن الحافة
-          السفلية (وعن شريط العاجل عند وجوده)، حدّة/تباين أعلى
-          للون (حدّ أسود أغمق وأعرض + شفافية كاملة)، وتثبيت اتجاه
-          الرسم LTR صراحةً كي تبقى أيقونة 🔗 على يسار النص دائماً
-          رغم أن الصفحة بالكامل RTL.
-   v3.3 — علامة مائية مستقلة جديدة: رابط/اسم الموقع في أسفل منتصف
-          الصورة دائماً (أيقونة 🔗 + نص)، مستقلة تماماً عن الشعار
-          وموضعه (بأسلوب سانا sana.sy). حقل قابل للتعديل بالكامل،
-          افتراضيه الحالي: syria24.news — يُترك فارغاً لإخفائه.
-          يرتفع تلقائياً فوق شريط العاجل إن كان مفعّلاً.
-   v3.2 — إضافة أيقونة علامة تبويب (favicon): دائرة خضراء بحرفي
-          PE بيضاء عريضة، كـ SVG مُضمَّن (Base64) داخل <head>
-          دون أي ملف خارجي.
-   v3.1 — تضمين شعار Syria24News الرسمي (24SN) كقيمة افتراضية
-          مباشرة داخل الكود (Base64)، مع قيم افتراضية جديدة:
-          حجم 7%، شفافية 85%، إزاحة أفقية -7%، إزاحة عمودية 10%،
-          موضع أعلى اليمين. يُحمَّل تلقائياً عند أول تشغيل أو بعد
-          «إفراغ الأداة» ما لم يوجد شعار مخصص محفوظ تلقائياً.
-   v3.0 — إصلاحات حرجة: تأكيد قبل فقدان البيانات عند تبديل الوضع،
-          إصلاح ثغرة XSS في بطاقات النص الحر، إصلاح مشكلة توقيت
-          تحميل الخطوط على الكانفاس. إضافات: حفظ تلقائي للشعار
-          والإعدادات العامة (localStorage)، حذف صورة مفردة من
-          الدفعة، تراجع عن آخر منطقة طمس، صيغ تصدير إضافية
-          (JPEG/PNG إلى جانب WebP)، إتاحة وصول بلوحة المفاتيح
-          للأقسام القابلة للطي وبطاقات الأوضاع والمصغّرات.
-   v2.1 — أول اعتماد لمعيار التسمية والإصدار على هذه الأداة.
+   v3.0–v3.19 — (مختصر) الدمج والتراكب والسحب على المعاينة، النصوص الحرة وتلوين [ما بين قوسين]، مكتبة الشعارات
+           وحفظها في Drive، رابط الموقع السفلي، اختيار مجلد الحفظ، القص اليدوي، الحفظ التلقائي، حذف الصور، صيغ JPEG/PNG/WebP.
    ══════════════════════════════════════════════════════════════ */
-var APP_VERSION = 'S24News_PE_v3.30';
+var APP_VERSION = 'S24News_PE_v3.31';
 /* هل الأداة تعمل داخل إطار (لوحة تحكم Syria24News) أم كملف مستقل؟ */
 var IS_EMBEDDED = (function(){ try { return window.self !== window.top; } catch(e){ return true; } })();
 function timeNow(){ return new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'}); }
@@ -2183,13 +2113,6 @@ function apiCall(fn, args, ms){
           function(e){ clearTimeout(t); throw new Error(e && e.name === 'AbortError' ? 'لا ردّ من الخادم' : 'تعذّر الاتصال بالخادم — تحقق من الرابط ومن إعداد النشر «أي شخص»'); });
 }
 var _peSeq = 0, _peWait = {};
-/* v3.22: النافذة المستقلة (blob) بلا opener، فاللوحة ترسل إليها قناة خاصة (MessageChannel) تمرّ عبرها الطلبات */
-var LIB_PORT = null, libWaitT = null, LIB_RO = false;
-/* v3.23: نسخة المكتبة التي أدخلتها اللوحة في هذه النافذة المستقلة (أو null) */
-function libInjected(){
-  try { return window.S24_PE_LIB_B64 ? JSON.parse(decodeURIComponent(escape(atob(window.S24_PE_LIB_B64)))) : null; }
-  catch(e){ return null; }
-}
 function libReply(d){
   if (!d || d.s24pe !== 'reply' || !_peWait[d.id]) return;
   var w = _peWait[d.id]; delete _peWait[d.id]; clearTimeout(w.t);
@@ -2197,17 +2120,7 @@ function libReply(d){
 }
 window.addEventListener('message', function(e){
   var d = e.data;
-  if (d && d.s24pe === 'reply' && e.source === LIB_PEER) { libReply(d); return; }
-  /* القناة تُقبل مرة واحدة، وفقط من صفحة بأصلنا نفسه (اللوحة التي أنشأت هذه النافذة) */
-  if (d && d.s24pe === 'port' && !LIB_PEER && !LIB_PORT && e.ports && e.ports[0] && e.origin === location.origin) {
-    LIB_PORT = e.ports[0];
-    LIB_PORT.onmessage = function(ev){ libReply(ev.data); };
-    LIB_PORT.postMessage({ s24pe:'portok' });
-    clearTimeout(libWaitT);
-    LIB_USE_DRIVE = true; LIB_RO = false;
-    addLog('🔗','اتصلت النافذة المستقلة باللوحة — المكتبة تُحفظ في Google Drive.');
-    loadLogoLib();
-  }
+  if (d && d.s24pe === 'reply' && e.source === LIB_PEER) libReply(d);
 });
 /* استدعاء دالة خادم عبر اللوحة كوعد (Promise)، مع مهلة إن لم تردّ */
 function gasCall(fn, args, ms) {
@@ -2217,7 +2130,7 @@ function gasCall(fn, args, ms) {
     _peWait[id] = { res:res, rej:rej, t:setTimeout(function(){ delete _peWait[id]; rej(new Error('لا ردّ من لوحة التحكم')); }, ms || 30000) };
     try {
       var msg = { s24pe:'call', id:id, fn:fn, args:args || [] };
-      if (LIB_PORT) LIB_PORT.postMessage(msg); else LIB_PEER.postMessage(msg, '*');
+      LIB_PEER.postMessage(msg, '*');
     }
     catch(e){ clearTimeout(_peWait[id].t); delete _peWait[id]; rej(e); }
   });
@@ -2295,7 +2208,8 @@ function renderLogoLib() {
     logoLibGrid.appendChild(d);
   });
   var add = document.createElement('div');
-  add.className = 'logo-lib-item logo-lib-add'; add.title = 'رفع شعار جديد وحفظه في المكتبة'; add.textContent = '➕';
+  add.className = 'logo-lib-item logo-lib-add'; add.title = 'رفع شعار جديد وحفظه في المكتبة';
+  add.innerHTML = '<div class="logo-lib-plus">+</div><span>شعار جديد</span>';   /* v3.31: خانة واضحة بدل رمز ➕ وحده */
   add.addEventListener('click', function(){ logoLibPendingAdd = true; logoInp.value = ''; logoInp.click(); });
   logoLibGrid.appendChild(add);
   markActiveLogo();
@@ -2326,7 +2240,6 @@ updateInfo = function(){ _updateInfoBase.apply(this, arguments); markActiveLogo(
 
 /* حفظ الشعار الحالي في المكتبة */
 function saveCurrentLogoToLib(nameHint) {
-  if (LIB_RO) { toast('ℹ️ هذه النافذة تعرض مكتبة Drive للاختيار فقط — الحفظ والحذف والتحديث من داخل اللوحة', 4500); return; }
   if (!sy_logo) { toast('⚠️ لا يوجد شعار حالي لحفظه'); return; }
   var b64;
   try { b64 = logoToDataUrl(sy_logo); } catch(e){ toast('⚠️ تعذّرت قراءة الشعار'); return; }
@@ -2361,7 +2274,6 @@ function askDeleteLib(it, btn) {
   setTimeout(function(){ if (btn.isConnected) { delete btn.dataset.armed; btn.textContent = '×'; } }, 3000);
 }
 function deleteLibLogo(it) {
-  if (LIB_RO) { toast('ℹ️ هذه النافذة تعرض مكتبة Drive للاختيار فقط — الحفظ والحذف والتحديث من داخل اللوحة', 4500); return; }
   var done = function(){
     logoLib = logoLib.filter(function(x){ return x.id !== it.id; });
     renderLogoLib(); addLog('🗑️','حُذف الشعار «' + it.name + '» من المكتبة.'); toast('🗑️ حُذف من المكتبة');
@@ -2393,27 +2305,9 @@ function loadLogoLib() {
       loadLogoLib();
     });
   } else {
-    /* نافذة مستقلة أدخلت اللوحة فيها نسخة المكتبة: نعرض شعارات Drive للاختيار (والحفظ من اللوحة) */
-    var inj = (!IS_EMBEDDED && !LIB_PEER && !LIB_PORT) ? libInjected() : null;
-    if (inj) {
-      LIB_RO = true;
-      logoLib = (inj.logos || []).map(function(x){ x.src = 'drive'; return x; });
-      if (srcEl) srcEl.textContent = '☁️ Google Drive — للاختيار';
-      renderLogoLib();
-      var injAct = inj.active && logoLib.filter(function(x){ return x.id === inj.active; })[0];
-      /* بعد اكتمال التشغيل، فيكون آخر شعار طُلب، فلا يسبقه الافتراضي (انظر logoReqSeq) */
-      if (injAct) setTimeout(function(){ applyLibLogo(injAct, true); }, 0);
-      return;
-    }
+    /* بلا لوحة ولا مفتاح ربط: الشعارات في ذاكرة هذا المتصفح فقط (زر 🔑 يربط الصفحة بـ Drive) */
     logoLib = libLocalRead().map(function(x){ x.src = 'local'; return x; });
-    /* نافذة مستقلة لم تصلها قناة اللوحة بعد: ننتظرها 16 ثانية، ثم نقول صراحة إن الحفظ هنا بلا Drive */
-    var waiting = !IS_EMBEDDED && !LIB_PEER && !LIB_PORT && libWaitT === null;
-    if (srcEl) srcEl.textContent = waiting ? '⏳ بانتظار اتصال اللوحة…' : (window.S24_STORAGE_BLOCKED ? '⚠️ مؤقتة (التخزين محظور)' : '💻 هذا المتصفح');
-    if (waiting) libWaitT = setTimeout(function(){
-      if (LIB_PORT) return;
-      if (srcEl) srcEl.textContent = '💻 هذا المتصفح — بلا Drive';
-      addLog('⚠️','هذه النافذة غير متصلة باللوحة، فالشعارات تُحفظ في هذا المتصفح فقط. لحفظها في Drive افتح الأداة من اللوحة أو من زر «نافذة مستقلة» فيها.');
-    }, 16000);
+    if (srcEl) srcEl.textContent = window.S24_STORAGE_BLOCKED ? '⚠️ مؤقتة (التخزين محظور)' : '💻 هذا المتصفح — بلا Drive';
     renderLogoLib();
   }
 }
@@ -2421,7 +2315,6 @@ document.getElementById('logoLibSaveBtn').addEventListener('click', function(){ 
 
 /* v3.16: حفظ الإعدادات الحالية (الموضع/الحجم/الشفافية/الإزاحة) للشعار المختار من المكتبة */
 function updateActiveLogoSettings() {
-  if (LIB_RO) { toast('ℹ️ هذه النافذة تعرض مكتبة Drive للاختيار فقط — الحفظ والحذف والتحديث من داخل اللوحة', 4500); return; }
   var it = activeLibItem();
   if (!it) { toast('ℹ️ اختر شعاراً من المكتبة أولاً'); return; }
   var s = currentLogoSettings();
@@ -3320,7 +3213,7 @@ var FS_ACCESS_SUPPORTED = (typeof window.showDirectoryPicker === 'function');
    داخل اللوحة يصير الزر «الحفظ في مجلد Drive» عبر جسر اللوحة (S24News_PE_Images ← مجلد اليوم). */
 var IS_SANDBOXED = (function(){ try { return location.protocol !== 'file:' && String(window.origin || location.origin) === 'null'; } catch(e){ return true; } })();
 var DRIVE_SAVE_KEY = 'sy_pe_drive_save', driveSaveOn = false;
-function driveReady(){ return !!(LIB_USE_DRIVE && (LIB_PEER || LIB_PORT || API_ON())) && !(typeof LIB_RO !== 'undefined' && LIB_RO); }
+function driveReady(){ return !!(LIB_USE_DRIVE && (LIB_PEER || API_ON())); }
 /* v3.28: زر Drive وسطر حالته متغيّران: داخل اللوحة هما زر المجلد نفسه، وفي الصفحة المستقلة زر منفصل */
 var drvBtn = null, drvStat = null;
 function paintDriveBtn(){
@@ -3372,7 +3265,7 @@ if (IS_EMBEDDED) {
   var esh = document.getElementById('embeddedSaveHint'); if (esh) esh.style.display = 'block';
 }
 if (dirPickBtn) {
-  if (IS_EMBEDDED || LIB_PEER || LIB_PORT || IS_SANDBOXED) {
+  if (IS_EMBEDDED || LIB_PEER || IS_SANDBOXED) {
     /* v3.26: هنا يمنع المتصفح اختيار مجلد على الجهاز، فيصير الزر «الحفظ في مجلد Drive» */
     setupDriveSave(dirPickBtn, dirStatusEl);
   } else if (!FS_ACCESS_SUPPORTED) {
@@ -3396,10 +3289,11 @@ if (dirPickBtn) {
         if (dirStatusEl) dirStatusEl.textContent = '📂 سيتم الحفظ في: '+handle.name;
         addLog('📁','تم اختيار مجلد تنزيل مخصّص: '+handle.name+'.'); toast('✅ تم اختيار مجلد الحفظ: '+handle.name);
       } catch(e) {
-        /* v3.30: الإلغاء يأتي أيضاً من رفض كروم إذن «تعديل الملفات» دون أي سؤال، فنشرح السبب بدل الصمت */
+        /* v3.31: «AbortError» = أُغلقت النافذة، أو رفض المتصفح المجلد بصمت (يحدث في بعض نسخ كروم على ويندوز
+           مع أي مجلد؛ وEdge يقبله). نشرح البدائل بدل الصمت، والتحميل يبقى في مجلد التنزيلات. */
         if (e && e.name === 'AbortError') {
-          if (dirStatusEl) dirStatusEl.textContent = '⚠️ لم يُعتمد مجلد. إن لم تُلغِ أنت النافذة فإذن «تعديل الملفات» محظور في كروم: 🔒 بجانب العنوان ← إعدادات الموقع ← تعديل الملفات ← السماح. واختر مجلداً فرعياً لا سطح المكتب أو المستندات نفسها.';
-          toast('⚠️ لم يُعتمد المجلد — راجع إذن «تعديل الملفات» في كروم', 6000);
+          if (dirStatusEl) dirStatusEl.textContent = '⚠️ لم يُعتمد مجلد، فالحفظ في مجلد التنزيلات. إن اخترت مجلداً ولم يُقبل فالمتصفح رفضه: جرّب مجلداً فرعياً (لا سطح المكتب أو المستندات نفسها)، أو افتح الأداة في Edge، أو اجعل مجلدك مكان التنزيل في إعدادات كروم (chrome://settings/downloads).';
+          toast('⚠️ لم يُعتمد المجلد — الحفظ في مجلد التنزيلات', 5000);
           return;
         }
         toast('⚠️ المتصفح منع اختيار المجلد هنا — افتح ملف الأداة مباشرة من جهازك');
