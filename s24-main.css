@@ -3879,7 +3879,7 @@ body.item-page .post-body > .s24-cover-injected:has(~ div[dir="rtl"] .s24-galler
 
 /* 5. إعدادات الموبايل الافتراضية (تظهر الأسهم) */
 /* هذا يطبق على القوائم العادية مثل القائمة العلوية */
-@media (max-width: 1024px) {
+@media (max-width: 1023px) {
     .sy-nav-arrow {
         display: flex !important;
         width: 30px;
