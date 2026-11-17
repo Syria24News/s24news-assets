@@ -1312,15 +1312,19 @@ body#layout #grid-label-config { display: block; border: 2px dashed orange; back
 /* إصلاحات خاصة لصفحات (الأكثر قراءة + المحفوظات) */
 /* ========================================= */
 
-body.live-page-mode .main-layout__column,
-body.live-page-mode #force-left-sidebar,
-body.most-read-page .main-layout__column,
-body.most-read-page .main-layout__column,
-body.most-read-page #force-left-sidebar {
-    flex-grow: 0 !important;
-    width: 312px !important;
-    min-width: 312px !important;
-    max-width: 312px !important;
+/* العمودان الجانبيان في صفحتي البث والأكثر قراءة: النسبة نفسها كبقية الصفحات (17 نوفمبر 2026)
+   21% لكل عمود بين 220 و312px — كانا مثبّتين على 312px فيُضغط العمود الأوسط إلى 353px عند 1024.
+   محصورة بالكمبيوتر: على الجوال القائمة الجانبية طبقة بعرض الشاشة */
+@media (min-width: 1024px) {
+    body.live-page-mode .main-layout__column,
+    body.live-page-mode #force-left-sidebar,
+    body.most-read-page .main-layout__column,
+    body.most-read-page #force-left-sidebar {
+        flex: 0 0 clamp(220px, calc((100% - 2rem) * 0.2097), 312px) !important;
+        width: auto !important;
+        min-width: 0 !important;
+        max-width: 312px !important;
+    }
 }
 
 
@@ -3243,14 +3247,6 @@ a.sy-news-link:last-child {
 
 
 /* حل مشكلة القوائم الجانبية في صفحة الأكثر قراءة */
-body.most-read-page .main-layout__column,
-body.most-read-page .main-layout__column,
-body.most-read-page #force-left-sidebar {
-    flex-grow: 0 !important;       /* 1. منع التمدد التلقائي */
-    width: 312px !important;       /* 2. تثبيت العرض برقم محدد */
-    min-width: 312px !important;   /* 3. ضمان عدم التقلص */
-    max-width: 312px !important;   /* 4. ضمان عدم التوسع */
-}
 
 /* توسيط المحتوى المتبقي (اختياري لجمالية أكثر) */
 body.most-read-page .main-layout {
