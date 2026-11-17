@@ -2,6 +2,9 @@
    S24News — مشغّل البث المباشر (playFast / loadVideoLibs)
    playFast تُستدعى من onclick داخل HTML القالب — يجب أن تبقى دالة عامة
 
+   الإصدار 2.20 — 17 نوفمبر 2026: شارة «الرئيسية» في شريط القنوات بصفحة البث؛ إن كان البث الرئيسي إحدى قنوات الشريط
+                (زر «★ اجعلها الرئيسية» في لوحة 24) تبقى في مكانها بترتيب حسان بدل نقلها إلى أول الشريط؛
+                وإن لم يكن منها يبقى أولاً كما كان (strip.mainIdx بدل strip.hasMain)
    الإصدار 2.19 — 11 نوفمبر 2026: إخفاء لوحة يوتيوب الرمادية عُمّم على المشغّلين الجانبي (الرئيسية) والمرافق،
                 بدالة واحدة مشتركة s24HideUntilPlaying
    الإصدار 2.18 — 11 نوفمبر 2026: (1) شاشة صفحة البث تبقى على صورة الغلاف ودائرة التحميل حتى يبدأ الفيديو فعلاً،
@@ -187,7 +190,7 @@ window.S24Live = (function () {
        channels: [{ name, kind 'video'|'channel', id, logo }] — حتى 10 قنوات.
        الضغط على قناة يبدّل المشغّل داخل متصفح الزائر فقط، ولا يقرأ من Firestore. */
     var ID_RE = { video: /^[\w-]{11}$/, channel: /^UC[\w-]{22}$/ };
-    var strip = { items: [], active: -1 };
+    var strip = { items: [], active: -1, mainIdx: -1 };   // mainIdx: موضع البث الرئيسي في الشريط (-1 = متوقف)
 
     function escTxt(v) {
         return String(v || '').replace(/[&<>"']/g, function (c) { return '&#' + c.charCodeAt(0) + ';'; });
@@ -417,16 +420,20 @@ window.S24Live = (function () {
         var box = document.getElementById('s24-ch-strip');
         if (!list.length) { if (box) box.remove(); return; }
 
-        // البث الرئيسي أولاً (ما لم يكن متوقفاً)، ثم القنوات بلا تكرار
+        // البث الرئيسي (2.20): إن كان إحدى قنوات الشريط يبقى في مكانها (ترتيب اللوحة) وعليه شارة «الرئيسية»؛
+        // وإلا يُضاف أول الشريط كما كان. متوقف = لا رئيسي في الشريط (وتُحذف نسخته منه كما كان)
         var main = {
             name: state.title || 'البث الرئيسي', kind: state.mode,
             id: state.mode === 'channel' ? state.channelId : window.LIVE_CONFIG.videoId,
             logo: window.LIVE_CONFIG.posterImage || ''
         };
-        strip.items = state.onAir ? [main] : [];
-        strip.hasMain = state.onAir;
-        list.forEach(function (c) { if (!(c.kind === main.kind && c.id === main.id)) strip.items.push(c); });
-        strip.active = state.onAir ? 0 : -1;
+        var same = function (c) { return c.kind === main.kind && c.id === main.id; };
+        var at = -1;
+        for (var q = 0; q < list.length; q++) { if (same(list[q])) { at = q; break; } }
+        if (!state.onAir) { strip.items = list.filter(function (c) { return !same(c); }); strip.mainIdx = -1; }
+        else if (at >= 0) { strip.items = list.slice(); strip.mainIdx = at; }
+        else { strip.items = [main].concat(list); strip.mainIdx = 0; }
+        strip.active = strip.mainIdx;
 
         // القناة المطلوبة (2.7): ?ch= من سطر الرئيسية، أو القناة التي يتبعها المشغّل المرافق — تُختار دون تشغيل
         if (!strip.picked) {
@@ -465,9 +472,10 @@ window.S24Live = (function () {
             });
         }
         box.innerHTML = strip.items.map(function (c, i) {
-            var t = thumbOf(c), on = i === strip.active;
-            return '<button type="button" class="s24-ch' + (on ? ' is-active' : '') + '" data-i="' + i + '" aria-pressed="' + on + '">' +
-                '<span class="s24-ch-thumb">' + (t ? '<img src="' + escTxt(t) + '" alt="" loading="lazy">' : '<b>' + escTxt((c.name || '؟').charAt(0)) + '</b>') + '</span>' +
+            var t = thumbOf(c), on = i === strip.active, isMain = i === strip.mainIdx;
+            return '<button type="button" class="s24-ch' + (on ? ' is-active' : '') + (isMain ? ' is-main' : '') + '" data-i="' + i + '" aria-pressed="' + on + '">' +
+                '<span class="s24-ch-thumb">' + (t ? '<img src="' + escTxt(t) + '" alt="" loading="lazy">' : '<b>' + escTxt((c.name || '؟').charAt(0)) + '</b>') +
+                (isMain ? '<span class="s24-ch-badge">الرئيسية</span>' : '') + '</span>' +
                 '<span class="s24-ch-name">' + escTxt(c.name || 'قناة') + '</span></button>';
         }).join('');
     }
@@ -766,7 +774,7 @@ window.S24Live = (function () {
     // صفحة البث: ما يشاهده القارئ الآن { kind, id, name, main }
     function currentSource() {
         var c = strip.active >= 0 ? strip.items[strip.active] : null;
-        if (c) return { kind: c.kind, id: c.id, name: c.name || '', main: !!(strip.hasMain && strip.active === 0) };
+        if (c) return { kind: c.kind, id: c.id, name: c.name || '', main: strip.mainIdx >= 0 && strip.active === strip.mainIdx };
         return { kind: state.mode, id: state.mode === 'channel' ? state.channelId : window.LIVE_CONFIG.videoId,
                  name: state.title || '', main: true };
     }

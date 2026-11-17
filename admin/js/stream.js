@@ -1,5 +1,9 @@
 /* ============================================================
    S24News — وحدة البث المباشر في لوحة التحكم (admin/js/stream.js)
+   الإصدار 1.6 — 17 نوفمبر 2026: زر «★ اجعلها الرئيسية» بجانب كل قناة في الشريط — يجعلها البث الرئيسي
+                (صفحة البث + الجانبي + المصغّر) بضغطة وتأكيد، ويُحفظ فوراً بكتابة حقول البث الرئيسي وحدها (merge)
+                فلا يمسّ تعديلات الشريط غير المحفوظة؛ الغلاف لا يتغيّر؛ شارة «الرئيسية» على القناة المطابقة؛
+                تحذير في التأكيد إن كانت القناة منقطعة في آخر فحص أو محفوظة بمعرّف قناة UC
    الإصدار 1.5 — 4 نوفمبر 2026: «حذف» في «آخر الأرقام المستخدمة» يُحفظ فوراً (كان يُعتمد بـ«حفظ» فيعود الرقم بعد التحميل)،
                 ورسالة تأكيد قبل كل حذف (الأرقام وقنوات الشريط) بطلب حسان
    الإصدار 1.4 — 4 نوفمبر 2026: زر «تعديل» في قنوات الشريط — يملأ الحقول بالقناة، «حفظ التعديل» يبدّلها في مكانها، يُعتمد بـ«حفظ»
@@ -112,6 +116,8 @@ const MARKUP = `
       #stView .st-dot.ok{background:var(--brand,#77bd1d)}
       #stView .st-dot.bad{background:#E71414}
       #stView .st-dot.warn{background:#e0a100}
+      #stView .st-main{display:inline-block;margin-inline-start:6px;padding:1px 8px;border-radius:999px;background:var(--brand,#77bd1d);color:var(--brand-ink,#fff);font-size:11px;font-weight:700;vertical-align:middle}
+      #stView .st-rec.is-main{border:1px solid var(--brand,#77bd1d)}
       #stView code{direction:ltr;unicode-bidi:isolate;font-family:ui-monospace,Consolas,monospace;background:rgba(119,189,29,.14);padding:1px 6px;border-radius:4px;font-size:.92em}
     </style>
 
@@ -128,6 +134,7 @@ const MARKUP = `
         <li>يصل التغيير إلى صفحة البث خلال دقيقة، وإلى الرئيسية خلال 15 دقيقة على الأكثر (كاش الزوار لتوفير الحصة).</li>
         <li>«آخر الأرقام المستخدمة» تعيد بثاً سابقاً بضغطة، وتحتفظ بآخر 8 أرقام فقط (يُحذف الأقدم تلقائياً). «استخدام» يضع الرقم وعنوانه في النموذج أعلاه، ولا يتغيّر شيء في الموقع حتى «حفظ». «حذف» يزيل رقماً منتهياً من القائمة فوراً بعد رسالة التأكيد، ولا يظهر بجانب الرقم الحالي. القائمة لا تؤثر في الموقع.</li>
         <li><b>مراقبة المحطات:</b> اللوحة المركزية تفحص البث الرئيسي وقنوات الشريط كل 3 ساعات تقريباً، وتعرض النتيجة في صندوق أعلى هذا التبويب: الأحمر يعني أن البث انقطع (انتهى، أو حُذف، أو مُنع عرضه، أو لا بث في القناة)، فضع رقماً جديداً واحفظ. النقطة بجانب كل قناة في الشريط تعرض حالتها. للفحص فوراً: مركز الحصص في اللوحة المركزية ← «مراقبة البث» ← «فحص الآن».</li>
+        <li><b>«★ اجعلها الرئيسية»:</b> بجانب كل قناة في الشريط. يجعلها البث الرئيسي في صفحة البث والمشغّل الجانبي في الرئيسية والمصغّر في الموبايل، ويُحفظ فوراً بعد رسالة التأكيد (لا يحتاج «حفظ»)، ويجعل الحالة «على الهواء». الغلاف لا يتغيّر. القناة الرئيسية تحمل شارة «الرئيسية» وتبقى في الشريط بمكانها.</li>
         <li><b>قنوات الشريط:</b> تظهر تحت الشاشة في صفحة البث ويختار منها الزائر. الصق رابط بث القناة (أو معرّفها <code>UC...</code>) واسمها، ثم «إضافة» ثم «حفظ». القناة بمعرّف <code>UC</code> تحتاج رابط شعار، وإلا ظهر الحرف الأول من اسمها. جرّب كل قناة بعد إضافتها، فبعض القنوات تمنع عرض بثها خارج يوتيوب. «تعديل» يملأ الحقول بالقناة لتغيير رابطها أو اسمها أو شعارها دون حذفها، ثم «حفظ التعديل» ثم «حفظ».</li>
       </ol>
     </details>
@@ -293,16 +300,73 @@ export default {
         const img = c.logo || (c.kind === 'video' ? thumb(c.id) : '');
         const hs = healthOf('strip', c.id);   // حالة القناة في آخر فحص (إن فُحصت)
         const dot = hs ? '<span class="st-dot ' + swTone(hs.state) + '" title="' + esc(SW_LABEL[hs.state] || hs.state) + '"></span>' : '';
-        return '<div class="card st-rec"' + (i === chEdit ? ' style="outline:2px solid #77bd1d"' : '') + '>' +
+        const main = isMain(c);   // هل هي البث الرئيسي المحفوظ الآن؟
+        return '<div class="card st-rec' + (main ? ' is-main' : '') + '"' + (i === chEdit ? ' style="outline:2px solid #77bd1d"' : '') + '>' +
           (img ? '<img src="' + esc(img) + '" alt="" loading="lazy">' : '<img alt="">') +
-          '<div class="st-meta"><div>' + dot + esc(c.name) + '</div>' +
+          '<div class="st-meta"><div>' + dot + esc(c.name) + (main ? '<span class="st-main">الرئيسية</span>' : '') + '</div>' +
           '<div class="st-sub">' + (c.kind === 'channel' ? 'قناة' : 'فيديو') + ' · <code>' + esc(c.id) + '</code></div></div>' +
+          '<button class="btn btn-sm" type="button" data-ch="main" data-i="' + i + '"' + (main ? ' disabled' : '') + '>★ اجعلها الرئيسية</button>' +
           '<button class="btn btn-sm" type="button" data-ch="up" data-i="' + i + '" aria-label="تقديم"' + (i === 0 ? ' disabled' : '') + '>↑</button>' +
           '<button class="btn btn-sm" type="button" data-ch="down" data-i="' + i + '" aria-label="تأخير"' + (i === channels.length - 1 ? ' disabled' : '') + '>↓</button>' +
           '<button class="btn btn-sm" type="button" data-ch="edit" data-i="' + i + '">تعديل</button>' +
           '<button class="btn btn-sm" type="button" data-ch="del" data-i="' + i + '">حذف</button>' +
         '</div>';
       }).join('') : '<div class="card empty">لا قنوات في الشريط بعد (لا يظهر الشريط في الموقع).</div>';
+    }
+
+    // القناة تطابق البث الرئيسي المحفوظ (data) بالنوع والمعرّف
+    function isMain(c) {
+      if (!c || !data.mode) return false;
+      return data.mode === 'channel'
+        ? c.kind === 'channel' && c.id === data.channelId
+        : c.kind === 'video' && c.id === data.videoId;
+    }
+
+    /* ============ «★ اجعلها الرئيسية» (1.6) ============
+       يُحفظ فوراً بعد التأكيد: يكتب حقول البث الرئيسي وحدها (merge) — mode وvideoId/channelId وtitle وonAir وrecent وupdatedAt —
+       فلا يمسّ channels ولا poster ولا تعديلات الشريط غير المحفوظة. العنوان = اسم القناة. */
+    async function makeMain(i, btn) {
+      const c = channels[i];
+      if (!c) return;
+      const hs = healthOf('strip', c.id);
+      const warn = [];
+      if (hs && SW_RED[hs.state]) warn.push('⚠️ آخر فحص: ' + (SW_LABEL[hs.state] || hs.state) + '.');
+      if (c.kind === 'channel') warn.push('ℹ️ هذه القناة محفوظة بمعرّف قناة (UC): يعرض المشغّل ما تبثه الآن، ولا تظهر رسالة «البث متوقف» إن لم تكن تبث.');
+      if (data.onAir === false) warn.push('ℹ️ البث متوقف الآن، وسيصير «على الهواء».');
+      if (!confirm('جعل «' + (c.name || c.id) + '» البث الرئيسي؟\n\nيظهر في صفحة البث والمشغّل الجانبي في الرئيسية والمصغّر في الموبايل، ويُحفظ فوراً.' +
+        (warn.length ? '\n\n' + warn.join('\n') : ''))) return;
+
+      const mode = c.kind === 'channel' ? 'channel' : 'video';
+      const title = clean(c.name || '', TITLE_MAX);
+      const videoId = mode === 'video' ? c.id : (data.videoId || '');
+      const channelId = mode === 'channel' ? c.id : (data.channelId || '');
+      let recent = recentList.slice();
+      if (mode === 'video') {
+        recent = recent.filter((r) => r.id !== videoId);
+        recent.unshift({ id: videoId, title, at: Date.now() });
+        recent = recent.slice(0, RECENT_MAX);
+      }
+      const payload = { mode, onAir: true, videoId, channelId, title, recent, updatedAt: serverTimestamp() };
+      if (btn) btn.disabled = true;
+      try {
+        const r = await commit(setDoc(streamRef(), payload, { merge: true }));
+        data = Object.assign({}, data, payload, { updatedAt: new Date() });
+        recentList = recent.slice();
+        // نُحدّث حقول البث الرئيسي في النموذج لتطابق ما حُفظ (حقول الشريط وتعديلاته تبقى كما هي)
+        setRadio('stAir', 'on');
+        setRadio('stMode', mode);
+        $('stVideo').value = videoId;
+        $('stChannel').value = channelId;
+        $('stTitle').value = title;
+        syncMode();
+        render();
+        $('stMsg').textContent = r.queued ? 'حُفظ على الجهاز، ويُرسل عند عودة الاتصال.'
+          : '«' + c.name + '» هي البث الرئيسي الآن. تصل إلى صفحة البث خلال دقيقة، وإلى الرئيسية خلال 15 دقيقة.';
+        toast('البث الرئيسي: ' + c.name);
+      } catch (e) {
+        if (btn) btn.disabled = false;
+        toast('تعذّر الحفظ: ' + errText(e), true);
+      }
     }
 
     function addChannel() {
@@ -494,6 +558,7 @@ export default {
       if (!b) return;
       const i = +b.dataset.i, act = b.dataset.ch;
       if (act === 'edit') { startEdit(i); renderChannels(); return; }
+      if (act === 'main') { makeMain(i, b); return; }
       if (chEdit >= 0) endEdit();   // أي حذف أو نقل يُنهي التعديل كي لا يتبدّل رقم القناة
       if (act === 'del') {
         if (!confirm('حذف القناة «' + (channels[i].name || channels[i].id) + '» من شريط القنوات؟\n\nيُعتمد الحذف في الموقع بعد «حفظ».')) return;

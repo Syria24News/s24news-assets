@@ -5071,6 +5071,9 @@ body #comments .comment-thread .comment-thread { padding-right: 12px !important;
 .s24-ch-name { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .s24-ch.is-active .s24-ch-thumb { border-color: #77bd1d; }
 .s24-ch.is-active .s24-ch-name { color: #77bd1d; font-weight: 700; }
+/* شارة «الرئيسية» على البث الرئيسي في شريط القنوات (live-player.js 2.20) */
+.s24-ch-thumb { position: relative; }
+.s24-ch-badge { position: absolute; top: 4px; inset-inline-start: 4px; padding: 1px 7px; border-radius: 999px; background: #77bd1d; color: #fff; font-family: var(--font-main); font-size: 10px; font-weight: 700; line-height: 1.6; pointer-events: none; }
 .s24-ch:focus-visible .s24-ch-thumb { outline: 2px solid #77bd1d; outline-offset: 2px; }
 
 /* 🟢 إصلاح: رسالة تظهر عند فشل تحميل مشغل الفيديو الخارجي (video.js) بعد مهلة 10 ثوانٍ */
