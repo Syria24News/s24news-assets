@@ -3925,10 +3925,9 @@ body.item-page .post-body > .s24-cover-injected:has(~ div[dir="rtl"] .s24-galler
 .sy-section-header .sy-related-list { margin-bottom: 0; }
 .sy-section-header .sy-mosaic-container + .sy-related-title { padding-top: 16px; border-top: 1px solid var(--border-color, #eee); }
 /* من 1024px (حين يظهر العمودان الجانبيان) تأخذ البطاقة عرض العمود الأوسط كاملاً،
-   بهامش سالب يساوي حشوة .main-container: 15px حتى 1449px، و72px فما فوق.
+   بهامش سالب يساوي حشوة .main-container (المتغيّر --s24-mc-pad: 15px، ثم يكبر تدريجياً إلى 72px بين 1436 و1550px).
    دون 1024px تبقى داخل الحشوة حتى لا تلتصق بحافتي الشاشة. */
-@media (min-width: 1024px) { .sy-section-header { margin-inline: -15px; } }
-@media (min-width: 1450px) { .sy-section-header { margin-inline: -72px; } }
+@media (min-width: 1024px) { .sy-section-header { margin-inline: calc(-1 * var(--s24-mc-pad, 15px)); } }
 /* صفحة المنوعات حشوتها صفر أصلاً، فلا تُسحب البطاقة فيها */
 @media (min-width: 1024px) { .main-container:has(#subcats-wrapper) .sy-section-header { margin-inline: 0; } }
 @media (max-width: 768.98px) { .sy-section-header { padding: 14px 16px; margin-bottom: 18px; } }
@@ -3938,15 +3937,11 @@ body.item-page .post-body > .s24-cover-injected:has(~ div[dir="rtl"] .s24-galler
    وليست الأخت التالية للقصص، فتُلتقط بالأخ اللاحق (~). في /search تقع البطاقة أعمق بمستوى داخل .blog-posts */
 @media (min-width: 1024px) {
   .stories-container:has(+ .sy-section-header),
-  .stories-container:has(~ #Blog_Content .widget.Blog > .sy-section-header, ~ #Blog_Content .widget.Blog > .blog-posts > .sy-section-header) { width: auto; margin-inline: -15px; }
+  .stories-container:has(~ #Blog_Content .widget.Blog > .sy-section-header, ~ #Blog_Content .widget.Blog > .blog-posts > .sy-section-header) { width: auto; margin-inline: calc(-1 * var(--s24-mc-pad, 15px)); }
   .stories-container:has(+ .sy-section-header) .stories-grid,
   .stories-container:has(~ #Blog_Content .widget.Blog > .sy-section-header, ~ #Blog_Content .widget.Blog > .blog-posts > .sy-section-header) .stories-grid { padding-inline: 22px; }
   /* صفحة المنوعات: البطاقة لا تتسع هناك، فلا تتسع القصص أيضاً */
   .main-container:has(#subcats-wrapper) .stories-container:has(+ .sy-section-header) { margin-inline: 0; }
-}
-@media (min-width: 1450px) {
-  .stories-container:has(+ .sy-section-header),
-  .stories-container:has(~ #Blog_Content .widget.Blog > .sy-section-header, ~ #Blog_Content .widget.Blog > .blog-posts > .sy-section-header) { margin-inline: -72px; }
 }
 /* ---------- نهاية ترويسة البطاقة ---------- */
 
@@ -5311,12 +5306,15 @@ a.s24-cov-link:hover .s24-cov-title { color: #77bd1d; }
 }
 
 /* ================================================= */
-/* 📺 الشاشات العملاقة (أكبر من 1450px) */
+/* 📺 الشاشات الكبيرة: حشوة جانبية متدرّجة لراحة القراءة (17 نوفمبر 2026)
+   كانت 72px دفعة واحدة من 1450px، فيصغر المحتوى فجأة 113px عند تجاوز 1449.
+   الآن تكبر من 15 إلى 72 بين 1436 و1550px بنصف سرعة اتساع العمود، فيبقى عرض المحتوى ثابتاً (720px) بلا قفزة.
+   المتغيّر --s24-mc-pad تقرؤه ترويسة الأقسام وشريط القصص لهوامشهما السالبة */
 /* ================================================= */
-@media screen and (min-width: 1450px) {
+@media screen and (min-width: 1201px) {
     .main-container {
-        padding-inline: 72px; /* زيادة الحشوة الجانبية لتصبح القراءة مريحة */
-        /* 💡 لا نحتاج لكتابة البادينغ السفلي هنا، لأنه سيرث الـ 72px من كود الكمبيوتر تلقائياً! */
+        --s24-mc-pad: clamp(15px, calc((100vw - 1406px) / 2), 72px);
+        padding-inline: var(--s24-mc-pad);
     }
 }
 
