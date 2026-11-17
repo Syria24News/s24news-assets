@@ -3467,9 +3467,15 @@ body.most-read-page .main-layout {
 .sy-sk-main-img { height: auto; aspect-ratio: 16 / 9; border-radius: 8px; }
 .sy-sk-sub-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; }
 .sy-sk-sub-item { height: auto; aspect-ratio: 16 / 9; border-radius: 8px; margin-bottom: 65px; /* مكان العنوان */ }
-/* حجز ارتفاع الشبكة على الجوال قبل وصول أي JS */
+/* حجز ارتفاع الشبكة على الجوال قبل وصول أي JS
+   على الجوال تصير الشبكة 5 صفوف ثابتة الارتفاع (العنوان 3 أسطر كحد أقصى = 63px أقصر من الصورة):
+   حتى 600px: الصورة 110px ← 4×141 + 125 = 689px · من 601 إلى 768: الصورة 125px ← 4×156 + 140 = 764px
+   السقف أقل بنحو 18px من الفعلي حتى لا يبقى فراغ (قياس 17 نوفمبر 2026: كان الفراغ يصل إلى 337px عند 768) */
 @media (max-width: 768px) {
-  #special-news-grid { min-height: calc(1.125 * (100vw - 30px) + 270px); }
+  #special-news-grid { min-height: min(calc(1.125 * (100vw - 30px) + 270px), 670px); }
+}
+@media (min-width: 601px) and (max-width: 768px) {
+  #special-news-grid { min-height: 745px; }
 }
 /* حجز ارتفاع الشبكة على الكمبيوتر (8 نوفمبر 2026) — يمنع دفع ما تحتها عند وصول الأخبار
    الارتفاع = صورة رئيسية 16:9 + شبكة 2×2 = 1.125 × عرض الشبكة + العناوين والفواصل
