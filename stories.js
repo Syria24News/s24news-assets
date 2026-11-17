@@ -297,7 +297,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
             box.addEventListener('click', function openStrip(e) {
                 if (!box.classList.contains('stories-collapsed')) return;
-                if (window.innerWidth >= 1024) return;
+                if (window.matchMedia('(min-width: 1024px)').matches) return;
                 e.preventDefault(); e.stopPropagation();
                 box.classList.remove('stories-collapsed');
                 box.classList.add('stories-opening');

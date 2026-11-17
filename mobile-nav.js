@@ -10,7 +10,7 @@ document.addEventListener("DOMContentLoaded", function() {
         const leftSidebar = document.getElementById('force-left-sidebar'); 
         const rightSidebar = document.getElementById('main-right-sidebar'); 
 
-        if (window.innerWidth <= 1023) {
+        if (window.matchMedia('(max-width: 1023.98px)').matches) {
             if (leftSidebar && rightSidebar && !leftSidebar.classList.contains('moved-to-mobile')) {
                 const mobileContainer = document.createElement('div');
                 mobileContainer.className = 'mobile-moved-sidebar';
@@ -45,7 +45,7 @@ document.addEventListener("DOMContentLoaded", function() {
         const side = document.getElementById('main-right-sidebar');
         const leftArea = document.querySelector('.left-area');
         if (!lang || !side || !leftArea) return;
-        if (window.innerWidth <= 1023) {
+        if (window.matchMedia('(max-width: 1023.98px)').matches) {
             if (lang.parentNode !== side) side.insertBefore(lang, side.firstChild);
         } else if (lang.parentNode !== leftArea) {
             leftArea.insertBefore(lang, document.getElementById('themeToggle'));

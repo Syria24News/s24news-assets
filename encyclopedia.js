@@ -131,7 +131,7 @@ document.addEventListener('DOMContentLoaded',function(){
          بدل تركه عائماً فوق الفوتر أو محاولة تثبيته هناك. */
       var dockContainer=document.querySelector('.s24-enc-body');
       function checkArticleEnd(){
-        if(window.innerWidth<769 || !dockContainer) return;
+        if(window.matchMedia('(max-width: 768.98px)').matches || !dockContainer) return;
         var past=dockContainer.getBoundingClientRect().bottom<=window.innerHeight;
         wrap.classList.toggle('s24-tools-past-end',past);
       }
@@ -144,7 +144,7 @@ document.addEventListener('DOMContentLoaded',function(){
       var mainCol=document.querySelector('.main-container');
       var TOOLS_INSET=28;
       function alignDesktop(){
-        if(window.innerWidth<769 || !mainCol){
+        if(window.matchMedia('(max-width: 768.98px)').matches || !mainCol){
           wrap.style.left=''; wrap.style.width=''; wrap.style.transform='';
           return;
         }

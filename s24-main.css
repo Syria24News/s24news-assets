@@ -804,7 +804,7 @@ section.important-sections {
 .story-caption { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; width: 100%; font-size: 13px; font-weight: 700; line-height: 16px; text-align: center; color: var(--text-main); white-space: normal; }
 /* المعاينة المجمّعة (للمقالات على الموبايل) — مخفية في غير ذلك */
 .stories-preview { display: none; }
-@media (max-width: 1023px) {
+@media (max-width: 1023.98px) {
   .stories-container { margin-inline: -15px; width: auto; margin-bottom: 24px; }
   /* الصفحات التي لا حشوة لعمودها الأوسط: لا سحب للحافة، وإلا ظهر تمرير أفقي */
   body.item-page .stories-container,
@@ -825,7 +825,7 @@ section.important-sections {
   /* بعد الفتح: الدوائر تكبر وتظهر تدريجياً */
   .stories-opening .story-item { animation: storiesGrow .3s ease-in-out; }
 }
-@media (min-width: 769px) and (max-width: 1023px) { .main-container:has(#subcats-wrapper) .stories-container { margin-inline: 0; } }
+@media (min-width: 769px) and (max-width: 1023.98px) { .main-container:has(#subcats-wrapper) .stories-container { margin-inline: 0; } }
 @keyframes storiesGrow { from { opacity: 0; transform: scale(.68); } to { opacity: 1; transform: none; } }
 
 /* ============================================================
@@ -983,7 +983,7 @@ section.important-sections {
 /* =========================================================
    🚀 موبايل — التصميم المكدس المطابق لـ RT (أسود - صورة - أسود)
    ========================================================= */
-@media only screen and (max-width: 768px) {
+@media only screen and (max-width: 768.98px) {
 
     /* الحاوية الأساسية (Stage) تملأ الشاشة بالكامل ومثبتة */
     .rt-stories-stage {
@@ -2713,7 +2713,7 @@ a.sy-news-link:last-child {
 /* 📱 استجابة الهاتف والأجهزة الصغيرة */
 /* ========================================= */
 
-@media (max-width: 768px) {
+@media (max-width: 768.98px) {
     .poll__wrapper {
         padding: 15px;
         min-height: 300px;
@@ -2749,7 +2749,7 @@ a.sy-news-link:last-child {
     }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 480.98px) {
     .poll__wrapper {
         padding: 12px;
         min-height: 280px;
@@ -3055,7 +3055,7 @@ a.sy-news-link:last-child {
     align-items: stretch;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 768.98px) {
     .news-themes__wrapper { grid-template-columns: 1fr; }
 }
 
@@ -3233,7 +3233,7 @@ a.sy-news-link:last-child {
 }
 
 /* تعديل للموبايل لضمان التناسق عند تصغير الشاشة */
-@media only screen and (max-width: 1023px) {
+@media only screen and (max-width: 1023.98px) {
     .custom-copyright-footer {
         padding: 20px 15px;    /* تقليل الحشوة لتناسب الموبايل مثل منطقة المقالات */
         margin-top: 20px;
@@ -3471,10 +3471,10 @@ body.most-read-page .main-layout {
    على الجوال تصير الشبكة 5 صفوف ثابتة الارتفاع (العنوان 3 أسطر كحد أقصى = 63px أقصر من الصورة):
    حتى 600px: الصورة 110px ← 4×141 + 125 = 689px · من 601 إلى 768: الصورة 125px ← 4×156 + 140 = 764px
    السقف أقل بنحو 18px من الفعلي حتى لا يبقى فراغ (قياس 17 نوفمبر 2026: كان الفراغ يصل إلى 337px عند 768) */
-@media (max-width: 768px) {
+@media (max-width: 768.98px) {
   #special-news-grid { min-height: min(calc(1.125 * (100vw - 30px) + 270px), 670px); }
 }
-@media (min-width: 601px) and (max-width: 768px) {
+@media (min-width: 601px) and (max-width: 768.98px) {
   #special-news-grid { min-height: 745px; }
 }
 /* حجز ارتفاع الشبكة على الكمبيوتر (8 نوفمبر 2026) — يمنع دفع ما تحتها عند وصول الأخبار
@@ -3662,7 +3662,7 @@ body.item-page .rt-album-source.s24-album-fallback { display: block !important; 
 }
 
 /* 7. إعدادات الموبايل */
-@media (max-width: 768px) {
+@media (max-width: 768.98px) {
     .s24-gallery-wrapper .s24-slide-caption {
         font-size: 12.5px !important;
         padding: 22px 12px 10px 85px;
@@ -3685,7 +3685,7 @@ body.item-page .post-body > div[dir="rtl"] .s24-gallery-wrapper.s24-gallery-lead
 }
 
 /* 8.1 تحت 1023px تصبح حشوة المقال 20px لا 65px — فيُكسر بالقيمة نفسها، وإلا تجاوز المعرض الشاشة وقُصّت أطرافه وعدّاده */
-@media only screen and (max-width: 1023px) {
+@media only screen and (max-width: 1023.98px) {
     body.item-page .post-body > div[dir="rtl"] .s24-gallery-wrapper.s24-gallery-lead {
         margin-left: -20px !important;
         margin-right: -20px !important;
@@ -3885,7 +3885,7 @@ body.item-page .post-body > .s24-cover-injected:has(~ div[dir="rtl"] .s24-galler
 
 /* 5. إعدادات الموبايل الافتراضية (تظهر الأسهم) */
 /* هذا يطبق على القوائم العادية مثل القائمة العلوية */
-@media (max-width: 1023px) {
+@media (max-width: 1023.98px) {
     .sy-nav-arrow {
         display: flex !important;
         width: 30px;
@@ -3931,7 +3931,7 @@ body.item-page .post-body > .s24-cover-injected:has(~ div[dir="rtl"] .s24-galler
 @media (min-width: 1450px) { .sy-section-header { margin-inline: -72px; } }
 /* صفحة المنوعات حشوتها صفر أصلاً، فلا تُسحب البطاقة فيها */
 @media (min-width: 1024px) { .main-container:has(#subcats-wrapper) .sy-section-header { margin-inline: 0; } }
-@media (max-width: 768px) { .sy-section-header { padding: 14px 16px; margin-bottom: 18px; } }
+@media (max-width: 768.98px) { .sy-section-header { padding: 14px 16px; margin-bottom: 18px; } }
 /* القصص فوق ترويسة البطاقة (صفحات الأقسام، الكمبيوتر): الشريط بعرض البطاقة نفسه،
    وأول دائرة تبتعد 22px عن حافتها = حشوة البطاقة الداخلية، فتقف فوق مربع العنوان ولا تلتصق بالحافة */
 /* الحالة الثانية: صفحات الأكثر قراءة وكل الأخبار والمحفوظات — البطاقة من القالب داخل #Blog_Content
@@ -4033,7 +4033,7 @@ body.item-page .post-body > .s24-cover-injected:has(~ div[dir="rtl"] .s24-galler
 /* ------------------------------------------- */
 /* 7. التجاوب مع الموبايل (Unified Mobile)     */
 /* ------------------------------------------- */
-@media (max-width: 768px) {
+@media (max-width: 768.98px) {
     .sy-mosaic-container { gap: 8px; padding: 0 5px; }
     .sy-related-list { gap: 6px; }
     .sy-related-title { font-size: 16px; margin-top: 20px; }
@@ -4055,7 +4055,7 @@ body.item-page .post-body > .s24-cover-injected:has(~ div[dir="rtl"] .s24-galler
 .sy-post-meta { display: flex; align-items: center; justify-content: flex-start; flex-wrap: wrap; margin-top: 20px; margin-bottom: 8px; padding-right: 30px; color: var(--text-sec); line-height: 1.5; gap: 0; }
 .meta-inner { order: 3; color: var(--text-sec); line-height: 1.5; margin-top: 2px; margin-bottom: 1px; padding: 2px 25px 15px 25px; box-sizing: border-box; display: flex; align-items: center; flex-wrap: wrap; font-size: 16px; }
 .post-body .meta-inner { margin-right: -65px; margin-left: -65px; }
-@media only screen and (max-width: 768px) {
+@media only screen and (max-width: 768.98px) {
     .post-body .meta-inner { margin-right: -20px; margin-left: -20px; }
 }
 .meta-el.meta-update::before { content: '|'; margin: 0 8px; opacity: 0.5; }
@@ -4086,7 +4086,7 @@ body.item-page .post-body > .s24-cover-injected:has(~ div[dir="rtl"] .s24-galler
 /* ================================================= */
 /* 📱 2. شاشات التابلت الصغيرة والموبايل الكبير (أقل من 768px) */
 /* ================================================= */
-@media only screen and (max-width:768px) {
+@media only screen and (max-width:768.98px) {
 
 
   /* زر العودة للأعلى على الموبايل: دائري بخلفية صلبة (القالب يجعلها شفافة فيظهر النص من تحته).
@@ -4105,7 +4105,7 @@ body.item-page .post-body > .s24-cover-injected:has(~ div[dir="rtl"] .s24-galler
 /* ================================================= */
 /* 📱 3. شاشات الموبايل الصغيرة (أقل من 600px) */
 /* ================================================= */
-@media only screen and (max-width: 600px) {
+@media only screen and (max-width: 600.98px) {
 
 
   /* القوائم المخصصة */
@@ -4282,7 +4282,7 @@ body.item-page .post-body > div[dir="rtl"] .s24-lead-video-wrapper {
 
 /* تحت 1023px تصبح حشوة المقال 20px لا 65px — فيُكسر بالقيمة نفسها، وإلا خرج الفيديو
    عن الشاشة 45px من كل جانب وقُصّت حافتاه وأزرار المشغّل (كما في المعرض القائد) */
-@media only screen and (max-width: 1023px) {
+@media only screen and (max-width: 1023.98px) {
     body.item-page .post-body > div[dir="rtl"] .s24-lead-video-wrapper {
         margin-left: -20px !important;
         margin-right: -20px !important;
@@ -4727,7 +4727,7 @@ body.item-page .post-body > *:not(.separator):not(img) { padding-right: 65px; pa
 
 /* == max-width: 1023px |التابلت والموبايل (شاشات 1023 وأصغر) ================================================================================================================================ */
 
-@media only screen and (max-width: 1023px) {
+@media only screen and (max-width: 1023.98px) {
 
 /* --- الهيدر والقوائم العلوية --- */
 header { position: fixed; inset-block-start: 0; inset-inline-end: 0; width: 100%; height: 80px; padding-block: 0 !important; padding-inline-start: 1px !important; padding-inline-end: 0 !important; background: var(--header-bg); z-index: 10000; box-shadow: 0 2px 5px rgba(0,0,0,0.1); box-sizing: border-box; }
@@ -4807,7 +4807,7 @@ body.item-page h1.post-title, body.item-page h3.post-title, body.item-page .post
 
 /* == max-width: 768px |الهواتف (شاشات 768 وأصغر) ============================================================================================================================================ */
 
-@media only screen and (max-width: 768px) {
+@media only screen and (max-width: 768.98px) {
 
 
 /* شبكة الأخبار المميزة (الرئيسية والأقسام) */
@@ -4913,7 +4913,7 @@ body #comments .comment-thread .comment-thread { padding-right: 12px !important;
 
 /* == max-width: 600px ================================================================================================================================================================= */
 
-@media only screen and (max-width:600px){
+@media only screen and (max-width:600.98px){
 
 /* شبكة الأخبار المميزة (الرئيسية والأقسام) */
 #special-news-grid .grid-item img,#category-special-grid .grid-item img{width:160px !important;height:110px !important}
@@ -4949,7 +4949,7 @@ body #comments .comment-thread .comment-thread { padding-right: 12px !important;
 
 /* == (min-width: 1201px) and (max-width: 1920px) | 2. شاشات المكتب القياسية (Desktop) ======================================================================================================= */
 
-@media screen and (min-width: 1201px) and (max-width: 1920px) {
+@media screen and (min-width: 1201px) and (max-width: 1920.98px) {
 
 /* الشريط العلوي (التاريخ والتواصل الإجتماعي) */
 .top-date-bar { height: 2.5rem; }
@@ -4965,7 +4965,7 @@ body #comments .comment-thread .comment-thread { padding-right: 12px !important;
 
 /* == (min-width: 1025px) and (max-width: 1200px) | 3. اللابتوب والشاشات المتوسطة (Laptops) =================================================================================================== */
 
-@media screen and (min-width: 1025px) and (max-width: 1200px) {
+@media screen and (min-width: 1025px) and (max-width: 1200.98px) {
 
 /* نفس قيم فئة "المكتب" أعلاه — تم نقلها هنا حرفيًا بعد فصل النطاقين لتفادي التداخل، بدون أي تغيير بالمظهر الفعلي */
 .top-date-bar { height: 2.5rem; }
@@ -4980,7 +4980,7 @@ body #comments .comment-thread .comment-thread { padding-right: 12px !important;
 
 /* == (min-width: 769px) and (max-width: 1023px) | 4. تابلت - الوضع العرضي والطولي (Tablets) ========================================================================================================================== */
 
-@media screen and (min-width: 769px) and (max-width: 1023px) {
+@media screen and (min-width: 769px) and (max-width: 1023.98px) {
 
 
 }
@@ -4991,7 +4991,7 @@ body #comments .comment-thread .comment-thread { padding-right: 12px !important;
 
 /* == (min-width: 481px) and (max-width: 768px) | 5. هواتف كبيرة / تابلت صغير (Large Phones) ============================================================================================== */
 
-@media screen and (min-width: 481px) and (max-width: 768px) {
+@media screen and (min-width: 481px) and (max-width: 768.98px) {
 
 
 }
@@ -5001,7 +5001,7 @@ body #comments .comment-thread .comment-thread { padding-right: 12px !important;
 
 /* == max-width: 480px | 6-7. الهواتف الذكية والصغيرة (Standard & Small Phones) — تم دمج فئتي 376-480 و ≤375 لأن محتواهما كان مكررًا حرفيًا بالكامل ================================================================================================= */
 
-@media screen and (max-width: 480px) {
+@media screen and (max-width: 480.98px) {
 
 .right-area { gap: 8px; }
  .left-area { gap: 9px; }
@@ -5126,11 +5126,11 @@ body.live-page-mode .main-container { max-width: 720px !important; margin: 0 aut
 .live-title-box { min-width: 0; }
 /* يلتفّ على سطرين في الشاشات الضيقة بدل قطعه بنقاط (كان nowrap + ellipsis) */
 .live-subtitle { margin: 2px 0 0; font-family: var(--font-main); font-size: 13px; font-weight: 400; line-height: 1.5; color: var(--text-sec); }
-@media (max-width: 768px) { .live-subtitle { font-size: 12px; } }
+@media (max-width: 768.98px) { .live-subtitle { font-size: 12px; } }
 /* الموبايل والتابلت (حتى 1023px): الشاشة وشريط القنوات يبقيان مثبّتين وأحدث الأخبار تمرّ تحتهما (live-player.js 2.4).
    التثبيت (sticky) لا يتجاوز حدود الحاوية الأم، فتُلغى صناديق الحاويات الوسيطة (display: contents)
    لتصير الحاوية الأم .post-outer التي تضم الأخبار أيضاً؛ وتحمل الترويسة لون البطاقة بنفسها */
-@media (max-width: 1023px) {
+@media (max-width: 1023.98px) {
     body.live-page-mode .post.hentry,
     body.live-page-mode .post-body,
     body.live-page-mode .live-stream-wrapper,
@@ -5153,7 +5153,7 @@ a.s24-cov-link:hover .s24-cov-title { color: #77bd1d; }
 .s24-cov-time { flex-shrink: 0; min-width: 52px; font-family: var(--font-main); font-size: 13px; font-weight: 700; color: var(--text-sec); }
 .s24-cov-title { font-family: var(--font-main); font-size: 15px; font-weight: 600; line-height: 1.6; }
 .s24-cov-item.is-urgent .s24-cov-title { color: var(--color-red, #e71414); }
-@media (max-width: 768px) { .s24-cov-title { font-size: 14px; } .s24-cov-all { font-size: 12px; } }
+@media (max-width: 768.98px) { .s24-cov-title { font-size: 14px; } .s24-cov-all { font-size: 12px; } }
 /* المشغّل العائم في صفحة البث (live-player.js 2.5) — الكمبيوتر فقط؛ الموضع (left/top) يكتبه السكربت */
 .s24-float-bar { display: none; }
 @media (min-width: 1024px) {
@@ -5259,7 +5259,7 @@ a.s24-cov-link:hover .s24-cov-title { color: #77bd1d; }
 .s24-watch-card:hover .s24-watch-thumb img { transform: scale(1.05); }
 .s24-watch-card:hover .s24-watch-play { background: #77bd1d; transform: scale(1.08); }
 .s24-watch-card:focus-visible .s24-watch-thumb { outline: 2px solid #77bd1d; outline-offset: 2px; }
-@media (max-width: 768px) { .s24-watch-card { flex-basis: 62%; } .s24-watch-title { font-size: 13px; } }
+@media (max-width: 768.98px) { .s24-watch-card { flex-basis: 62%; } .s24-watch-title { font-size: 13px; } }
 /* ضغط ترويسة صفحة البث، والشارة في سطر واحد دائماً، وإزالة الفراغ الأبيض أسفل الشريط */
 .live-header { margin-bottom: 10px !important; padding: 0 15px 0 15px !important; gap: 12px; }
 .live-header .status-badge { flex-shrink: 0; white-space: nowrap; }
@@ -5281,7 +5281,7 @@ a.s24-cov-link:hover .s24-cov-title { color: #77bd1d; }
 .mini-live__button { background-color: var(--hover-bg, #f5f5f5); inline-size: 26px; block-size: 26px; border-radius: 50%; border: none; display: flex; align-items: center; justify-content: center; cursor: pointer; flex-shrink: 0; padding: 0; }
 .mini-live__button svg { inline-size: 16px; block-size: 16px; fill: var(--text-sec, #555); }
 .mini-live__video-box .video-js * { box-shadow: none !important; text-shadow: none !important; }
-@media only screen and (max-width: 768px) {
+@media only screen and (max-width: 768.98px) {
     .mini-live__wrapper { display: flex; animation: slideUpLive 0.4s ease-out; }
     .live-return-pill { bottom: 65px !important; padding: 8px 16px !important; font-size: 12px !important; gap: 8px !important; white-space: nowrap; }
     .live-return-pill svg { width: 14px; height: 14px; }
@@ -5369,7 +5369,7 @@ body.item-page h3.post-title {
 /* =========================================================
    4. التجاوب مع الموبايل والتابلت (الشاشات أقل من 768px)
 ========================================================= */
-@media only screen and (max-width: 768px) {
+@media only screen and (max-width: 768.98px) {
 
     /* القاعدة الموحّدة الوحيدة لصور المقال (غير الأولى) على الموبايل
        — تجمع كل الخصائص التي كانت موزعة على 3 نسخ متضاربة، وتحافظ على
@@ -5415,7 +5415,7 @@ body.item-page h3.post-title {
   border-bottom:1px solid transparent;transition:color .2s,border-color .2s}
 .s24-enc-related a:hover{color:var(--sy-green,#77bd1d);border-bottom-color:var(--sy-green,#77bd1d)}
 .s24-rel-ico{font-size:15px;line-height:1;flex-shrink:0;opacity:.85}
-@media (max-width:480px){
+@media (max-width:480.98px){
   .s24-enc-related{padding:14px}
   .s24-enc-related ul{grid-template-columns:1fr;gap:6px}
 }
@@ -5447,7 +5447,7 @@ a.s24-imp-item:hover .s24-imp-title{color:var(--sy-green,#77bd1d)}
 .s24-imp-item.is-static{cursor:default}
 .s24-imp-time{flex:none;color:var(--sy-green,#77bd1d);font-weight:700;font-size:13px;font-variant-numeric:tabular-nums;min-width:42px;white-space:nowrap}
 .s24-imp-title{font-family:var(--font-title);font-weight:700;font-size:16px;line-height:1.6;overflow-wrap:anywhere;transition:color .2s}
-@media (max-width:600px){
+@media (max-width:600.98px){
   .s24-imp-head{padding:8px 15px}
   .s24-imp-item{padding:12px 15px;gap:10px}
   .s24-imp-title{font-size:15px}
@@ -5520,4 +5520,4 @@ a.s24-imp-item:hover .s24-imp-title{color:var(--sy-green,#77bd1d)}
 /* شكل ثابت مهما بلّغ يوتيوب عن المدة (9 نوفمبر 2026): عند المدة اللانهائية يضيف VideoJS كتابة LIVE فتأخذ نصف الشريط ويبقى فارغاً */
 .video-js.s24-skin .vjs-live-control { display: none !important; }
 .video-js.s24-skin.vjs-live .vjs-play-progress { width: 100% !important; }
-@media (max-width: 768px) { .video-js.s24-skin .vjs-control-bar { font-size: 12px; } .video-js.s24-skin .s24-seek { width: 2.6em; } }
+@media (max-width: 768.98px) { .video-js.s24-skin .vjs-control-bar { font-size: 12px; } .video-js.s24-skin .s24-seek { width: 2.6em; } }

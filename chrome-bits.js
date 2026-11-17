@@ -13,7 +13,7 @@
             
             // الموبايل (حتى 768px، نقطة الكسر نفسها في s24-main.css):
             // يظهر بعد شاشة ونصف، يختفي عند النزول (القراءة)، يعود عند الصعود، ويبقى ظاهراً قرب نهاية الصفحة
-            var mobileMQ = window.matchMedia('(max-width: 768px)');
+            var mobileMQ = window.matchMedia('(max-width: 768.98px)');
             var lastY = window.scrollY;
             var ticking = false;
 

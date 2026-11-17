@@ -1602,9 +1602,9 @@ function initMiniLive() {
     }
     S24Live.whenReady(function () {
         afterLoad(function () {
-            if (window.innerWidth <= 768) start();
+            if (window.matchMedia('(max-width: 768.98px)').matches) start();
             else window.addEventListener('resize', function () {
-                if (window.innerWidth <= 768) start();
+                if (window.matchMedia('(max-width: 768.98px)').matches) start();
             });
         });
     });
