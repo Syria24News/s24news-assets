@@ -4681,7 +4681,9 @@ header { position: fixed; top: 40px; width: 100%; z-index: 1000; background-colo
 
 
 /* 3. القوائم الجانبية (Sticky Sidebars) */
-.main-layout__column:first-child, .main-layout__column:last-child { position: -webkit-sticky !important; position: sticky !important; top: 200px !important; height: calc(100vh - 220px) !important; max-height: calc(100vh - 220px) !important; overflow-y: auto !important; overscroll-behavior: contain !important; align-self: flex-start !important; width: auto; min-width: 312px; flex-grow: 0; flex-shrink: 0; display: flex; flex-direction: column; gap: 0; scrollbar-width: none !important; -ms-overflow-style: none !important;}
+/* عرض العمودين الجانبيين نسبي (17 نوفمبر 2026): 21% لكل منهما كما في الشكل المريح 312 | 864 | 312 (0.2097 = 312 ÷ 1488)،
+   فيتقلص الثلاثة معاً حتى 1024px بدل أن يدفع العمود الأوسط وحده الثمن. الحد الأدنى 220px (تحته ينكسر «برامج القناة»)، والأقصى 312px */
+.main-layout__column:first-child, .main-layout__column:last-child { position: -webkit-sticky !important; position: sticky !important; top: 200px !important; height: calc(100vh - 220px) !important; max-height: calc(100vh - 220px) !important; overflow-y: auto !important; overscroll-behavior: contain !important; align-self: flex-start !important; width: auto; min-width: 0; flex-basis: clamp(220px, calc((100% - 2rem) * 0.2097), 312px); flex-grow: 0; flex-shrink: 0; display: flex; flex-direction: column; gap: 0; scrollbar-width: none !important; -ms-overflow-style: none !important;}
 
 .main-layout__column:first-child { padding-inline-start: 1.125rem; }
 
