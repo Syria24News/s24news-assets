@@ -299,6 +299,19 @@
 
     ensure();
 
+    /* تبديل الوضع الليلي/النهاري: اللون المنسوخ سطرياً يبقى لون الوضع السابق
+       فيختفي النص أو يبهت حتى إعادة التحميل؛ نعيد نسخه بعد انتهاء انتقال الألوان */
+    function recolor() {
+      var a = findDateNode(bar);
+      if (a) link.style.color = window.getComputedStyle(a).color;
+    }
+    if (window.MutationObserver) {
+      new MutationObserver(function () {
+        setTimeout(recolor, 60);
+        setTimeout(recolor, 700);
+      }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
+    }
+
     if (window.MutationObserver) {
       new MutationObserver(ensure).observe(bar, { childList: true, subtree: true });
     } else {

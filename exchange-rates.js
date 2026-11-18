@@ -288,6 +288,11 @@
         /* أي تغيير في الشريط (إعادة كتابة التاريخ أو سطر الصلاة) يُفحص فوراً */
         new MutationObserver(function () { ensure(); })
           .observe(bar, { childList: true, subtree: true });
+        /* تبديل الوضع: إعادة نسخ اللون بعد أن يحدّث prayer-times.js لون رابط الصلاة */
+        new MutationObserver(function () {
+          setTimeout(copyLook, 150);
+          setTimeout(copyLook, 800);
+        }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
       }
       setInterval(function () { ensure(); rotate(); }, ROTATE_MS);
     });
