@@ -170,23 +170,18 @@
 
     // 🎯 إعداد المستمعين للأحداث
     function setupEventListeners() {
-        const captchaBox = document.querySelector('.captcha-box');
         const submitBtn = document.getElementById('submit-vote-btn');
         
-        // 🆕 مع reCAPTCHA الحقيقي يُخفى المربع الشكلي ويُحمَّل التحقق عند أول اختيار
+        // 🆕 reCAPTCHA الحقيقي: يُحمَّل التحقق عند أول اختيار
         if (RECAPTCHA_SITE_KEY) {
-          const fake = document.querySelector('.fake-recaptcha');
-            if (fake) fake.style.display = 'none';
             // إخفاء شارة reCAPTCHA العائمة واستبدالها بنص الإسناد الذي تشترطه Google داخل صندوق الاستطلاع
-            const noteAnchor = fake || submitBtn;
-            if (noteAnchor) {
+            if (submitBtn) {
                 const note = document.createElement('p');
                 note.className = 's24-recaptcha-note';
                 note.style.cssText = 'font-size:11px;color:#888;margin:10px 0 14px;line-height:1.6;text-align:center';
                 note.innerHTML = 'هذا الاستطلاع محمي بـ reCAPTCHA، وتنطبق عليه <a href="https://policies.google.com/privacy" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">سياسة الخصوصية</a> و<a href="https://policies.google.com/terms" target="_blank" rel="noopener" style="color:inherit;text-decoration:underline">شروط الخدمة</a> من Google.';
-                  // بعد حذف الكابتشا الشكلية من القالب: النص يوضع فوق زر التصويت مباشرة
-                if (fake) fake.insertAdjacentElement('afterend', note);
-                else submitBtn.insertAdjacentElement('beforebegin', note);
+                // النص يوضع فوق زر التصويت مباشرة
+                submitBtn.insertAdjacentElement('beforebegin', note);
                 const badgeCss = document.createElement('style');
                 badgeCss.textContent = '.grecaptcha-badge{visibility:hidden!important}'; // visibility لا display حتى يبقى التحقق عاملاً
                 document.head.appendChild(badgeCss);
@@ -196,19 +191,6 @@
             });
         }
 
-        if (captchaBox && !RECAPTCHA_SITE_KEY) {
-            captchaBox.addEventListener('click', function() {
-                isCaptchaDone = true;
-                this.setAttribute('data-checked', 'true');
-                this.innerHTML = '✔';
-                this.style.background = '#6db200'; 
-                this.style.color = '#fff';
-                if(submitBtn && document.querySelector('input[name="vote"]:checked')) {
-                    submitBtn.disabled = false;
-                }
-            });
-        }
-        
         if (submitBtn) {
             submitBtn.addEventListener('click', submitVote);
         }
@@ -275,12 +257,6 @@
         showFormUI();
         
         isCaptchaDone = !!RECAPTCHA_SITE_KEY;
-        const captchaBox = document.querySelector('.captcha-box');
-        if(captchaBox) {
-            captchaBox.removeAttribute('data-checked');
-            captchaBox.innerHTML = '';
-            captchaBox.style.background = '#fff';
-        }
         
         const submitBtn = document.getElementById('submit-vote-btn');
         if(submitBtn) submitBtn.disabled = true;

@@ -85,7 +85,6 @@ body .progress-wrap { left: auto !important; right: 14px !important; }
 .s24-bio-table th, .s24-bio-table td, .s24-place-table th, .s24-place-table td,
 .s24-enc-table th, .s24-enc-table td, .s24-enc-data th, .s24-enc-data td { text-align: left !important; }
 .s24-enc-quote { border-right: 0 !important; border-left: 4px solid var(--bs-main, #77bd1d) !important; }
-.s24-enc-links ul { padding-right: 0 !important; padding-left: 20px !important; }
 .s24-enc-refs ol { padding-right: 0 !important; padding-left: 22px !important; }
 .s24-enc-note { border-right: 0 !important; border-left: 4px solid var(--bs-main, #77bd1d) !important; }
 .s24-enc-note.warn { border-left-color: #e0a800 !important; }

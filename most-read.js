@@ -10,8 +10,7 @@ document.addEventListener("DOMContentLoaded", function() {
     const container = document.getElementById('most-read-renderer');
     
     // 2. البحث عن أداة المشاركات الشائعة (مصدر البيانات)
-    let popWidget = document.getElementById('PopularPosts1');
-    if (!popWidget) popWidget = document.getElementById('PopularPosts2');
+    const popWidget = document.getElementById('PopularPosts1');
 
     if (popWidget && container) {
         

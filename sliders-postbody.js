@@ -75,7 +75,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
     var pageContent = document.title + " " + decodeURIComponent(window.location.href);
 
-    var specialElements = document.querySelectorAll('.post-labels a, .sy-post-meta a, .sy-clean-text, .sy-section-title-text');
+    var specialElements = document.querySelectorAll('.post-labels a, .sy-post-meta a, .sy-section-title-text');
     specialElements.forEach(function(el) {
         pageContent += " " + el.textContent.trim();
     });
@@ -109,8 +109,7 @@ document.addEventListener("DOMContentLoaded", function() {
                     classList.includes('fb-video') ||
                     child.classList.contains('post-footer') ||
                     child.classList.contains('rt-album-source') ||     // مصدر المعرض المخفي (فيه تعليقات الصور)
-                    child.classList.contains('s24-gallery-wrapper') || // المعرض نفسه (عدّاده وتعليقاته) 
-                    child.classList.contains('thumb-nav-btn');
+                    child.classList.contains('s24-gallery-wrapper');   // المعرض نفسه (عدّاده وتعليقاته)
 
                 if (isMediaOrSocial) continue;
 

@@ -5,41 +5,32 @@
    ══════════════════════════════════════════════════════════════ */
 
 /* خطوط المصحف تُحمَّل عند الحاجة فقط من encyclopedia.js (لا @import هنا — كان يحظر العرض في كل الصفحات) */
-/* ═══ ١. صندوق المعلومات — الاسم القياسي + الأسماء الموروثة ═══ */
-.s24-infobox,
+/* ═══ ١. صندوق المعلومات ═══ */
 .s24-bio-infobox,.s24-place-infobox,.s24-enc-infobox{
   float:left;width:300px;margin:0 20px 20px 0;
   border:1px solid var(--border-color,#dddddd);border-radius:8px;overflow:hidden;
   background:var(--bg-card,#ffffff);font-family:"Readex Pro",Tahoma,sans-serif;
   direction:rtl;text-align:center;box-shadow:0 2px 8px rgba(0,0,0,.08);
 }
-.s24-infobox img{display:block;width:100%;height:auto}
-.s24-infobox-title,
 .s24-bio-native,.s24-place-native,.s24-enc-native{
   font-weight:700;color:#fff;background:var(--bs-main,#77bd1d);
 }
-.s24-infobox-title,
 .s24-place-native,.s24-enc-native{font-size:15px;padding:10px 8px}
 .s24-bio-native{font-size:13px;opacity:.9;padding:0 8px 10px}
 .s24-bio-native:first-child{padding-top:10px}
-.s24-infobox-table,
 .s24-bio-table,.s24-place-table,.s24-enc-table{
   width:100%;border-collapse:collapse;font-size:13px;
 }
-.s24-infobox-table tr,
 .s24-bio-table tr,.s24-place-table tr,.s24-enc-table tr{
   border-top:1px solid var(--border-color,#dddddd);
 }
-.s24-infobox-table tr:first-child,
 .s24-bio-table tr:first-child,.s24-place-table tr:first-child,.s24-enc-table tr:first-child{
   border-top:none;
 }
-.s24-infobox-table th,
 .s24-bio-table th,.s24-place-table th,.s24-enc-table th{
   color:var(--text-sec,#555555);font-weight:700;text-align:right;
   padding:8px 10px;width:38%;vertical-align:top;white-space:nowrap;
 }
-.s24-infobox-table td,
 .s24-bio-table td,.s24-place-table td,.s24-enc-table td{
   color:var(--text-main,#000000);text-align:right;padding:8px 10px;line-height:1.5;
 }
@@ -70,12 +61,6 @@
 }
 
 /* ═══ ٤. الوسائط ═══ */
-.s24-enc-figure{margin:0 0 22px}
-.s24-enc-figure img{display:block;width:100%;height:auto;border-radius:8px}
-.s24-enc-caption{
-  font-size:14px;color:var(--text-sec,#555555);line-height:1.6;
-  text-align:center;padding:8px 6px 0;
-}
 .s24-enc-video{margin:0 0 22px}
 /* صورة الغلاف: موجودة في الكود للمصغّرة، مخفيّة في الصفحة */
 .s24-cover-thumb{display:none!important}
@@ -137,19 +122,16 @@
   font-weight:700;font-size:15px;color:var(--bs-main,#77bd1d);
 }
 
-/* ═══ ٩. انظر أيضاً + الروابط الخارجية + المصادر ═══ */
-.s24-enc-seealso,
-.s24-enc-links{
+/* ═══ ٩. انظر أيضاً + المصادر ═══ */
+.s24-enc-seealso{
   border:1px solid var(--border-color,#dddddd);border-radius:8px;
   padding:14px 18px;margin:24px 0;background:var(--bg-card,#ffffff);
 }
-.s24-enc-seealso ul,
-.s24-enc-links ul{margin:8px 0 0;padding-right:20px;font-size:17px}
+.s24-enc-seealso ul{margin:8px 0 0;padding-right:20px;font-size:17px}
 .s24-enc-refs{margin:24px 0}
 .s24-enc-refs ol{font-size:15px;line-height:1.9;padding-right:22px}
 .s24-enc-refs li{margin-bottom:6px;color:var(--text-sec,#555555);text-align:start;overflow-wrap:anywhere}
 .s24-enc-seealso .s24-enc-box-title,
-.s24-enc-links .s24-enc-box-title,
 .s24-enc-refs .s24-enc-box-title{
   display:block;font-family:"IBM Plex Sans Arabic",sans-serif;
   font-weight:700;font-size:18px;margin-bottom:4px;
@@ -481,8 +463,6 @@ body.s24-font-lateef .s24-quran-basmala{
   color:#4a7c12;
   transition:color .3s;
 }
-body.dark-mode .s24-aya.is-playing,
-body.dark .s24-aya.is-playing,
 [data-theme="dark"] .s24-aya.is-playing{color:#9ede4e}
 .s24-aya{cursor:pointer}
 
@@ -587,7 +567,6 @@ html body.s24-quran-text-page .post-body .s24-cover-injected{display:none!import
 
 /* ═══ ١٩. الجوال ═══ */
 @media (max-width:768px){
-  .s24-infobox,
   .s24-bio-infobox,.s24-place-infobox,.s24-enc-infobox{
     float:none;width:100%;margin:0 0 20px 0;
   }

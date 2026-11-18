@@ -231,17 +231,6 @@ document.addEventListener("DOMContentLoaded", function() {
   
   
   // ══════════════════════════════════════════════════════════════
-  // 1️⃣ تنظيف العناصر في الصفحة
-  // ══════════════════════════════════════════════════════════════
-  var titles = document.querySelectorAll('.sy-section-title-text .sy-clean-text');
-  titles.forEach(function(title) {
-    var text = title.innerText.trim();
-    if (window.labelMap[text]) {
-      title.innerText = window.labelMap[text];
-    }
-  });
-  
-  // ══════════════════════════════════════════════════════════════
   // 2️⃣ تنظيف عنوان الصفحة في المتصفح
   // ══════════════════════════════════════════════════════════════
   var pageTitle = document.title;
