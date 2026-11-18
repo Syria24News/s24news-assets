@@ -303,12 +303,17 @@
        فيختفي النص أو يبهت حتى إعادة التحميل؛ نعيد نسخه بعد انتهاء انتقال الألوان */
     function recolor() {
       var a = findDateNode(bar);
-      if (a) link.style.color = window.getComputedStyle(a).color;
+      if (!a) return;
+      /* إيقاف الانتقال لحظياً يعطينا اللون النهائي فوراً بدل لون منتصف الانتقال */
+      var t = a.style.transition;
+      a.style.transition = 'none';
+      link.style.color = window.getComputedStyle(a).color;
+      a.style.transition = t;
     }
     if (window.MutationObserver) {
       new MutationObserver(function () {
-        setTimeout(recolor, 60);
-        setTimeout(recolor, 700);
+        recolor();                       // فوري
+        setTimeout(recolor, 700);        // احتياط
       }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
     }
 

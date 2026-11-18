@@ -290,7 +290,7 @@
           .observe(bar, { childList: true, subtree: true });
         /* تبديل الوضع: إعادة نسخ اللون بعد أن يحدّث prayer-times.js لون رابط الصلاة */
         new MutationObserver(function () {
-          setTimeout(copyLook, 150);
+          setTimeout(copyLook, 0);       // بعد تحديث رابط الصلاة مباشرة
           setTimeout(copyLook, 800);
         }).observe(document.documentElement, { attributes: true, attributeFilter: ['data-theme'] });
       }
