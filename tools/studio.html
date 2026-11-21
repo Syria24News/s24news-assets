@@ -25,7 +25,7 @@ window.addEventListener('error', function (e) {
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Studio – S24News</title>
+    <title>الاستوديو — Syria24</title>
     <link rel="icon" type="image/png" href="https://syria24news.github.io/s24news-assets/panel-icons/studio.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=IBM+Plex+Sans+Arabic:wght@400;700&display=swap" rel="stylesheet">
@@ -33,13 +33,13 @@ window.addEventListener('error', function (e) {
     :root {
         --bg:#1e1e2f; --card:#2a2a3c; --card2:#222233; --border:#3e3e55;
         --text:#e0e0e0; --accent:#e71414; --green:#6db200; --blue:#2980b9;
-        --purple:#8e44ad; --tab-h:54px; --card-title-color:#fff; --header-h:84px;
+        --purple:#8e44ad; --tab-h:54px; --card-title-color:#fff; --header-h:44px;
     }
     *{box-sizing:border-box;margin:0;padding:0;}
     body{font-family:'Cairo','IBM Plex Sans Arabic',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
 
     .app-shell{display:flex;flex-direction:column;min-height:100vh;}
-    /* v6.2: الترويسة صف واحد (العنوان · الوصف · الإصدار … العدد والمدة) لتوفير المساحة */
+    /* v6.3: الترويسة الموحّدة لأدوات غرفة الأخبار — صف واحد 44px: الأيقونة والاسم بالعربية · الوصف · الإصدار … الأزرار */
     .app-header{background:var(--card);border-bottom:2px solid var(--border);padding:6px 16px;min-height:44px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100;}
     .app-header h1{font-size:16px;font-weight:900;color:#fff;margin:0;white-space:nowrap;}
     .app-header .subtitle{font-size:12px;color:#888;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -452,8 +452,8 @@ window.addEventListener('error', function (e) {
 <div class="app-shell">
 
   <header class="app-header">
-    <h1 dir="ltr">🎬 Studio</h1>
-    <span class="subtitle" dir="ltr">News Video Maker</span>
+    <h1>🎬 الاستوديو</h1>
+    <span class="subtitle">صانع الفيديو الإخباري</span>
     <span class="app-version" id="appVersionLabel" dir="ltr"></span>
     <span class="hdr-gap"></span>
     <div id="totalDuration"></div>
@@ -1843,6 +1843,9 @@ window.addEventListener('error', function (e) {
     //  • إصلاح: المعاينة الحية لم تكن تتحدث عند تغيير المقاس، ومعرّف مكرر لمدة المشروع.
     //  • إصلاح: مقاطع «تقطيع فيديو طويل» لم تكن تُعلِّم المشروع كغير محفوظ.
     //  • هيكلة: مصنع واحد لإنشاء العناصر، دالة واحدة لتغيير المقاس، قائمة واحدة لحقول حفظ المشروع.
+    // سجل التغييرات v6.3 (22 نوفمبر 2026):
+    //  • الاسم بالعربية: «🎬 الاستوديو» في الترويسة، ووصف «صانع الفيديو الإخباري»، وعنوان التبويب «الاستوديو — Syria24».
+    //  • الترويسة الموحّدة مع معالج الصور (صف واحد 44px)، وتصحيح --header-h من 84px إلى 44px (ارتفاع العمود الجانبي).
     // سجل التغييرات v6.2 (22 نوفمبر 2026):
     //  • الاسم: «Studio» بالإنجليزية في الترويسة وعنوان التبويب، و«الاستوديو» في مربع اللوحة المركزية.
     //  • الترويسة صف واحد ارتفاعه نحو 44px بدل ثلاثة أسطر: العنوان، الوصف، الإصدار، ثم المدة وعدد العناصر،
@@ -1881,7 +1884,7 @@ window.addEventListener('error', function (e) {
     // سجل التغييرات v5.1:
     //  • إصلاح: إذا منع المتصفح التخزين المحلي داخل إطار اللوحة (حظر ملفات الطرف الثالث)، كانت الأداة
     //    تتوقف عند أول قراءة للإعدادات فلا يعمل زر ليلي/نهاري ولا ما بعده — صارت تعمل بذاكرة مؤقتة.
-    const APP_VERSION = 'S24News_Studio_v6.2';
+    const APP_VERSION = 'S24News_Studio_v6.3';
     let isExporting = false;
     let deleteItem; // تُعرَّف لاحقًا (كانت متغيرًا عامًّا ضمنيًا)
     const appVersionLabel = document.getElementById('appVersionLabel');
