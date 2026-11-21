@@ -1,29 +1,10 @@
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
-<script>
-/* حماية: إذا منع المتصفح التخزين المحلي (مثلاً عند حظر ملفات تعريف الارتباط لجهات خارجية داخل إطار Google)
-   كان أول وصول إلى localStorage يوقف الأداة كلها. هنا نستبدله بذاكرة مؤقتة فتعمل الأداة، ولا يُحفظ شيء بعد الإغلاق. */
-(function () {
-  try { var k = '__s24_probe'; window.localStorage.setItem(k, '1'); window.localStorage.removeItem(k); return; } catch (e) {}
-  var m = {};
-  var mem = {
-    getItem: function (k) { return Object.prototype.hasOwnProperty.call(m, k) ? m[k] : null; },
-    setItem: function (k, v) { m[k] = String(v); },
-    removeItem: function (k) { delete m[k]; },
-    clear: function () { m = {}; },
-    key: function (i) { return Object.keys(m)[i] || null; },
-    get length() { return Object.keys(m).length; }
-  };
-  try { Object.defineProperty(window, 'localStorage', { configurable: true, value: mem }); } catch (e) {}
-  window.S24_STORAGE_BLOCKED = true;
-})();
-</script>
-
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <title>معالج الصور الإخباري — Syria24</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAyNTYgMjU2Ij4KPGNpcmNsZSBjeD0iMTI4IiBjeT0iMTI4IiByPSIxMjAiIGZpbGw9IiM2ZGIyMDAiIHN0cm9rZT0iIzNmNjYwMCIgc3Ryb2tlLXdpZHRoPSI4Ii8+Cjx0ZXh0IHg9IjEyOCIgeT0iMTMyIiB0ZXh0LWFuY2hvcj0ibWlkZGxlIiBkb21pbmFudC1iYXNlbGluZT0iY2VudHJhbCIgZm9udC1mYW1pbHk9IkFyaWFsLCBIZWx2ZXRpY2EsIHNhbnMtc2VyaWYiIGZvbnQtc2l6ZT0iMTEyIiBmb250LXdlaWdodD0iOTAwIiBmaWxsPSIjZmZmZmZmIj5QRTwvdGV4dD4KPC9zdmc+"/>
+<link rel="icon" type="image/png" href="https://syria24news.github.io/s24news-assets/panel-icons/photo.png">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet"/>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.js"></script>
@@ -591,7 +572,7 @@ canvas{display:none}
     <div>
       <div class="brand-name">معالج الصور <span>الإخباري</span></div>
       <div class="brand-sub">منصة متكاملة لتجهيز صور السوشيال ميديا</div>
-      <div class="brand-version" id="appVersionLabel">S24News_PE_v3.31</div>
+      <div class="brand-version" id="appVersionLabel">S24News_PE_v3.32</div>
     </div>
   </div>
   <div class="topbar-actions">
@@ -814,8 +795,6 @@ canvas{display:none}
             <div class="logo-lib-head">
               <span>📚 مكتبة الشعارات</span>
               <span class="logo-lib-src" id="logoLibSrc"></span>
-              <!-- v3.28: ربط الصفحة المستقلة (GitHub) بخادم اللوحة — يظهر خارج اللوحة فقط -->
-              <button id="peApiBtn" type="button" class="btn btn-outline btn-sm" style="display:none;margin:0;padding:3px 8px">🔑</button>
             </div>
             <div class="logo-lib-grid" id="logoLibGrid"></div>
             <div class="logo-lib-save">
@@ -1048,7 +1027,6 @@ canvas{display:none}
         <button class="btn btn-green" id="btnProcessNormal" style="display:none">⬇️ تحميل مع الشعار والإضافات</button>
         <button class="btn btn-dark" id="btnProcessClean">⬇️ تحميل نظيف — بدون إضافات</button>
         <div class="hint">اسم الملف يتضمن أول كلمات الشريط العاجل، أو أول نص حر إن لم يكن الشريط مفعّلاً.</div>
-        <div class="hint" id="embeddedSaveHint" style="display:none">💡 إذا لم يبدأ التحميل: انقر بالزر الأيمن على المعاينة واختر «حفظ الصورة باسم». المعاينة هي نفسها الصورة النهائية مع الإضافات.</div>
       </div>
 
     </div>
@@ -1200,6 +1178,11 @@ canvas{display:none}
       ولا يُستخدم أي اسم عام آخر عند التسليم.
    ──────────────────────────────────────────────────────────────
     سجل التغييرات:
+   v3.32 — (22 نوفمبر 2026) المعالج على GitHub فقط: مربع «معالج الصور» في اللوحة يفتح هذه الصفحة مربوطة، وحُذف ملف PhotoEditor
+           من مشروع Apps Script. حُذف كل ما كان للعمل داخل إطار اللوحة: جسر postMessage (LIB_PEER) وIS_EMBEDDED وIS_SANDBOXED
+           وبديل التخزين المحلي وتلميح التحميل داخل الإطار. مكتبة الشعارات في Drive فقط (حُذفت المكتبة المحلية «هذا المتصفح»):
+           الصفحة غير المربوطة تقول «افتح المعالج من مربعه في اللوحة» وتعطّل الحفظ، وتعذّر Drive يظهر خطأً لا تحويلاً صامتاً.
+           حُذف زر 🔑: الربط يصل من مربع اللوحة بعد «#pe=» (مشترك مع الاستوديو على هذا النطاق: sy_pe_api).
    v3.31 — تنظيف: حُذف جسر النافذة المستقلة القديمة (blob، v3.22–v3.23) بعدما صار زر «نافذة مستقلة» يفتح صفحة GitHub،
            وقاعدتا CSS غير مستعملتين. خانة «+ شعار جديد» داخل المكتبة دائماً (لا تخرج مع الأسماء الطويلة)،
            وحقلا الإزاحة على سطر واحد. رسالة أوضح حين يرفض المتصفح المجلد المختار.
@@ -1226,9 +1209,7 @@ canvas{display:none}
    v3.0–v3.19 — (مختصر) الدمج والتراكب والسحب على المعاينة، النصوص الحرة وتلوين [ما بين قوسين]، مكتبة الشعارات
            وحفظها في Drive، رابط الموقع السفلي، اختيار مجلد الحفظ، القص اليدوي، الحفظ التلقائي، حذف الصور، صيغ JPEG/PNG/WebP.
    ══════════════════════════════════════════════════════════════ */
-var APP_VERSION = 'S24News_PE_v3.31';
-/* هل الأداة تعمل داخل إطار (لوحة تحكم Syria24News) أم كملف مستقل؟ */
-var IS_EMBEDDED = (function(){ try { return window.self !== window.top; } catch(e){ return true; } })();
+var APP_VERSION = 'S24News_PE_v3.32';
 function timeNow(){ return new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'}); }
 
 /* ══════════════ THEME ══════════════ */
@@ -2069,23 +2050,16 @@ document.getElementById('removeLogoBtn').addEventListener('click', function(){
 
 /* ══════════════ LOGO LIBRARY (v3.14) ══════════════
    مكتبة شعارات محفوظة: كل شعار يُحفظ مع إعداداته (الموضع/الحجم/الشفافية/الإزاحة).
-   مكان الحفظ:
-   • داخل لوحة التحكم (Apps Script): Google Drive — مجلد S24News_PE_Logos —
-     فتبقى المكتبة ثابتة بين الأجهزة والمتصفحات ولا تتأثر بحظر التخزين داخل الإطار.
-   • عند فتح الملف مستقلاً خارج Apps Script: localStorage في هذا المتصفح.
+   مكان الحفظ (v3.32): Google Drive فقط — مجلد S24News_PE_Logos عبر بوابة أدوات اللوحة —
+   فالمكتبة واحدة على كل الأجهزة والمتصفحات. لا مكتبة محلية: صفحة غير مربوطة لا تحفظ شعاراً.
    الشعار الافتراضي (Syria24) يظهر دائماً أولاً ولا يُحذف. */
-var LOGO_LIB_KEY = 'sy_pe_logo_lib_v1';
 var LOGO_LIB_MAX_W = 1200;   /* أقصى عرض للشعار المحفوظ — يكفي لأكبر حجم (40%) على صورة 3000px */
 var logoLib = [];
 var logoLibPendingAdd = false;
 var logoLibGrid = document.getElementById('logoLibGrid');
 var logoLibNameInp = document.getElementById('logoLibName');
-/* v3.15: الأداة داخل إطار srcdoc لا تصلها google.script.run، فتطلب من اللوحة (الأب،
-   أو النافذة التي فتحتها في الوضع المستقل) عبر postMessage، واللوحة تنفّذ في الخادم. */
-var LIB_PEER = (function(){ try { return IS_EMBEDDED ? window.parent : (window.opener || null); } catch(e){ return null; } })();
-var LIB_USE_DRIVE = !!LIB_PEER;
-/* v3.28: الربط المباشر بخادم اللوحة — للصفحة المستقلة على GitHub Pages، حيث لا جسر ولا إطار.
-   رابط /exec ومفتاح معالج الصور (يُنشأ بـ peMakeKey في المحرر) يُحفظان في هذا المتصفح بزر 🔑. */
+/* v3.32: الربط بخادم اللوحة (بوابة الأدوات doPost): رابط /exec ومفتاح الأدوات، يصلان من مربع «معالج الصور»
+   في اللوحة بعد «#pe=» ويُحفظان في هذا المتصفح (الاسم نفسه يستعمله الاستوديو على هذا النطاق). */
 var PE_API_LS = 'sy_pe_api';
 /* v3.29: زر «نافذة مستقلة» في اللوحة يمرّر الرابط والمفتاح بعد «#pe=» — نحفظهما ثم نمحوهما من شريط العنوان فوراً.
    لا يُقبل إلا رابط خادم Google Apps Script، كي لا يوجّه رابطٌ مصطنع صورك إلى خادم غريب. */
@@ -2100,10 +2074,10 @@ var PE_API_LS = 'sy_pe_api';
   try { history.replaceState(null, '', location.pathname + location.search); } catch(e){ location.hash = ''; }
 })();
 function apiCfg(){ try { var c = JSON.parse(localStorage.getItem(PE_API_LS) || 'null'); return (c && c.url && c.key) ? c : null; } catch(e){ return null; } }
-function API_ON(){ return !IS_EMBEDDED && !!apiCfg(); }
-/* صفحة فُتحت من اللوحة يكون لها opener، لكن الربط بالمفتاح أولى منه */
-if (API_ON()) { LIB_PEER = null; LIB_USE_DRIVE = true; }
-function apiCall(fn, args, ms){
+function API_ON(){ return !!apiCfg(); }
+var LIB_USE_DRIVE = API_ON();
+/* استدعاء دالة في خادم اللوحة كوعد (Promise)، مع مهلة إن لم يردّ */
+function gasCall(fn, args, ms){
   var c = apiCfg(), ctl = (typeof AbortController === 'function') ? new AbortController() : null;
   var t = setTimeout(function(){ if (ctl) ctl.abort(); }, ms || 30000);
   /* نص عادي (text/plain) = طلب «بسيط» لا يحتاج إذناً مسبقاً من الخادم (CORS) */
@@ -2112,31 +2086,6 @@ function apiCall(fn, args, ms){
     .then(function(d){ clearTimeout(t); if (d && d.ok) return d.val; throw new Error((d && d.err) || 'ردّ غير مفهوم من الخادم'); },
           function(e){ clearTimeout(t); throw new Error(e && e.name === 'AbortError' ? 'لا ردّ من الخادم' : 'تعذّر الاتصال بالخادم — تحقق من الرابط ومن إعداد النشر «أي شخص»'); });
 }
-var _peSeq = 0, _peWait = {};
-function libReply(d){
-  if (!d || d.s24pe !== 'reply' || !_peWait[d.id]) return;
-  var w = _peWait[d.id]; delete _peWait[d.id]; clearTimeout(w.t);
-  if (d.ok) w.res(d.val); else w.rej(new Error(d.val || 'خطأ غير معروف'));
-}
-window.addEventListener('message', function(e){
-  var d = e.data;
-  if (d && d.s24pe === 'reply' && e.source === LIB_PEER) libReply(d);
-});
-/* استدعاء دالة خادم عبر اللوحة كوعد (Promise)، مع مهلة إن لم تردّ */
-function gasCall(fn, args, ms) {
-  if (API_ON()) return apiCall(fn, args, ms);   /* v3.28: الصفحة المستقلة تكلّم الخادم مباشرة */
-  return new Promise(function(res, rej){
-    var id = 'pe' + (++_peSeq);
-    _peWait[id] = { res:res, rej:rej, t:setTimeout(function(){ delete _peWait[id]; rej(new Error('لا ردّ من لوحة التحكم')); }, ms || 30000) };
-    try {
-      var msg = { s24pe:'call', id:id, fn:fn, args:args || [] };
-      LIB_PEER.postMessage(msg, '*');
-    }
-    catch(e){ clearTimeout(_peWait[id].t); delete _peWait[id]; rej(e); }
-  });
-}
-function libLocalRead() { try { return JSON.parse(localStorage.getItem(LOGO_LIB_KEY) || '[]'); } catch(e){ return []; } }
-function libLocalWrite(arr) { localStorage.setItem(LOGO_LIB_KEY, JSON.stringify(arr)); } /* يرمي خطأً عند امتلاء المساحة */
 
 function currentLogoSettings() {
   return { pos:logoPos.value, size:logoSzInp.value, opacity:logoOpInp.value, offsetX:logoOffXInp.value, offsetY:logoOffYInp.value };
@@ -2254,16 +2203,11 @@ function saveCurrentLogoToLib(nameHint) {
     renderLogoLib(); applyLibLogo(item);
     addLog('💾','حُفظ الشعار «' + item.name + '» في المكتبة.'); toast('💾 حُفظ في المكتبة');
   };
-  if (LIB_USE_DRIVE) {
-    toast('☁️ جارٍ الحفظ في Drive…');
-    gasCall('pe_saveLogo', [name, b64, settings])
-      .then(function(r){ r.src = 'drive'; finish(r); })
-      .catch(function(e){ btn.disabled = false; toast('⚠️ تعذّر الحفظ في Drive: ' + e.message, 4000); });
-  } else {
-    var item = { id:'l' + Date.now(), name:name, b64:b64, settings:settings, src:'local' };
-    try { var arr = libLocalRead(); arr.push(item); libLocalWrite(arr); finish(item); }
-    catch(e){ btn.disabled = false; toast('⚠️ مساحة المتصفح ممتلئة — احذف شعاراً قديماً أولاً', 4000); }
-  }
+  if (!LIB_USE_DRIVE) { btn.disabled = false; toast(LIB_UNLINKED_MSG, 5000); return; }
+  toast('☁️ جارٍ الحفظ في Drive…');
+  gasCall('pe_saveLogo', [name, b64, settings])
+    .then(function(r){ r.src = 'drive'; finish(r); })
+    .catch(function(e){ btn.disabled = false; toast('⚠️ تعذّر الحفظ في Drive: ' + e.message, 4000); });
 }
 
 /* الحذف بنقرتين: الأولى تُسلّح الزر (؟) والثانية خلال 3 ثوانٍ تحذف */
@@ -2278,38 +2222,34 @@ function deleteLibLogo(it) {
     logoLib = logoLib.filter(function(x){ return x.id !== it.id; });
     renderLogoLib(); addLog('🗑️','حُذف الشعار «' + it.name + '» من المكتبة.'); toast('🗑️ حُذف من المكتبة');
   };
-  if (it.src === 'drive') {
-    gasCall('pe_deleteLogo', [it.id]).then(done).catch(function(e){ toast('⚠️ تعذّر الحذف: ' + e.message, 4000); });
-  } else {
-    try { libLocalWrite(libLocalRead().filter(function(x){ return x.id !== it.id; })); done(); }
-    catch(e){ toast('⚠️ تعذّر الحذف'); }
-  }
+  gasCall('pe_deleteLogo', [it.id]).then(done).catch(function(e){ toast('⚠️ تعذّر الحذف: ' + e.message, 4000); });
 }
 
-/* تحميل المكتبة عند فتح الأداة */
+/* تحميل المكتبة عند فتح الأداة — من Drive فقط */
+var LIB_UNLINKED_MSG = '🔗 الصفحة غير مربوطة باللوحة — افتح المعالج من مربع «معالج الصور» في اللوحة المركزية لتظهر مكتبة الشعارات ويعمل الحفظ في Drive.';
 function loadLogoLib() {
   var srcEl = document.getElementById('logoLibSrc');
   renderLogoLib();
-  if (LIB_USE_DRIVE) {
-    if (srcEl) srcEl.textContent = '☁️ جارٍ التحميل…';
-        gasCall('pe_listLogos', []).then(function(r){
+  if (!LIB_USE_DRIVE) {
+    if (srcEl) { srcEl.textContent = '🔗 غير مربوطة'; srcEl.title = LIB_UNLINKED_MSG; }
+    var sb = document.getElementById('logoLibSaveBtn'); if (sb) { sb.disabled = true; sb.title = LIB_UNLINKED_MSG; }
+    addLog('🔗', LIB_UNLINKED_MSG);
+    return;
+  }
+  if (srcEl) srcEl.textContent = '☁️ جارٍ التحميل…';
+  gasCall('pe_listLogos', []).then(function(r){
       logoLib = ((r && r.logos) || []).map(function(x){ x.src = 'drive'; return x; });
       if (srcEl) srcEl.textContent = '☁️ Google Drive';
       renderLogoLib();
       /* استرجاع آخر شعار اخترته — محفوظ في الخادم، فلا يضيع بإطفاء الجهاز */
       var act = r && r.active && logoLib.filter(function(x){ return x.id === r.active; })[0];
       if (act) applyLibLogo(act, true);
-    }).catch(function(e){
-      LIB_USE_DRIVE = false;
-      addLog('⚠️','تعذّر الوصول إلى مكتبة Drive، تُستخدم ذاكرة المتصفح: ' + e.message);
-      loadLogoLib();
-    });
-  } else {
-    /* بلا لوحة ولا مفتاح ربط: الشعارات في ذاكرة هذا المتصفح فقط (زر 🔑 يربط الصفحة بـ Drive) */
-    logoLib = libLocalRead().map(function(x){ x.src = 'local'; return x; });
-    if (srcEl) srcEl.textContent = window.S24_STORAGE_BLOCKED ? '⚠️ مؤقتة (التخزين محظور)' : '💻 هذا المتصفح — بلا Drive';
-    renderLogoLib();
-  }
+  }).catch(function(e){
+    /* لا تحويل صامت إلى المتصفح: الخطأ يظهر كما هو، وزر «🔄» في المكتبة أو إعادة فتح الصفحة يعيدان المحاولة */
+    if (srcEl) { srcEl.textContent = '⚠️ تعذّر الوصول إلى Drive'; srcEl.title = e.message; }
+    addLog('⚠️','تعذّر الوصول إلى مكتبة Drive: ' + e.message);
+    toast('⚠️ تعذّر تحميل مكتبة الشعارات من Drive: ' + e.message, 5000);
+  });
 }
 document.getElementById('logoLibSaveBtn').addEventListener('click', function(){ saveCurrentLogoToLib(''); });
 
@@ -2325,34 +2265,11 @@ function updateActiveLogoSettings() {
     addLog('🔄','حُدّثت إعدادات الشعار «' + it.name + '» في المكتبة.');
     toast('✅ حُدّثت إعدادات «' + it.name + '»');
   };
-  if (it.src === 'drive') {
-    gasCall('pe_updateLogo', [it.id, s]).then(done)
-      .catch(function(e){ btn.disabled = false; toast('⚠️ تعذّر التحديث: ' + e.message, 4000); });
-  } else {
-    try {
-      var arr = libLocalRead();
-      arr.forEach(function(x){ if (x.id === it.id) x.settings = s; });
-      libLocalWrite(arr); done();
-    } catch(e){ btn.disabled = false; toast('⚠️ تعذّر التحديث'); }
-  }
+  gasCall('pe_updateLogo', [it.id, s]).then(done)
+    .catch(function(e){ btn.disabled = false; toast('⚠️ تعذّر التحديث: ' + e.message, 4000); });
 }
 document.getElementById('logoLibUpdateBtn').addEventListener('click', updateActiveLogoSettings);
 logoLibNameInp.addEventListener('keydown', function(e){ if (e.key === 'Enter') saveCurrentLogoToLib(''); });
-/* v3.28: زر 🔑 خارج اللوحة — يحفظ رابط الخادم والمفتاح في هذا المتصفح ثم يعيد فتح الصفحة */
-(function(){
-  var b = document.getElementById('peApiBtn'); if (!b || IS_EMBEDDED) return;
-  b.style.display = '';
-  b.title = apiCfg() ? 'مربوط بخادم اللوحة — اضغط لتغيير الرابط أو المفتاح' : 'اربط هذه الصفحة بخادم اللوحة لتعمل مكتبة الشعارات والحفظ في Drive';
-  if (apiCfg()) b.style.borderColor = 'var(--c-accent)';
-  b.addEventListener('click', function(){
-    var c = apiCfg() || {};
-    var url = prompt('رابط خادم اللوحة (رابط النشر الذي ينتهي بـ /exec):', c.url || ''); if (url === null) return;
-    var key = prompt('مفتاح معالج الصور (من peMakeKey في المحرر). اتركه فارغاً لفك الربط:', c.key || ''); if (key === null) return;
-    url = url.trim(); key = key.trim();
-    try { if (url && key) localStorage.setItem(PE_API_LS, JSON.stringify({ url:url, key:key })); else localStorage.removeItem(PE_API_LS); } catch(e){}
-    location.reload();
-  });
-})();
 loadLogoLib();
 
 
@@ -3209,12 +3126,10 @@ async function processAndDownload(useAdditions){
    مدعومة حالياً في Chrome / Edge على الحاسوب فقط؛ في أي متصفح آخر تسقط
    الأداة تلقائياً إلى أسلوب التحميل الاعتيادي عبر المتصفح. */
 var FS_ACCESS_SUPPORTED = (typeof window.showDirectoryPicker === 'function');
-/* v3.26: نافذة معزولة (sandbox) أصلها «null» — المتصفح يرفض فيها نافذة اختيار المجلد مهما كان.
-   داخل اللوحة يصير الزر «الحفظ في مجلد Drive» عبر جسر اللوحة (S24News_PE_Images ← مجلد اليوم). */
-var IS_SANDBOXED = (function(){ try { return location.protocol !== 'file:' && String(window.origin || location.origin) === 'null'; } catch(e){ return true; } })();
+/* الحفظ في Drive (S24News_PE_Images ← مجلد اليوم) عبر بوابة اللوحة، مع مجلد الكمبيوتر أو بدونه */
 var DRIVE_SAVE_KEY = 'sy_pe_drive_save', driveSaveOn = false;
-function driveReady(){ return !!(LIB_USE_DRIVE && (LIB_PEER || API_ON())); }
-/* v3.28: زر Drive وسطر حالته متغيّران: داخل اللوحة هما زر المجلد نفسه، وفي الصفحة المستقلة زر منفصل */
+function driveReady(){ return API_ON(); }
+/* زر Drive وسطر حالته: الزر المنفصل في الصفحة، أو زر المجلد نفسه في متصفح لا يدعم اختيار مجلد */
 var drvBtn = null, drvStat = null;
 function paintDriveBtn(){
   var dirPickBtn = drvBtn, dirStatusEl = drvStat;
@@ -3226,10 +3141,10 @@ function paintDriveBtn(){
   dirPickBtn.style.borderColor = (ok && driveSaveOn) ? 'var(--c-accent)' : '';
   if (!dirStatusEl) return;
   dirStatusEl.textContent = !ok
-    ? (!IS_EMBEDDED && !IS_SANDBOXED) ? '🔑 اربط الصفحة بخادم اللوحة من زر 🔑 في «مكتبة الشعارات» ليعمل الحفظ في Drive.' : '⚠️ هذه النافذة معزولة عن اللوحة، والمتصفح يمنع فيها اختيار مجلد على الجهاز وحفظ Drive معاً. افتح الأداة من داخل اللوحة لتحفظ في Drive، أو فعّل في كروم: الإعدادات ← التنزيلات ← «اسأل عن مكان حفظ كل ملف قبل التنزيل».'
+    ? '🔗 افتح المعالج من مربع «معالج الصور» في اللوحة المركزية ليعمل الحفظ في Drive.'
     : driveSaveOn
       ? '☁️ كل تحميل يُحفظ في Google Drive: مجلد S24News_PE_Images ← مجلد اليوم. اضغط الزر مرة أخرى للعودة إلى مجلد التنزيلات.'
-      : (!IS_EMBEDDED && !IS_SANDBOXED) ? 'اضغط الزر لتُحفظ كل صورة في مجلد Google Drive أيضاً (ومعه مجلد الكمبيوتر إن اخترته).' : 'المتصفح يمنع اختيار مجلد على الجهاز داخل اللوحة. اضغط الزر ليُحفظ كل تحميل في مجلد Google Drive بدل مجلد التنزيلات.';
+      : 'اضغط الزر لتُحفظ كل صورة في مجلد Google Drive أيضاً (ومعه مجلد الكمبيوتر إن اخترته).';
 }
 function setupDriveSave(btn, stat){
   drvBtn = btn; drvStat = stat;
@@ -3261,14 +3176,8 @@ function showDriveSaved(r){
 }
 var dirPickBtn = document.getElementById('btnChooseDownloadDir');
 var dirStatusEl = document.getElementById('downloadDirStatus');
-if (IS_EMBEDDED) {
-  var esh = document.getElementById('embeddedSaveHint'); if (esh) esh.style.display = 'block';
-}
 if (dirPickBtn) {
-  if (IS_EMBEDDED || LIB_PEER || IS_SANDBOXED) {
-    /* v3.26: هنا يمنع المتصفح اختيار مجلد على الجهاز، فيصير الزر «الحفظ في مجلد Drive» */
-    setupDriveSave(dirPickBtn, dirStatusEl);
-  } else if (!FS_ACCESS_SUPPORTED) {
+  if (!FS_ACCESS_SUPPORTED) {
     setupDriveSave(dirPickBtn, dirStatusEl);   /* v3.28: متصفح بلا اختيار مجلد: الزر لـ Drive */
     dirPickBtn.disabled = true;
     dirPickBtn.title = 'هذه الميزة مدعومة حالياً في متصفحي Chrome وEdge على الحاسوب فقط.';
