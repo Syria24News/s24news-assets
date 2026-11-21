@@ -25,7 +25,7 @@ window.addEventListener('error', function (e) {
 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>صانع فيديو الصور الإخبارية – S24News (الإصدار المستقر)</title>
+    <title>Studio – S24News</title>
     <link rel="icon" type="image/png" href="https://syria24news.github.io/s24news-assets/panel-icons/studio.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=IBM+Plex+Sans+Arabic:wght@400;700&display=swap" rel="stylesheet">
@@ -39,10 +39,15 @@ window.addEventListener('error', function (e) {
     body{font-family:'Cairo','IBM Plex Sans Arabic',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
 
     .app-shell{display:flex;flex-direction:column;min-height:100vh;}
-    .app-header{background:var(--card);border-bottom:2px solid var(--border);padding:14px 24px;display:flex;align-items:center;gap:16px;position:sticky;top:0;z-index:100;}
-    .app-header h1{font-size:18px;font-weight:900;color:#fff;flex:1;}
-    .app-header .subtitle{font-size:12px;color:#888;}
-    .app-header .app-version{font-size:10px;color:#666;margin-top:2px;letter-spacing:.3px;direction:ltr;display:inline-block;}
+    /* v6.2: الترويسة صف واحد (العنوان · الوصف · الإصدار … العدد والمدة) لتوفير المساحة */
+    .app-header{background:var(--card);border-bottom:2px solid var(--border);padding:6px 16px;min-height:44px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100;}
+    .app-header h1{font-size:16px;font-weight:900;color:#fff;margin:0;white-space:nowrap;}
+    .app-header .subtitle{font-size:12px;color:#888;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .app-header .app-version{font-size:10px;color:#666;letter-spacing:.3px;white-space:nowrap;}
+    .app-header .hdr-gap{flex:1;}
+    .app-header #totalDuration{padding:0;white-space:nowrap;}
+    /* الموبايل: العنوان وعدد العناصر والزر فقط — المدة ظاهرة أصلاً في لوحة الإجراءات */
+    @media(max-width:768px){.app-header{padding:6px 10px;gap:8px;}.app-header .subtitle,.app-header .app-version,.app-header #totalDuration{display:none;}}
     .app-body{display:flex;flex:1;gap:0;flex-direction:row-reverse;overflow:hidden;}
 
     .sidebar{width:220px;background:var(--card);border-right:1px solid var(--border);display:flex;flex-direction:column;padding:14px;gap:8px;position:sticky;top:0;height:calc(100vh - var(--header-h));overflow-y:auto;flex-shrink:0;}
@@ -228,8 +233,8 @@ window.addEventListener('error', function (e) {
     @keyframes pulse{0%{opacity:1;}50%{opacity:.4;}100%{opacity:1;}}
     #recordTimer{font-size:22px;font-family:monospace;text-align:center;letter-spacing:2px;padding:4px 0;}
 
-    .theme-toggle{position:fixed;top:16px;left:16px;z-index:999;background:var(--card);border:2px solid var(--border);border-radius:50px;padding:7px 14px;cursor:pointer;font-size:18px;display:flex;align-items:center;gap:7px;box-shadow:0 4px 12px rgba(0,0,0,.3);transition:.3s;font-family:'Cairo',sans-serif;color:var(--text);}
-    .theme-toggle:hover{transform:scale(1.05);}
+    /* v6.2: زر ليلي/نهاري داخل الترويسة بدل الزر العائم فوقها (كان يغطي العنوان) — بلا حركة عند المرور */
+    .theme-toggle{background:var(--card);border:1px solid var(--border);border-radius:50px;padding:3px 10px;cursor:pointer;font-size:14px;display:flex;align-items:center;gap:5px;font-family:'Cairo',sans-serif;color:var(--text);}
     .toggle-label{font-size:12px;font-weight:bold;}
 
     body.light-mode {
@@ -443,21 +448,20 @@ window.addEventListener('error', function (e) {
 </head>
 <body>
 
-<button class="theme-toggle" id="themeToggle">
-    <span id="themeIcon">☀️</span>
-    <span class="toggle-label" id="themeLabel">نهاري</span>
-</button>
 
 <div class="app-shell">
 
   <header class="app-header">
-    <div>
-      <h1>🎬 S24News Studio</h1>
-      <div class="subtitle">صانع الفيديو الإخباري الاحترافي</div>
-      <div class="app-version" id="appVersionLabel"></div>
-    </div>
-    <span id="imagesCountBadge">0 عنصر</span>
+    <h1 dir="ltr">🎬 Studio</h1>
+    <span class="subtitle" dir="ltr">News Video Maker</span>
+    <span class="app-version" id="appVersionLabel" dir="ltr"></span>
+    <span class="hdr-gap"></span>
     <div id="totalDuration"></div>
+    <span id="imagesCountBadge">0 عنصر</span>
+    <button class="theme-toggle" id="themeToggle" type="button">
+      <span id="themeIcon">☀️</span>
+      <span class="toggle-label" id="themeLabel">نهاري</span>
+    </button>
   </header>
 
   <div class="app-body">
@@ -1839,6 +1843,10 @@ window.addEventListener('error', function (e) {
     //  • إصلاح: المعاينة الحية لم تكن تتحدث عند تغيير المقاس، ومعرّف مكرر لمدة المشروع.
     //  • إصلاح: مقاطع «تقطيع فيديو طويل» لم تكن تُعلِّم المشروع كغير محفوظ.
     //  • هيكلة: مصنع واحد لإنشاء العناصر، دالة واحدة لتغيير المقاس، قائمة واحدة لحقول حفظ المشروع.
+    // سجل التغييرات v6.2 (22 نوفمبر 2026):
+    //  • الاسم: «Studio» بالإنجليزية في الترويسة وعنوان التبويب، و«الاستوديو» في مربع اللوحة المركزية.
+    //  • الترويسة صف واحد ارتفاعه نحو 44px بدل ثلاثة أسطر: العنوان، الوصف، الإصدار، ثم المدة وعدد العناصر،
+    //    وزر ليلي/نهاري صار داخلها في آخر الصف (كان عائماً فوقها ويغطي العنوان).
     // سجل التغييرات v6.1 (21 نوفمبر 2026 — العزل عن اللوحة المركزية):
     //  • الأداة صارت صفحة مستقلة على GitHub Pages فقط (tools/studio.html في s24news-assets)، ومربع
     //    «استوديو الفيديو» في اللوحة يفتحها مربوطة بخادم اللوحة. حُذف ملف Studio من مشروع Apps Script.
@@ -1873,7 +1881,7 @@ window.addEventListener('error', function (e) {
     // سجل التغييرات v5.1:
     //  • إصلاح: إذا منع المتصفح التخزين المحلي داخل إطار اللوحة (حظر ملفات الطرف الثالث)، كانت الأداة
     //    تتوقف عند أول قراءة للإعدادات فلا يعمل زر ليلي/نهاري ولا ما بعده — صارت تعمل بذاكرة مؤقتة.
-    const APP_VERSION = 'S24News_Studio_v6.1';
+    const APP_VERSION = 'S24News_Studio_v6.2';
     let isExporting = false;
     let deleteItem; // تُعرَّف لاحقًا (كانت متغيرًا عامًّا ضمنيًا)
     const appVersionLabel = document.getElementById('appVersionLabel');
@@ -1942,14 +1950,14 @@ window.addEventListener('error', function (e) {
             el.textContent = '✅ مربوط بخادم اللوحة — ميزات الذكاء الاصطناعي تعمل.';
             el.style.color = 'var(--green)';
         } else {
-            el.textContent = '⚠️ غير مربوط بعد: افتح الاستوديو مرة واحدة من مربع «استوديو الفيديو» في اللوحة المركزية على هذا الجهاز.';
+            el.textContent = '⚠️ غير مربوط بعد: افتح الاستوديو مرة واحدة من مربع «الاستوديو» في اللوحة المركزية على هذا الجهاز.';
             el.style.color = '#e0a020';
         }
     })();
 
     async function callGeminiAPI(model, body) {
         const c = toolsLink();
-        if (!c) throw new Error('الاستوديو غير مربوط بخادم اللوحة. افتحه مرة واحدة من مربع «استوديو الفيديو» في اللوحة المركزية.');
+        if (!c) throw new Error('الاستوديو غير مربوط بخادم اللوحة. افتحه مرة واحدة من مربع «الاستوديو» في اللوحة المركزية.');
         const ctl = new AbortController();
         const timer = setTimeout(() => ctl.abort(), 120000); // التعليق الصوتي الطويل قد يأخذ دقيقة
         let d;
