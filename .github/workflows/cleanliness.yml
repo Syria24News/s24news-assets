@@ -1,0 +1,45 @@
+# S24News — فحص النظافة الأسبوعي (الكود الميت والتكرار والأخطاء)
+# يعمل كل أحد صباحاً، ويمكن تشغيله يدوياً من Actions ← «فحص النظافة» ← Run workflow.
+# الكود في .github/scripts/cleanliness.mjs — يقارن المستودع بالموقع الحي ويكتب cleanliness-report.md.
+# الاستهلاك: مجاني بالكامل (المستودع عام)، ولا يمس حصص Apps Script ولا Firestore. لا نشر لـ Pages (التقرير للقراءة في GitHub).
+
+name: فحص النظافة
+
+on:
+  schedule:
+    - cron: '13 6 * * 0'   # الأحد 09:13 بتوقيت إسطنبول
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: cleanliness
+  cancel-in-progress: false
+
+jobs:
+  scan:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+
+      - name: الفحص
+        run: node .github/scripts/cleanliness.mjs
+
+      - name: حفظ التقرير في المستودع
+        run: |
+          git config user.name  "s24-cleanliness-bot"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add cleanliness-report.md cleanliness.json
+          if git diff --cached --quiet; then echo "لا تغيير"; exit 0; fi
+          git commit -m "فحص النظافة: تقرير أسبوعي"
+          for i in 1 2 3; do
+            if git pull --rebase --quiet origin main && git push --quiet origin HEAD:main; then exit 0; fi
+            sleep 5
+          done
+          exit 1
