@@ -158,7 +158,9 @@ document.addEventListener("DOMContentLoaded", function() {
         var grid = document.getElementById('main-stories-grid');
         var configItems = document.querySelectorAll('#s24-story-labels-config li a');
         
-        if (!grid || !configItems.length) return;
+        // الـ CSS يحجز ارتفاع الشريط قبل الرسم (منع إزاحة التخطيط)؛ إن لم تُرسم أي دائرة يُخفى الشريط فلا يبقى فراغ
+        function hideEmptyStrip() { if (grid && !grid.children.length && grid.parentElement) grid.parentElement.style.display = 'none'; }
+        if (!grid || !configItems.length) { hideEmptyStrip(); return; }
 
         var storiesMetadata = [];
         
@@ -179,11 +181,14 @@ document.addEventListener("DOMContentLoaded", function() {
         });
 
         var fetchedCount = 0;
+        // الخلاصة تُرجع مقالات آخر 24 ساعة فقط (نصف الحجم تقريباً بدل 40 مقالة كاملة)؛ فحص isWithin24h يبقى احتياطاً
+        var sinceIso = new Date(Date.now() - STORY_MAX_AGE_MS).toISOString();
         var totalToFetch = storiesMetadata.length;
+        if (!totalToFetch) hideEmptyStrip();
         
         storiesMetadata.forEach(function (item) {
             // طلب واحد لكل دائرة: يعطينا عدد مقالات آخر 24 ساعة، وأحدثها (للصورة والرابط)
-            fetch('/feeds/posts/summary/-/' + encodeURIComponent(item.label) + '?alt=json&max-results=40')
+            fetch('/feeds/posts/summary/-/' + encodeURIComponent(item.label) + '?alt=json&max-results=40&published-min=' + encodeURIComponent(sinceIso))
                 .then(res => res.json())
                 .then(data => {
                     if (data.feed && data.feed.entry && data.feed.entry.length > 0) {
@@ -258,6 +263,7 @@ document.addEventListener("DOMContentLoaded", function() {
             });
             
             reinitializeStoryItemsArray();
+            hideEmptyStrip();
             buildStoriesPreview(items);
         }
 

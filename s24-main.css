@@ -826,6 +826,15 @@ section.important-sections {
   .stories-opening .story-item { animation: storiesGrow .3s ease-in-out; }
 }
 @media (min-width: 769px) and (max-width: 1023.98px) { .main-container:has(#subcats-wrapper) .stories-container { margin-inline: 0; } }
+/* حجز ارتفاع شريط القصص قبل أن يرسمه stories.js — كان يظهر من صفر إلى 120px فيدفع الصفحة كلها (CLS، قياس 22 نوفمبر 2026)
+   الكمبيوتر: دائرة 96 + 8 + سطر عنوان 16 = 120 · تحت 1024: ‏82 + 3 + 16 = 101
+   صفحة المقالة تحت 1024: يُحجز ارتفاع المعاينة المجمّعة (دوائر 56 + 4 = 60) بدل الشريط. لا دوائر ← stories.js يخفي الشريط */
+.stories-grid { min-height: 120px; }
+@media (max-width: 1023.98px) {
+  .stories-grid { min-height: 101px; }
+  body.item-page:not(.static-page-view) .stories-grid { min-height: 0; }
+  body.item-page:not(.static-page-view) .stories-container { min-height: 60px; }
+}
 @keyframes storiesGrow { from { opacity: 0; transform: scale(.68); } to { opacity: 1; transform: none; } }
 
 /* ============================================================
