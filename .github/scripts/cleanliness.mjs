@@ -33,9 +33,19 @@ const codeFiles = files.filter((f) => /\.(js|mjs|html)$/.test(f));
 const cssFiles = files.filter((f) => /\.css$/.test(f));
 
 // ---------- جلب الموقع الحي ----------
+const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
+// بلوجر يرفض الطلبات المتلاحقة من خوادم GitHub (429): طلب واحد في كل مرة، وإعادة المحاولة بمهلة متزايدة
 async function get(url) {
-  try { const r = await fetch(url, { headers: { 'User-Agent': 's24-cleanliness-bot' } }); return r.ok ? await r.text() : ''; }
-  catch { return ''; }
+  for (let i = 0; i < 4; i++) {
+    try {
+      const r = await fetch(url, { headers: { 'User-Agent': 'Mozilla/5.0 (s24-cleanliness-bot)' } });
+      if (r.ok) return await r.text();
+      if (r.status === 404) return '';
+      console.log(r.status + ' ' + url);
+    } catch (e) { console.log('err ' + url); }
+    await sleep(3000 * (i + 1));
+  }
+  return '';
 }
 async function livePages() {
   const urls = new Set([SITE + '/', SITE + '/search/label/' + encodeURIComponent('*Sy'), SITE + '/search/label/' + encodeURIComponent('*M'),
@@ -49,7 +59,7 @@ async function livePages() {
     }
   } catch {}
   const list = [...urls], html = [];
-  for (let i = 0; i < list.length; i += 4) html.push(...await Promise.all(list.slice(i, i + 4).map(get)));
+  for (const u of list) { html.push(await get(u)); await sleep(700); }
   return { count: html.filter(Boolean).length, total: list.length, text: html.join('\n') };
 }
 
