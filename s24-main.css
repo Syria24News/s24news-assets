@@ -3873,6 +3873,27 @@ body.item-page .post-body > .s24-cover-injected:has(~ div[dir="rtl"] .s24-galler
     }
 }
 
+/* 6. شاشات الموبايل: أسهم أصغر وأخف ومسافات أضيق لإفساح المجال لأزرار الأقسام (22 نوفمبر 2026) */
+@media (max-width: 767.98px) {
+    .sy-slider-container {
+        gap: 6px;
+    }
+    .sy-nav-arrow {
+        width: 24px;
+        height: 28px;
+        font-size: 15px;
+        line-height: 1;
+        opacity: .65;
+    }
+    .sy-nav-arrow:hover,
+    .sy-nav-arrow:active {
+        opacity: 1;
+    }
+    .sy-scroll-wrapper {
+        width: calc(100% - 60px) !important;
+    }
+}
+
 /* ================================================= */
 /* 🧩 نهاية نظام الشريط المتحرك الموحد (Unified Slider System) */
 /* ================================================= */
