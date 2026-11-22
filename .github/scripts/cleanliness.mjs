@@ -29,6 +29,8 @@ const files = walk(ROOT);
 const read = (f) => fs.readFileSync(path.join(ROOT, f), 'utf8');
 const isText = (f) => /\.(js|mjs|html|css|json|yml|xml)$/.test(f);
 const REPORT_FILES = new Set(['cleanliness-report.md', 'cleanliness.json']);
+// ملفات حيّة يستدعيها ما لا يصل إليه الفحص: الموقع الإنجليزي، اللوحة المركزية (Apps Script)، أداة الآيات (مستودع خاص)
+const KNOWN_ALIVE = new Set(['s24-en.css', 'tools/photo-editor.html', 'uthmanic-hafs.woff2']);
 const codeFiles = files.filter((f) => /\.(js|mjs|html)$/.test(f));
 const cssFiles = files.filter((f) => /\.css$/.test(f));
 
@@ -99,7 +101,7 @@ for (const f of cssFiles) {
 // 2) ملفات لا يذكرها أحد، وملفات تستدعيها الصفحات وهي غير موجودة
 const allText = repoText + '\n' + live.text;
 for (const f of files) {
-  if (!/\.(js|css|json|png|jpg|svg|webp|woff2|html|xml)$/.test(f) || f.startsWith('.github/') || REPORT_FILES.has(f)) continue;
+  if (!/\.(js|css|json|png|jpg|svg|webp|woff2|html|xml)$/.test(f) || f.startsWith('.github/') || REPORT_FILES.has(f) || KNOWN_ALIVE.has(f)) continue;
   if (!allText.includes(path.basename(f))) result.filesUnused.push(f);
 }
 for (const m of live.text.matchAll(new RegExp(ASSETS.replace(/\./g, '\\.') + '([\\w./-]+)', 'g'))) {
