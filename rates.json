@@ -1,6 +1,6 @@
 {
   "v": 1,
-  "updated": "2026-11-21T16:06:43.511Z",
+  "updated": "2026-11-22T06:11:10.433Z",
   "source": {
     "market": "sptoday",
     "gold": "sptoday"
@@ -9,32 +9,32 @@
     "USD": {
       "buy": 150,
       "sell": 150.5,
-      "chg": 0.33
+      "chg": 0
     },
     "EUR": {
       "buy": 163.2,
       "sell": 165.1,
-      "chg": 0.25
+      "chg": 0
     },
     "TRY": {
       "buy": 2.95,
       "sell": 2.98,
-      "chg": 0.34
+      "chg": 0
     },
     "SAR": {
       "buy": 39.58,
       "sell": 40.11,
-      "chg": 0.33
+      "chg": 0
     },
     "AED": {
       "buy": 40.43,
       "sell": 40.97,
-      "chg": 0.35
+      "chg": 0
     },
     "EGP": {
       "buy": 2.76,
       "sell": 2.8,
-      "chg": 0.36
+      "chg": 0
     }
   },
   "official": {},
