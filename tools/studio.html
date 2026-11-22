@@ -27,6 +27,7 @@ window.addEventListener('error', function (e) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="robots" content="noindex, nofollow"><!-- أداة داخلية لغرفة الأخبار: لا تُفهرس في محركات البحث -->
 <title>الاستوديو — Syria24</title>
+    <script src="tools-link.js" data-tool="🎬 الاستوديو"></script>
     <link rel="icon" type="image/png" href="https://syria24news.github.io/s24news-assets/panel-icons/studio.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=IBM+Plex+Sans+Arabic:wght@400;700&display=swap" rel="stylesheet">
@@ -1844,6 +1845,9 @@ window.addEventListener('error', function (e) {
     //  • إصلاح: المعاينة الحية لم تكن تتحدث عند تغيير المقاس، ومعرّف مكرر لمدة المشروع.
     //  • إصلاح: مقاطع «تقطيع فيديو طويل» لم تكن تُعلِّم المشروع كغير محفوظ.
     //  • هيكلة: مصنع واحد لإنشاء العناصر، دالة واحدة لتغيير المقاس، قائمة واحدة لحقول حفظ المشروع.
+    // سجل التغييرات v6.4 (22 نوفمبر 2026):
+    //  • شاشة القفل: الصفحة غير المربوطة لا تعرض الأداة بل «افتحها من مربّعها في اللوحة المركزية».
+    //  • استقبال الربط (#pe=) والقفل صارا في الملف المشترك tools/tools-link.js بدل نسخة في كل أداة.
     // سجل التغييرات v6.3 (22 نوفمبر 2026):
     //  • الاسم بالعربية: «🎬 الاستوديو» في الترويسة، ووصف «صانع الفيديو الإخباري»، وعنوان التبويب «الاستوديو — Syria24».
     //  • الترويسة الموحّدة مع معالج الصور (صف واحد 44px)، وتصحيح --header-h من 84px إلى 44px (ارتفاع العمود الجانبي).
@@ -1885,7 +1889,7 @@ window.addEventListener('error', function (e) {
     // سجل التغييرات v5.1:
     //  • إصلاح: إذا منع المتصفح التخزين المحلي داخل إطار اللوحة (حظر ملفات الطرف الثالث)، كانت الأداة
     //    تتوقف عند أول قراءة للإعدادات فلا يعمل زر ليلي/نهاري ولا ما بعده — صارت تعمل بذاكرة مؤقتة.
-    const APP_VERSION = 'S24News_Studio_v6.3';
+    const APP_VERSION = 'S24News_Studio_v6.4';
     let isExporting = false;
     let deleteItem; // تُعرَّف لاحقًا (كانت متغيرًا عامًّا ضمنيًا)
     const appVersionLabel = document.getElementById('appVersionLabel');
@@ -1931,22 +1935,8 @@ window.addEventListener('error', function (e) {
         el.addEventListener('input', () => localStorage.setItem(key, el.value.trim()));
     });
 
-    const TOOLS_LINK_LS = 'sy_pe_api';
-    // الربط القادم من اللوحة: يُحفظ ثم يُمحى من شريط العنوان فوراً. لا يُقبل إلا خادم Google Apps Script.
-    (function () {
-        const m = /[#&]pe=([^&]+)/.exec(location.hash || '');
-        if (!m) return;
-        try {
-            const c = JSON.parse(decodeURIComponent(m[1]));
-            if (c && c.key && /^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/(exec|dev)$/.test(String(c.url)))
-                localStorage.setItem(TOOLS_LINK_LS, JSON.stringify({ url: String(c.url), key: String(c.key) }));
-        } catch (e) {}
-        try { history.replaceState(null, '', location.pathname + location.search); } catch (e) { location.hash = ''; }
-    })();
-    function toolsLink() {
-        try { const c = JSON.parse(localStorage.getItem(TOOLS_LINK_LS) || 'null'); return (c && c.url && c.key) ? c : null; }
-        catch (e) { return null; }
-    }
+    // v6.4: الربط القادم من اللوحة (#pe=) وشاشة القفل في الملف المشترك tools/tools-link.js (sy_pe_api، مشترك مع معالج الصور).
+    function toolsLink() { return window.S24ToolsLink ? window.S24ToolsLink.get() : null; }
     (function showLinkStatus() {
         const el = document.getElementById('geminiLinkStatus');
         if (!el) return;

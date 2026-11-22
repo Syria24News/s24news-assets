@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
 <meta name="robots" content="noindex, nofollow"><!-- أداة داخلية لغرفة الأخبار: لا تُفهرس في محركات البحث -->
 <title>معالج الصور — Syria24</title>
+<script src="tools-link.js" data-tool="🖼️ معالج الصور"></script>
 <link rel="icon" type="image/png" href="https://syria24news.github.io/s24news-assets/panel-icons/photo.png">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.5.13/cropper.min.css" rel="stylesheet"/>
@@ -1165,6 +1166,8 @@ canvas{display:none}
       ولا يُستخدم أي اسم عام آخر عند التسليم.
    ──────────────────────────────────────────────────────────────
     سجل التغييرات:
+   v3.34 — (22 نوفمبر 2026) شاشة القفل: الصفحة غير المربوطة لا تعرض الأداة بل «افتحها من مربّعها في اللوحة المركزية».
+           استقبال الربط (#pe=) والقفل صارا في الملف المشترك tools/tools-link.js بدل نسخة في كل أداة.
    v3.33 — (22 نوفمبر 2026) الترويسة الموحّدة مع الاستوديو: صف واحد 44px بدل ثلاثة أسطر 56px — «🖼️ معالج الصور» ·
            «تجهيز صور الأخبار والسوشيال ميديا» · الإصدار … الأزرار؛ الموبايل يُبقي الاسم والأزرار. عنوان التبويب «معالج الصور — Syria24».
    v3.32 — (22 نوفمبر 2026) المعالج على GitHub فقط: مربع «معالج الصور» في اللوحة يفتح هذه الصفحة مربوطة، وحُذف ملف PhotoEditor
@@ -1198,7 +1201,7 @@ canvas{display:none}
    v3.0–v3.19 — (مختصر) الدمج والتراكب والسحب على المعاينة، النصوص الحرة وتلوين [ما بين قوسين]، مكتبة الشعارات
            وحفظها في Drive، رابط الموقع السفلي، اختيار مجلد الحفظ، القص اليدوي، الحفظ التلقائي، حذف الصور، صيغ JPEG/PNG/WebP.
    ══════════════════════════════════════════════════════════════ */
-var APP_VERSION = 'S24News_PE_v3.33';
+var APP_VERSION = 'S24News_PE_v3.34';
 function timeNow(){ return new Date().toLocaleTimeString('en-GB',{hour:'2-digit',minute:'2-digit',second:'2-digit'}); }
 
 /* ══════════════ THEME ══════════════ */
@@ -2047,22 +2050,10 @@ var logoLib = [];
 var logoLibPendingAdd = false;
 var logoLibGrid = document.getElementById('logoLibGrid');
 var logoLibNameInp = document.getElementById('logoLibName');
-/* v3.32: الربط بخادم اللوحة (بوابة الأدوات doPost): رابط /exec ومفتاح الأدوات، يصلان من مربع «معالج الصور»
-   في اللوحة بعد «#pe=» ويُحفظان في هذا المتصفح (الاسم نفسه يستعمله الاستوديو على هذا النطاق). */
-var PE_API_LS = 'sy_pe_api';
-/* v3.29: زر «نافذة مستقلة» في اللوحة يمرّر الرابط والمفتاح بعد «#pe=» — نحفظهما ثم نمحوهما من شريط العنوان فوراً.
-   لا يُقبل إلا رابط خادم Google Apps Script، كي لا يوجّه رابطٌ مصطنع صورك إلى خادم غريب. */
-(function(){
-  var m = /[#&]pe=([^&]+)/.exec(location.hash || '');
-  if (!m) return;
-  try {
-    var c = JSON.parse(decodeURIComponent(m[1]));
-    if (c && c.key && /^https:\/\/script\.google\.com\/macros\/s\/[\w-]+\/(exec|dev)$/.test(String(c.url)))
-      localStorage.setItem(PE_API_LS, JSON.stringify({ url:String(c.url), key:String(c.key) }));
-  } catch(e){}
-  try { history.replaceState(null, '', location.pathname + location.search); } catch(e){ location.hash = ''; }
-})();
-function apiCfg(){ try { var c = JSON.parse(localStorage.getItem(PE_API_LS) || 'null'); return (c && c.url && c.key) ? c : null; } catch(e){ return null; } }
+/* v3.34: الربط بخادم اللوحة (بوابة الأدوات doPost) وشاشة القفل في الملف المشترك tools/tools-link.js:
+   يستقبل الرابط والمفتاح من مربع «معالج الصور» بعد «#pe=» ويحفظهما (sy_pe_api، مشترك مع الاستوديو)،
+   ويخفي الأداة كلها إن لم يكن هذا المتصفح مربوطاً. */
+function apiCfg(){ return window.S24ToolsLink ? window.S24ToolsLink.get() : null; }
 function API_ON(){ return !!apiCfg(); }
 var LIB_USE_DRIVE = API_ON();
 /* استدعاء دالة في خادم اللوحة كوعد (Promise)، مع مهلة إن لم يردّ */
