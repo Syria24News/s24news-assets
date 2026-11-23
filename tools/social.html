@@ -1,0 +1,764 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow"><!-- أداة داخلية لغرفة الأخبار: لا تُفهرس في محركات البحث -->
+<title>قوالب التواصل — Syria24</title>
+<!-- v1.2: الربط بخادم اللوحة (#pe=) وشاشة القفل في الملف المشترك — يُحمَّل قبل أي سكربت آخر -->
+<script src="tools-link.js" data-tool="📱 قوالب التواصل"></script>
+<link rel="icon" type="image/png" href="https://syria24news.github.io/s24news-assets/panel-icons/social.png">
+<script>
+/* أي خطأ غير متوقع يظهر في شريط أحمر أسفل الشاشة بدل التعطل الصامت */
+window.addEventListener('error', function (e) {
+  try {
+    if (!e || !e.message) return;
+    var bar = document.getElementById('s24ErrBar');
+    if (!bar) {
+      bar = document.createElement('div');
+      bar.id = 's24ErrBar';
+      bar.setAttribute('dir', 'rtl');
+      bar.style.cssText = 'position:fixed;left:0;right:0;bottom:0;z-index:2147483647;background:#b42318;color:#fff;font:13px/1.6 Tahoma,Arial,sans-serif;padding:8px 12px;max-height:30vh;overflow:auto;white-space:pre-wrap';
+      bar.onclick = function () { bar.remove(); };
+      (document.body || document.documentElement).appendChild(bar);
+    }
+    bar.textContent += (bar.textContent ? '\n' : '⚠️ حدث خطأ في الأداة (انسخ هذا النص وأرسله للمطوّر — اضغط للإخفاء):\n') + e.message + '  [سطر ' + (e.lineno || '?') + ']';
+  } catch (x) {}
+});
+</script>
+<!--
+  S24News_Social_v1.2 — قوالب منشورات التواصل الاجتماعي
+  v1.2 (23 نوفمبر 2026): خرجت من اللوحة إلى GitHub فقط (tools/social.html) — عزل الأدوات، ROADMAP بند 4.
+   - الترويسة الموحّدة لأدوات غرفة الأخبار: صف واحد 44px (الأيقونة والاسم · الوصف · الإصدار … الأزرار).
+   - الشعار من مكتبة الشعارات في Drive (S24News_PE_Logos، مشتركة مع معالج الصور) عبر بوابة الأدوات
+     في اللوحة (doPost، الدوال so_listLogos وso_saveLogo في TOOLS_API_FNS) بالربط المحفوظ sy_pe_api.
+     لم يعد الشعار يُحفظ في المتصفح؛ يُحفظ فقط معرّف الشعار المختار.
+-->
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Tajawal:wght@500;700;800;900&family=Almarai:wght@400;700;800&family=Reem+Kufi:wght@500;700&family=Amiri:wght@700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#0f1220;--surf:#171b2e;--surf2:#1f2440;--line:#2c3358;--ink:#e6e9f5;--muted:#8c93b8;--acc:#7c3aed;--acc2:#a78bfa;--ok:#10b981;--r:10px}
+body.light{--bg:#eef0f6;--surf:#ffffff;--surf2:#f5f6fa;--line:#d8dbe6;--ink:#1d2433;--muted:#667085}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{font-family:'Cairo',Tahoma,sans-serif;background:var(--bg);color:var(--ink);font-size:14px}
+/* v1.2: الترويسة الموحّدة لأدوات غرفة الأخبار — صف واحد 44px: الأيقونة والاسم · الوصف · الإصدار … الأزرار */
+header{display:flex;align-items:center;gap:12px;padding:0 16px;height:44px;background:var(--surf);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
+header h1{margin:0;font-size:16px;font-weight:900;white-space:nowrap}
+header .sub{font-size:12px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;min-width:0}
+header .ver{font-size:10px;color:var(--muted);direction:ltr;white-space:nowrap;letter-spacing:.3px}
+header .sp{flex:1}
+@media (max-width:768px){header{padding:0 10px;gap:8px}header .sub,header .ver{display:none}}  /* الموبايل: الاسم والأزرار فقط */
+.btn{font:inherit;font-weight:700;border:1px solid var(--line);background:var(--surf2);color:var(--ink);border-radius:8px;padding:7px 13px;cursor:pointer;white-space:nowrap}
+.btn:hover{border-color:var(--acc2)}
+.btn.pri{background:var(--acc);border-color:var(--acc);color:#fff}
+.btn.ok{background:var(--ok);border-color:var(--ok);color:#fff}
+.btn.sm{padding:4px 10px;font-size:13px}
+.wrap{display:grid;grid-template-columns:360px 1fr;gap:0;min-height:calc(100vh - 44px)}
+.side{background:var(--surf);border-left:1px solid var(--line);padding:12px;overflow:auto;max-height:calc(100vh - 44px)}
+.stage{padding:16px;display:flex;flex-direction:column;align-items:center;gap:12px;overflow:auto;max-height:calc(100vh - 44px)}
+.sec{border:1px solid var(--line);border-radius:var(--r);margin-bottom:10px;background:var(--surf2)}
+.sec>h3{margin:0;font-size:13px;padding:8px 10px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:6px}
+.sec .body{padding:10px;display:flex;flex-direction:column;gap:8px}
+label.f{display:flex;flex-direction:column;gap:4px;font-size:12px;color:var(--muted)}
+.inp,textarea.inp,select.inp{font:inherit;color:var(--ink);background:var(--bg);border:1px solid var(--line);border-radius:8px;padding:7px 9px;width:100%}
+textarea.inp{resize:vertical;min-height:58px;line-height:1.6}
+.row2{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.chips{display:flex;flex-wrap:wrap;gap:5px}
+.chip{font:inherit;font-size:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:99px;padding:4px 10px;cursor:pointer;display:inline-flex;align-items:center;gap:5px}
+.chip.on{border-color:var(--acc);background:var(--acc);color:#fff}
+.chip .dot{width:10px;height:10px;border-radius:50%;display:inline-block}
+.styles{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.style{font:inherit;font-size:12px;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:8px;padding:6px 4px;cursor:pointer;text-align:center}
+.style .ic{display:block;font-size:20px}
+.style.on{border-color:var(--acc);box-shadow:0 0 0 1px var(--acc) inset}
+.check{display:flex;align-items:center;gap:6px;font-size:13px;cursor:pointer}
+.check input{margin:0}
+.range{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
+.range input{flex:1}
+.drop{border:2px dashed var(--line);border-radius:10px;padding:14px;text-align:center;color:var(--muted);cursor:pointer}
+.drop.over{border-color:var(--acc);color:var(--ink)}
+.canvas-box{background:repeating-conic-gradient(#0002 0 25%,transparent 0 50%) 0 0/18px 18px;border-radius:10px;padding:8px;max-width:100%}
+#cv{display:block;max-width:100%;max-height:calc(100vh - 190px);border-radius:6px;cursor:grab;box-shadow:0 10px 30px rgba(0,0,0,.35);touch-action:none}
+#cv.dragging{cursor:grabbing}
+.tbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center}
+.dim{font-size:12px;color:var(--muted);direction:ltr}
+.hint{font-size:12px;color:var(--muted);line-height:1.6}
+.sizes{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.size{font:inherit;font-size:12px;text-align:right;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:8px;padding:6px 8px;cursor:pointer;display:flex;flex-direction:column}
+.size small{color:var(--muted);direction:ltr;text-align:right}
+.size.on{border-color:var(--acc);box-shadow:0 0 0 1px var(--acc) inset}
+.batch{display:flex;flex-direction:column;gap:4px}
+/* v1.2: مكتبة الشعارات (Drive) */
+.lib{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.lib-it{font:inherit;font-size:11px;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:8px;padding:5px;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:4px;min-width:0}
+.lib-it .th{width:100%;height:42px;display:flex;align-items:center;justify-content:center;border-radius:5px;background:repeating-conic-gradient(#0003 0 25%,transparent 0 50%) 0 0/10px 10px}
+.lib-it img{max-width:100%;max-height:38px;display:block}
+.lib-it .nm{max-width:100%;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lib-it.on{border-color:var(--acc);box-shadow:0 0 0 1px var(--acc) inset}
+.lib-it.add .th{background:none;font-size:22px;color:var(--muted)}
+.lib-it[disabled]{opacity:.5;cursor:wait}
+.lib-src{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
+.lib-src span{flex:1}
+.toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#111827;color:#fff;padding:9px 16px;border-radius:8px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:50}
+.toast.show{opacity:1}
+@media (max-width:900px){.wrap{grid-template-columns:1fr}.side,.stage{max-height:none}.side{border-left:0;border-bottom:1px solid var(--line);order:2}.stage{order:1}#cv{max-height:60vh}}
+</style>
+</head>
+<body>
+<header>
+  <h1>📱 قوالب التواصل</h1>
+  <span class="sub">تصاميم الأخبار لكل المنصات</span>
+  <span class="ver" id="ver"></span>
+  <span class="sp"></span>
+  <button class="btn sm" id="themeBtn" type="button" title="ليلي / نهاري">☀️</button>
+  <button class="btn sm" id="resetBtn" type="button" title="مسح النصوص والصورة">🗑 جديد</button>
+</header>
+
+<div class="wrap">
+  <aside class="side">
+
+    <div class="sec"><h3>📸 الصورة</h3><div class="body">
+      <div class="drop" id="drop">اسحب صورة هنا، أو <b>اضغط للاختيار</b>، أو الصق بـ Ctrl+V<input type="file" id="file" accept="image/*" hidden></div>
+      <div class="range">🔍 تكبير<input type="range" id="zoom" min="100" max="300" value="100"><span id="zoomV">100%</span></div>
+      <div class="range">🌗 تعتيم<input type="range" id="shade" min="0" max="80" value="25"><span id="shadeV">25%</span></div>
+      <div class="hint">اسحب الصورة داخل المعاينة لتحريك موضعها. الموضع يُحفظ لكل المقاسات.</div>
+    </div></div>
+
+    <div class="sec"><h3>📐 المنصة والمقاس</h3><div class="body">
+      <div class="sizes" id="sizes"></div>
+    </div></div>
+
+    <div class="sec"><h3>🏷️ نوع الخبر</h3><div class="body">
+      <div class="chips" id="types"></div>
+      <label class="f">لون مخصّص (اختياري)<input type="color" id="accent" class="inp" style="padding:2px;height:34px"></label>
+    </div></div>
+
+    <div class="sec"><h3>🎨 الشكل</h3><div class="body">
+      <div class="styles" id="styles"></div>
+    </div></div>
+
+    <div class="sec"><h3>✍️ النصوص</h3><div class="body">
+      <label class="f">الكلمة البارزة (اختياري — مثل: سوريا)<input class="inp" id="kicker" placeholder="سوريا"></label>
+      <label class="f">العنوان<textarea class="inp" id="title" placeholder="اكتب عنوان الخبر هنا…"></textarea></label>
+      <label class="f" id="subWrap">سطر ثانٍ (اختياري)<input class="inp" id="sub" placeholder="تفصيل قصير أو اسم المتحدث"></label>
+      <div class="row2">
+        <label class="f">المصدر / الائتمان<input class="inp" id="credit" placeholder="المصدر: وكالات"></label>
+        <label class="f">الوسم أو الحساب<input class="inp" id="handle" placeholder="@Syria24News" dir="ltr"></label>
+      </div>
+      <div class="row2">
+        <label class="f">الخط<select class="inp" id="font">
+          <option value="Cairo">Cairo</option><option value="Tajawal">Tajawal</option><option value="Almarai">Almarai</option>
+          <option value="Reem Kufi">Reem Kufi</option><option value="Amiri">Amiri</option></select></label>
+        <label class="f">حجم الخط<div class="range" style="margin:0"><input type="range" id="fscale" min="70" max="140" value="100"><span id="fscaleV">100%</span></div></label>
+      </div>
+      <label class="check"><input type="checkbox" id="showDate"> إظهار التاريخ</label>
+    </div></div>
+
+    <div class="sec"><h3>🔰 الهوية</h3><div class="body">
+      <div class="lib-src"><span id="libSrc">☁️ جارٍ تحميل المكتبة…</span><button class="btn sm" id="libReload" type="button" title="إعادة تحميل المكتبة من Drive">🔄</button></div>
+      <div class="lib" id="lib"></div>
+      <input type="file" id="logoFile" accept="image/png,image/svg+xml,image/webp,image/jpeg" hidden>
+      <div class="hint">مكتبة الشعارات في Drive مشتركة مع معالج الصور. «+ شعار جديد» يحفظه فيها لكل الأجهزة، والشعار النصي «Syria24.News» متاح دائماً.</div>
+      <div class="row2">
+        <label class="f">موضع الشعار<select class="inp" id="logoPos"><option value="tl">أعلى يسار</option><option value="tr">أعلى يمين</option><option value="off">بدون</option></select></label>
+        <label class="f">رابط الموقع<input class="inp" id="site" value="syria24.news" dir="ltr"></label>
+      </div>
+      <label class="check"><input type="checkbox" id="showSite" checked> إظهار رابط الموقع</label>
+    </div></div>
+
+    <div class="sec"><h3>📦 تصدير دفعة واحدة</h3><div class="body">
+      <div class="hint">التصميم نفسه بكل المقاسات المختارة — يُنزَّل كل ملف باسم منصته.</div>
+      <div class="batch" id="batch"></div>
+      <button class="btn ok" id="batchBtn" type="button">📦 تنزيل المقاسات المحددة</button>
+    </div></div>
+
+  </aside>
+
+  <main class="stage">
+    <div class="tbar">
+      <span class="dim" id="dim"></span>
+      <button class="btn pri" id="dlPng" type="button">⬇️ تنزيل PNG</button>
+      <button class="btn" id="dlJpg" type="button">⬇️ JPG (أخف)</button>
+      <button class="btn" id="copyImg" type="button">📋 نسخ الصورة</button>
+    </div>
+    <div class="canvas-box"><canvas id="cv" width="1200" height="675"></canvas></div>
+    <div class="hint">💡 العنوان يصغر تلقائياً إذا طال حتى يبقى داخل التصميم. في مقاس الستوري تُترك هوامش آمنة أعلى وأسفل لأزرار التطبيقات.</div>
+  </main>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function () {
+  'use strict';
+  var VERSION = 'S24News_Social_v1.2';
+
+  /* ═══ المقاسات — نفس مقاسات معالج الصور والاستوديو ═══ */
+  var SIZES = [
+    { k: 'x',        n: 'X (تويتر)',            w: 1600, h: 900 },
+    { k: 'fb',       n: 'فيسبوك / X رابط',     w: 1200, h: 630 },
+    { k: 'ig',       n: 'إنستغرام طولي',        w: 1080, h: 1350 },
+    { k: 'sq',       n: 'مربع',                 w: 1080, h: 1080 },
+    { k: 'story',    n: 'ستوري / ريلز',         w: 1080, h: 1920 },
+    { k: 'yt',       n: 'مصغّرة يوتيوب',         w: 1280, h: 720 },
+    { k: 'site',     n: 'صورة المقال',          w: 1200, h: 675 },
+    { k: 'tg',       n: 'تيليغرام / واتساب',     w: 1280, h: 1280 }
+  ];
+  /* ═══ أنواع الأخبار وألوانها ═══ */
+  var TYPES = [
+    { k: 'breaking', n: 'عاجل',   c: '#d71920' },
+    { k: 'official', n: 'رسمي',   c: '#1e40af' },
+    { k: 'statement',n: 'تصريح',  c: '#047857' },
+    { k: 'quote',    n: 'اقتباس', c: '#6d28d9' },
+    { k: 'exclusive',n: 'خاص',    c: '#b45309' },
+    { k: 'report',   n: 'تقرير',  c: '#0f172a' },
+    { k: 'sport',    n: 'رياضة',  c: '#0e7490' },
+    { k: 'economy',  n: 'اقتصاد', c: '#15803d' }
+  ];
+  /* ═══ الأشكال ═══ */
+  var STYLES = [
+    { k: 'bar',    n: 'شريط',        ic: '▬' },
+    { k: 'curve',  n: 'منحني',       ic: '〰️' },
+    { k: 'card',   n: 'بطاقة',       ic: '🪪' },
+    { k: 'cinema', n: 'سينمائي',     ic: '🎞️' },
+    { k: 'quote',  n: 'اقتباس',      ic: '❝' },
+    { k: 'split',  n: 'نصفان',       ic: '◧' }
+  ];
+
+  var $ = function (id) { return document.getElementById(id); };
+  var cv = $('cv'), ctx = cv.getContext('2d');
+  var KEY = 's24_social_v1';
+  var S = {
+    size: 'x', type: 'breaking', style: 'curve', accent: '',
+    kicker: '', title: '', sub: '', credit: '', handle: '@Syria24News',
+    font: 'Cairo', fscale: 100, showDate: false,
+    logoPos: 'tl', logoId: '', site: 'syria24.news', showSite: true,  /* logoId: الشعار المختار من مكتبة Drive ('' = الشعار النصي) */
+    zoom: 100, shade: 25, panX: 0, panY: 0, batch: ['x', 'fb', 'ig', 'story']
+  };
+  var IMG = null, LOGO = null;
+
+  function toast(m) { var t = $('toast'); t.textContent = m; t.classList.add('show'); clearTimeout(toast.t); toast.t = setTimeout(function () { t.classList.remove('show'); }, 2600); }
+  function load() {
+    try { var v = JSON.parse(localStorage.getItem(KEY) || 'null'); if (v) for (var k in v) if (k in S) S[k] = v[k]; } catch (e) {}
+  }
+  function save() {
+    var c = {}; for (var k in S) c[k] = S[k];
+    c.title = ''; c.sub = ''; c.kicker = ''; c.credit = ''; c.panX = 0; c.panY = 0; c.zoom = 100;  /* النصوص لا تُحفظ — كل منشور جديد */
+    try { localStorage.setItem(KEY, JSON.stringify(c)); } catch (e) {}
+  }
+  function sizeOf(k) { for (var i = 0; i < SIZES.length; i++) if (SIZES[i].k === k) return SIZES[i]; return SIZES[0]; }
+  function typeOf(k) { for (var i = 0; i < TYPES.length; i++) if (TYPES[i].k === k) return TYPES[i]; return TYPES[0]; }
+  function accent() { return S.accent || typeOf(S.type).c; }
+
+  /* ═══ أدوات الألوان ═══ */
+  function hexRgb(h) { h = h.replace('#', ''); if (h.length === 3) h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2]; var n = parseInt(h, 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; }
+  function rgba(h, a) { var c = hexRgb(h); return 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + a + ')'; }
+  function shadeHex(h, f) { var c = hexRgb(h).map(function (v) { return Math.max(0, Math.min(255, Math.round(f < 0 ? v * (1 + f) : v + (255 - v) * f))); }); return 'rgb(' + c.join(',') + ')'; }
+
+  /* ═══ النص العربي: التفاف وملاءمة تلقائية ═══ */
+  function fontStr(w, px) { return w + ' ' + Math.round(px) + 'px "' + S.font + '", "Cairo", Tahoma, sans-serif'; }
+  function wrap(text, maxW) {
+    var out = [];
+    String(text || '').split('\n').forEach(function (para) {
+      var words = para.split(/\s+/).filter(Boolean), line = '';
+      words.forEach(function (w) {
+        var t = line ? line + ' ' + w : w;
+        if (ctx.measureText(t).width > maxW && line) { out.push(line); line = w; } else line = t;
+      });
+      if (line) out.push(line);
+    });
+    return out;
+  }
+  /* يصغّر الخط حتى يتسع النص في عدد الأسطر المسموح */
+  function fit(text, weight, startPx, minPx, maxW, maxLines) {
+    var px = startPx, lines;
+    for (; px >= minPx; px -= Math.max(1, px * 0.04)) {
+      ctx.font = fontStr(weight, px);
+      lines = wrap(text, maxW);
+      if (lines.length <= maxLines && lines.every(function (l) { return ctx.measureText(l).width <= maxW; })) break;
+    }
+    ctx.font = fontStr(weight, px);
+    lines = wrap(text, maxW);
+    if (lines.length > maxLines) { lines = lines.slice(0, maxLines); lines[maxLines - 1] += '…'; }
+    return { px: px, lines: lines, lh: px * 1.45 };
+  }
+  function drawLines(f, xRight, yTop, color, align, xCenter) {
+    ctx.fillStyle = color;
+    ctx.textBaseline = 'top';
+    ctx.direction = 'rtl';
+    ctx.textAlign = align || 'right';
+    f.lines.forEach(function (l, i) { ctx.fillText(l, align === 'center' ? xCenter : xRight, yTop + i * f.lh); });
+    return yTop + f.lines.length * f.lh;
+  }
+  function rr(x, y, w, h, r) {
+    r = Math.min(r, w / 2, h / 2);
+    ctx.beginPath();
+    ctx.moveTo(x + r, y); ctx.arcTo(x + w, y, x + w, y + h, r); ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r); ctx.arcTo(x, y, x + w, y, r); ctx.closePath();
+  }
+
+  /* ═══ الصورة: ملء المساحة + تكبير + تحريك ═══ */
+  function drawPhoto(x, y, w, h) {
+    ctx.save();
+    ctx.beginPath(); ctx.rect(x, y, w, h); ctx.clip();
+    if (!IMG) {
+      var g = ctx.createLinearGradient(x, y, x + w, y + h);
+      g.addColorStop(0, '#1f2937'); g.addColorStop(1, '#111827');
+      ctx.fillStyle = g; ctx.fillRect(x, y, w, h);
+      ctx.fillStyle = 'rgba(255,255,255,.18)'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+      ctx.font = fontStr(700, Math.min(w, h) * 0.06); ctx.fillText('📸 أضف صورة', x + w / 2, y + h / 2);
+    } else {
+      var ir = IMG.width / IMG.height, rr2 = w / h, z = S.zoom / 100, dw, dh;
+      if (ir > rr2) { dh = h * z; dw = dh * ir; } else { dw = w * z; dh = dw / ir; }
+      var ox = (dw - w) / 2, oy = (dh - h) / 2;
+      var dx = x - ox + S.panX * ox, dy = y - oy + S.panY * oy;
+      ctx.drawImage(IMG, dx, dy, dw, dh);
+    }
+    if (S.shade > 0) { ctx.fillStyle = 'rgba(0,0,0,' + (S.shade / 100) + ')'; ctx.fillRect(x, y, w, h); }
+    ctx.restore();
+  }
+
+  /* ═══ عناصر مشتركة ═══ */
+  function U(W, H) { var u = Math.min(W, H) / 1080; return H / W > 1.5 ? u * 1.15 : u; }  /* الستوري: خط أكبر قليلاً */
+  function dateText() {
+    var d = new Date(), p = function (n) { return (n < 10 ? '0' : '') + n; };
+    return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
+  }
+  function drawLogo(W, H, u, safeTop) {
+    if (S.logoPos === 'off') return;
+    var m = 34 * u, y = m + safeTop, size = 120 * u;
+    var left = S.logoPos === 'tl';
+    if (LOGO) {
+      var lw = LOGO.width / LOGO.height >= 1.6 ? size * 2.4 : size;
+      var lh = lw * LOGO.height / LOGO.width;
+      if (lh > size * 1.1) { lh = size * 1.1; lw = lh * LOGO.width / LOGO.height; }
+      ctx.save(); ctx.shadowColor = 'rgba(0,0,0,.35)'; ctx.shadowBlur = 12 * u;
+      ctx.drawImage(LOGO, left ? m : W - m - lw, y, lw, lh); ctx.restore();
+      return;
+    }
+    /* شعار نصي احتياطي */
+    ctx.save();
+    ctx.font = fontStr(900, 40 * u);
+    ctx.direction = 'ltr';
+    var t1 = 'Syria', t2 = '24', t3 = 'News';
+    var w1 = ctx.measureText(t1).width, w2 = ctx.measureText(t2).width, w3 = ctx.measureText(t3).width;
+    var dotR = 4.5 * u, dotW = dotR * 2 + 8 * u;  /* النقطة الصغيرة بين 24 و News */
+    var pad = 16 * u, bw = w1 + w2 + dotW + w3 + pad * 2, bh = 64 * u, bx = left ? m : W - m - bw;
+    ctx.fillStyle = 'rgba(0,0,0,.55)'; rr(bx, y, bw, bh, 12 * u); ctx.fill();
+    ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
+    var cx = bx + pad, cy = y + bh / 2 + 2 * u;
+    ctx.fillStyle = '#fff'; ctx.fillText(t1, cx, cy); cx += w1;
+    ctx.fillStyle = '#6db200'; ctx.fillText(t2, cx, cy); cx += w2;
+    ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(cx + dotW / 2, y + bh * 0.66, dotR, 0, Math.PI * 2); ctx.fill(); cx += dotW;
+    ctx.fillStyle = '#fff'; ctx.fillText(t3, cx, cy);
+    ctx.restore();
+  }
+  function drawSite(W, H, u, safeTop, color) {
+    if (!S.showSite || !S.site) return;
+    var m = 34 * u, y = m + safeTop + 14 * u;
+    ctx.save();
+    ctx.font = fontStr(700, 26 * u); ctx.direction = 'ltr'; ctx.textBaseline = 'top';
+    var txt = '🌐 ' + S.site, w = ctx.measureText(txt).width + 26 * u, h = 44 * u;
+    var x = S.logoPos === 'tl' ? W - m - w : m;
+    ctx.fillStyle = 'rgba(0,0,0,.45)'; rr(x, y - 6 * u, w, h, h / 2); ctx.fill();
+    ctx.fillStyle = color || '#fff'; ctx.textAlign = 'left'; ctx.fillText(txt, x + 13 * u, y + 2 * u);
+    ctx.restore();
+  }
+  function label(x, y, u, text, bg, alignRight) {
+    ctx.save();
+    ctx.font = fontStr(900, 30 * u); ctx.direction = 'rtl';
+    var w = ctx.measureText(text).width + 36 * u, h = 52 * u;
+    var lx = alignRight ? x - w : x;
+    ctx.fillStyle = bg; rr(lx, y, w, h, 8 * u); ctx.fill();
+    ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(text, lx + w / 2, y + h / 2 + 2 * u);
+    ctx.restore();
+    return h;
+  }
+  function footLine(u) {
+    var parts = [];
+    if (S.credit) parts.push(S.credit);
+    if (S.showDate) parts.push('\u2066' + dateText() + '\u2069');
+    if (S.handle) parts.push('\u2066' + S.handle + '\u2069');  /* عزل النص اللاتيني حتى لا ينقلب ترتيبه */
+    return parts.join('   •   ');
+  }
+
+  /* ═══ كتلة النص (مشتركة بين الأشكال): كلمة بارزة + عنوان + سطر ثانٍ + تذييل ═══
+     تُقاس أولاً (measure) ثم تُرسم في المكان الذي يحدده الشكل */
+  function textBlock(maxW, u, opts) {
+    var sc = S.fscale / 100, o = opts || {};
+    var b = { parts: [], h: 0 };
+    if (S.kicker && o.kicker !== false) {
+      var fk = fit(S.kicker, 900, 110 * u * sc, 50 * u, maxW, 1);
+      b.parts.push({ f: fk, color: o.kickerColor || '#fff', gap: 4 * u }); b.h += fk.lines.length * fk.lh + 4 * u;
+    }
+    var title = S.title || 'اكتب عنوان الخبر هنا';
+    var ft = fit(title, 800, (o.titlePx || 64) * u * sc, 30 * u, maxW, o.maxLines || 3);
+    b.parts.push({ f: ft, color: o.titleColor || '#fff', gap: 10 * u, dim: !S.title }); b.h += ft.lines.length * ft.lh + 10 * u;
+    if (S.sub) {
+      var fs = fit(S.sub, 600, 34 * u * sc, 22 * u, maxW, 2);
+      b.parts.push({ f: fs, color: o.subColor || 'rgba(255,255,255,.88)', gap: 8 * u }); b.h += fs.lines.length * fs.lh + 8 * u;
+    }
+    var foot = footLine(u);
+    if (foot) {
+      ctx.font = fontStr(600, 24 * u);
+      var ff = fit(foot, 600, 24 * u, 16 * u, maxW, 1);
+      b.parts.push({ f: ff, color: o.footColor || 'rgba(255,255,255,.75)', gap: 0, foot: true }); b.h += ff.lines.length * ff.lh;
+    }
+    return b;
+  }
+  function drawBlock(b, xRight, yTop, align, xCenter) {
+    var y = yTop;
+    b.parts.forEach(function (p) {
+      ctx.save();
+      ctx.font = fontStr(p.foot ? 600 : (p.f.px > 80 ? 900 : 800), p.f.px);
+      if (p.dim) ctx.globalAlpha = 0.45;
+      ctx.shadowColor = 'rgba(0,0,0,.25)'; ctx.shadowBlur = 6;
+      y = drawLines(p.f, xRight, y, p.color, align, xCenter) + p.gap;
+      ctx.restore();
+    });
+    return y;
+  }
+
+  /* ═══ الرسم الرئيسي ═══ */
+  function render(target, sz) {
+    var c = target || cv, W = sz ? sz.w : sizeOf(S.size).w, H = sz ? sz.h : sizeOf(S.size).h;
+    c.width = W; c.height = H;
+    var save = ctx; ctx = c.getContext('2d');
+    try { draw(W, H); } finally { ctx = save; }
+    if (!target) $('dim').textContent = W + '×' + H;
+  }
+
+  function draw(W, H) {
+    var u = U(W, H), tall = H / W > 1.5, A = accent(), T = typeOf(S.type);
+    var safeTop = tall ? H * 0.08 : 0, safeBot = tall ? H * 0.14 : 0;
+    var m = 48 * u;
+    ctx.clearRect(0, 0, W, H);
+
+    if (S.style === 'split') {
+      var landscape = W / H > 1.2;
+      var panelW = landscape ? W * 0.46 : W, panelH = H;
+      var bl = textBlock(panelW - m * 2, u, { titlePx: landscape ? 60 : 66, maxLines: landscape ? 5 : 4 });
+      if (!landscape) panelH = Math.min(H * 0.7, Math.max(H * 0.42, bl.h + 52 * u + 20 * u + m * 2 + safeBot));
+      if (landscape) drawPhoto(0, 0, W - panelW, H); else drawPhoto(0, 0, W, H - panelH);
+      var px = landscape ? W - panelW : 0, py = landscape ? 0 : H - panelH;
+      var g = ctx.createLinearGradient(px, py, px + panelW, py + panelH);
+      g.addColorStop(0, A); g.addColorStop(1, shadeHex(A, -0.45));
+      ctx.fillStyle = g; ctx.fillRect(px, py, panelW, panelH);
+      ctx.fillStyle = 'rgba(255,255,255,.9)';
+      if (landscape) ctx.fillRect(px, 0, 8 * u, H); else ctx.fillRect(0, py, W, 8 * u);
+      var lh = 52 * u;
+      var top = py + Math.max(m + (landscape ? 0 : 0), (panelH - safeBot - bl.h - lh - 20 * u) / 2);
+      label(px + panelW - m, top, u, T.n, 'rgba(0,0,0,.35)', true);
+      drawBlock(bl, px + panelW - m, top + lh + 20 * u);
+      drawLogo(W, H, u, safeTop); drawSite(W, H, u, safeTop);
+      return;
+    }
+
+    drawPhoto(0, 0, W, H);
+    var maxW = W - m * 2;
+
+    if (S.style === 'bar') {
+      var b1 = textBlock(maxW - 40 * u, u, {});
+      var barH = b1.h + 70 * u;
+      var by = H - safeBot - barH;
+      ctx.fillStyle = A; ctx.fillRect(0, by, W, barH + safeBot);
+      ctx.fillStyle = shadeHex(A, -0.35); ctx.fillRect(0, by, W, 8 * u);
+      label(W - m, by - 26 * u, u, T.n, shadeHex(A, -0.35), true);
+      drawBlock(b1, W - m - 20 * u, by + 38 * u);
+    } else if (S.style === 'curve') {
+      var b2 = textBlock(maxW - 30 * u, u, {});
+      var areaH = b2.h + 120 * u;
+      var cy = H - safeBot - areaH;
+      ctx.save();
+      ctx.beginPath();
+      ctx.moveTo(0, cy + 60 * u);
+      ctx.bezierCurveTo(W * 0.25, cy - 30 * u, W * 0.6, cy + 90 * u, W, cy + 10 * u);
+      ctx.lineTo(W, H); ctx.lineTo(0, H); ctx.closePath();
+      var g2 = ctx.createLinearGradient(0, cy, 0, H);
+      g2.addColorStop(0, A); g2.addColorStop(1, shadeHex(A, -0.5));
+      ctx.fillStyle = g2; ctx.fill();
+      ctx.strokeStyle = 'rgba(255,255,255,.85)'; ctx.lineWidth = 5 * u;
+      ctx.beginPath(); ctx.moveTo(0, cy + 60 * u); ctx.bezierCurveTo(W * 0.25, cy - 30 * u, W * 0.6, cy + 90 * u, W, cy + 10 * u); ctx.stroke();
+      ctx.restore();
+      label(W - m, cy - 20 * u, u, T.n, shadeHex(A, -0.4), true);
+      drawBlock(b2, W - m - 10 * u, cy + 84 * u);
+    } else if (S.style === 'card') {
+      var cw = Math.min(maxW, 980 * u * (W > H ? 1.2 : 1));
+      var b3 = textBlock(cw - 90 * u, u, { titleColor: '#111827', subColor: '#374151', footColor: '#6b7280', kickerColor: A });
+      var ch = b3.h + 96 * u, cx = (W - cw) / 2, cyy = H - safeBot - ch - m;
+      ctx.save(); ctx.shadowColor = 'rgba(0,0,0,.35)'; ctx.shadowBlur = 30 * u;
+      ctx.fillStyle = '#ffffff'; rr(cx, cyy, cw, ch, 22 * u); ctx.fill(); ctx.restore();
+      ctx.fillStyle = A; rr(cx + cw - 14 * u, cyy, 14 * u, ch, 7 * u); ctx.fill();
+      label(cx + cw - 40 * u, cyy - 26 * u, u, T.n, A, true);
+      drawBlock(b3, cx + cw - 46 * u, cyy + 46 * u);
+    } else if (S.style === 'cinema') {
+      var b4 = textBlock(maxW, u, { titlePx: 72 });
+      var gH = Math.min(H, b4.h + 300 * u + safeBot);
+      var g4 = ctx.createLinearGradient(0, H - gH, 0, H);
+      g4.addColorStop(0, 'rgba(0,0,0,0)'); g4.addColorStop(0.45, 'rgba(0,0,0,.65)'); g4.addColorStop(1, 'rgba(0,0,0,.92)');
+      ctx.fillStyle = g4; ctx.fillRect(0, H - gH, W, gH);
+      var ty = H - safeBot - m - b4.h;
+      label(W - m, ty - 74 * u, u, T.n, A, true);
+      ctx.fillStyle = A; ctx.fillRect(W - m - 120 * u, ty - 12 * u, 120 * u, 6 * u);
+      drawBlock(b4, W - m, ty);
+    } else if (S.style === 'quote') {
+      var b5 = textBlock(maxW - 40 * u, u, { titlePx: 58, maxLines: 4, kicker: false, subColor: A === '#0f172a' ? '#fff' : shadeHex(A, 0.55) });
+      var gH5 = Math.min(H, b5.h + 360 * u + safeBot);
+      var g5 = ctx.createLinearGradient(0, H - gH5, 0, H);
+      g5.addColorStop(0, 'rgba(0,0,0,0)'); g5.addColorStop(0.35, 'rgba(0,0,0,.7)'); g5.addColorStop(1, 'rgba(0,0,0,.95)');
+      ctx.fillStyle = g5; ctx.fillRect(0, H - gH5, W, gH5);
+      var qy = H - safeBot - m - b5.h;
+      ctx.save(); ctx.font = '900 ' + Math.round(220 * u) + 'px Georgia, "Amiri", serif'; ctx.fillStyle = A;
+      ctx.textAlign = 'right'; ctx.textBaseline = 'top'; ctx.fillText('”', W - m + 10 * u, qy - 190 * u); ctx.restore();
+      if (S.kicker) label(W - m - 130 * u, qy - 100 * u, u, S.kicker, A, true);
+      ctx.fillStyle = A; ctx.fillRect(W - m - 8 * u, qy, 8 * u, b5.h - 10 * u);
+      drawBlock(b5, W - m - 30 * u, qy);
+    }
+    drawLogo(W, H, u, safeTop);
+    drawSite(W, H, u, safeTop);
+  }
+
+  /* ═══ واجهة الاختيارات ═══ */
+  function buildUI() {
+    $('ver').textContent = VERSION;
+    var sz = $('sizes'); sz.innerHTML = '';
+    SIZES.forEach(function (s) {
+      var b = document.createElement('button'); b.type = 'button'; b.className = 'size' + (S.size === s.k ? ' on' : '');
+      b.innerHTML = '<span></span><small></small>'; b.firstChild.textContent = s.n; b.lastChild.textContent = s.w + '×' + s.h;
+      b.onclick = function () { S.size = s.k; buildUI(); render(); save(); };
+      sz.appendChild(b);
+    });
+    var tp = $('types'); tp.innerHTML = '';
+    TYPES.forEach(function (t) {
+      var b = document.createElement('button'); b.type = 'button'; b.className = 'chip' + (S.type === t.k ? ' on' : '');
+      var d = document.createElement('span'); d.className = 'dot'; d.style.background = t.c; b.appendChild(d);
+      b.appendChild(document.createTextNode(t.n));
+      b.onclick = function () { S.type = t.k; S.accent = ''; $('accent').value = t.c; buildUI(); render(); save(); };
+      tp.appendChild(b);
+    });
+    var st = $('styles'); st.innerHTML = '';
+    STYLES.forEach(function (s) {
+      var b = document.createElement('button'); b.type = 'button'; b.className = 'style' + (S.style === s.k ? ' on' : '');
+      b.innerHTML = '<span class="ic"></span><span></span>'; b.firstChild.textContent = s.ic; b.lastChild.textContent = s.n;
+      b.onclick = function () { S.style = s.k; buildUI(); render(); save(); };
+      st.appendChild(b);
+    });
+    var bt = $('batch'); bt.innerHTML = '';
+    SIZES.forEach(function (s) {
+      var l = document.createElement('label'); l.className = 'check';
+      var c = document.createElement('input'); c.type = 'checkbox'; c.checked = S.batch.indexOf(s.k) >= 0;
+      c.onchange = function () { S.batch = SIZES.filter(function (x, i) { return bt.querySelectorAll('input')[i].checked; }).map(function (x) { return x.k; }); save(); };
+      l.appendChild(c); l.appendChild(document.createTextNode(' ' + s.n + ' '));
+      var sm = document.createElement('small'); sm.style.cssText = 'color:var(--muted);direction:ltr'; sm.textContent = s.w + '×' + s.h; l.appendChild(sm);
+      bt.appendChild(l);
+    });
+    $('subWrap').firstChild.textContent = S.style === 'quote' ? 'اسم المتحدث وصفته' : 'سطر ثانٍ (اختياري)';
+  }
+
+  function bindInputs() {
+    [['kicker', 'input'], ['title', 'input'], ['sub', 'input'], ['credit', 'input'], ['handle', 'input'], ['site', 'input']].forEach(function (p) {
+      var el = $(p[0]); el.value = S[p[0]] || '';
+      el.addEventListener(p[1], function () { S[p[0]] = el.value; render(); save(); });
+    });
+    $('font').value = S.font;
+    $('font').onchange = function () { S.font = this.value; ensureFont(S.font, render); save(); };
+    $('logoPos').value = S.logoPos; $('logoPos').onchange = function () { S.logoPos = this.value; render(); save(); };
+    $('showSite').checked = S.showSite; $('showSite').onchange = function () { S.showSite = this.checked; render(); save(); };
+    $('showDate').checked = S.showDate; $('showDate').onchange = function () { S.showDate = this.checked; render(); save(); };
+    $('accent').value = accent();
+    $('accent').oninput = function () { S.accent = this.value; render(); save(); };
+    var rng = function (id, key, suffix) {
+      var el = $(id); el.value = S[key]; $(id + 'V').textContent = S[key] + suffix;
+      el.oninput = function () { S[key] = +el.value; $(id + 'V').textContent = el.value + suffix; render(); save(); };
+    };
+    rng('zoom', 'zoom', '%'); rng('shade', 'shade', '%'); rng('fscale', 'fscale', '%');
+  }
+
+  /* ═══ الصورة: اختيار / سحب / لصق ═══ */
+  function openImage(file) {
+    if (!file || !/^image[\/]/.test(file.type)) { toast('الملف ليس صورة'); return; }
+    var url = URL.createObjectURL(file), im = new Image();
+    im.onload = function () { IMG = im; S.panX = 0; S.panY = 0; S.zoom = 100; $('zoom').value = 100; $('zoomV').textContent = '100%'; render(); toast('تم تحميل الصورة'); };
+    im.onerror = function () { toast('تعذّرت قراءة الصورة (صيغة غير مدعومة؟)'); };
+    im.src = url;
+  }
+  $('drop').onclick = function () { $('file').click(); };
+  $('file').onchange = function () { openImage(this.files[0]); this.value = ''; };
+  ['dragover', 'dragenter'].forEach(function (ev) { document.addEventListener(ev, function (e) { e.preventDefault(); $('drop').classList.add('over'); }); });
+  ['dragleave', 'drop'].forEach(function (ev) { document.addEventListener(ev, function (e) { e.preventDefault(); $('drop').classList.remove('over'); }); });
+  document.addEventListener('drop', function (e) { var f = e.dataTransfer && e.dataTransfer.files[0]; if (f) openImage(f); });
+  document.addEventListener('paste', function (e) {
+    var items = (e.clipboardData && e.clipboardData.items) || [];
+    for (var i = 0; i < items.length; i++) if (items[i].type.indexOf('image') === 0) { openImage(items[i].getAsFile()); e.preventDefault(); return; }
+  });
+
+  /* تحريك الصورة بالسحب داخل المعاينة */
+  (function () {
+    var drag = null;
+    cv.addEventListener('pointerdown', function (e) { if (!IMG) return; drag = { x: e.clientX, y: e.clientY, px: S.panX, py: S.panY }; cv.setPointerCapture(e.pointerId); cv.classList.add('dragging'); });
+    cv.addEventListener('pointermove', function (e) {
+      if (!drag) return;
+      var r = cv.getBoundingClientRect(), k = 2.2;
+      S.panX = Math.max(-1, Math.min(1, drag.px + (e.clientX - drag.x) / r.width * k));
+      S.panY = Math.max(-1, Math.min(1, drag.py + (e.clientY - drag.y) / r.height * k));
+      render();
+    });
+    var end = function () { drag = null; cv.classList.remove('dragging'); };
+    cv.addEventListener('pointerup', end); cv.addEventListener('pointercancel', end);
+  })();
+
+  /* ═══ الشعار: مكتبة Drive عبر بوابة الأدوات (v1.2) ═══
+     المكتبة نفسها التي يستعملها معالج الصور (مجلد S24News_PE_Logos). الربط (رابط الخادم والمفتاح) يحفظه
+     tools-link.js من مربع الأداة في اللوحة؛ والصفحة غير المربوطة مقفلة أصلاً.
+     القائمة البيضاء لهذه الأداة في اللوحة: so_listLogos (قراءة) وso_saveLogo (إضافة) — لا حذف من هنا. */
+  var LIB = [], LIB_MAX_W = 1200, logoSeq = 0;  /* أقصى عرض للشعار المحفوظ، كما في معالج الصور */
+  function gasCall(fn, args, ms) {
+    var c = window.S24ToolsLink && window.S24ToolsLink.get();
+    if (!c) return Promise.reject(new Error('الصفحة غير مربوطة باللوحة — افتحها من مربعها في اللوحة المركزية.'));
+    var ctl = typeof AbortController === 'function' ? new AbortController() : null;
+    var t = setTimeout(function () { if (ctl) ctl.abort(); }, ms || 30000);
+    /* نص عادي (text/plain) = طلب «بسيط» لا يحتاج إذناً مسبقاً من الخادم (CORS) */
+    return fetch(c.url, { method: 'POST', body: JSON.stringify({ key: c.key, fn: fn, args: args || [] }), signal: ctl ? ctl.signal : undefined })
+      .then(function (r) { return r.json(); })
+      .then(function (d) { clearTimeout(t); if (d && d.ok) return d.val; throw new Error((d && d.err) || 'ردّ غير مفهوم من الخادم'); },
+            function (e) { clearTimeout(t); throw new Error(e && e.name === 'AbortError' ? 'لا ردّ من الخادم' : 'تعذّر الاتصال بالخادم — تحقق من الربط ومن إعداد النشر «أي شخص»'); });
+  }
+  /* يضع الشعار على التصميم: id فارغ = الشعار النصي */
+  function useLogo(id) {
+    var it = id ? LIB.filter(function (x) { return x.id === id; })[0] : null;
+    var seq = ++logoSeq;
+    S.logoId = it ? it.id : ''; save(); renderLib();
+    if (!it) { LOGO = null; render(); return; }
+    var im = new Image();
+    im.onload = function () { if (seq === logoSeq) { LOGO = im; render(); } };
+    im.onerror = function () { if (seq === logoSeq) toast('تعذّرت قراءة الشعار «' + it.name + '»'); };
+    im.src = it.b64;
+  }
+  function libItem(label, thumb, on, click) {
+    var b = document.createElement('button'); b.type = 'button'; b.className = 'lib-it' + (on ? ' on' : ''); b.title = label;
+    var th = document.createElement('span'); th.className = 'th';
+    if (thumb) { var im = document.createElement('img'); im.src = thumb; im.alt = ''; th.appendChild(im); } else th.textContent = '+';
+    var nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = label;
+    b.appendChild(th); b.appendChild(nm); b.onclick = click;
+    return b;
+  }
+  var TEXT_LOGO_THUMB = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 40"><rect width="150" height="40" rx="8" fill="#000" fill-opacity=".55"/><text x="75" y="27" text-anchor="middle" font-family="Arial" font-weight="900" font-size="20" fill="#fff">Syria<tspan fill="#6db200">24</tspan>.News</text></svg>');
+  function renderLib() {
+    var g = $('lib'); g.innerHTML = '';
+    g.appendChild(libItem('الشعار النصي', TEXT_LOGO_THUMB, !S.logoId, function () { useLogo(''); }));
+    LIB.forEach(function (it) { g.appendChild(libItem(it.name, it.b64, S.logoId === it.id, function () { useLogo(it.id); })); });
+    var add = libItem('شعار جديد', '', false, function () { $('logoFile').click(); }); add.classList.add('add'); add.id = 'libAdd';
+    add.title = 'رفع شعار وحفظه في مكتبة Drive';
+    g.appendChild(add);
+  }
+  function loadLib() {
+    $('libSrc').textContent = '☁️ جارٍ تحميل المكتبة…'; $('libSrc').title = '';
+    gasCall('so_listLogos', []).then(function (r) {
+      LIB = (r && r.logos) || [];
+      $('libSrc').textContent = '☁️ ' + LIB.length + ' شعار في Google Drive';
+      /* الشعار المختار سابقاً؛ إن حُذف من المكتبة نعود إلى الشعار النصي */
+      useLogo(LIB.some(function (x) { return x.id === S.logoId; }) ? S.logoId : '');
+    }).catch(function (e) {
+      /* لا تحويل صامت: الخطأ يظهر، والشعار النصي يبقى، وزر 🔄 يعيد المحاولة */
+      $('libSrc').textContent = '⚠️ تعذّر الوصول إلى Drive'; $('libSrc').title = e.message;
+      renderLib(); toast('⚠️ تعذّر تحميل مكتبة الشعارات: ' + e.message);
+    });
+  }
+  /* تحويل الملف إلى PNG (Base64) مع تصغيره إن كان أعرض من الحد — الخادم يقبل PNG فقط */
+  function toPngDataUrl(im) {
+    var w = im.naturalWidth || im.width, h = im.naturalHeight || im.height, k = w > LIB_MAX_W ? LIB_MAX_W / w : 1;
+    var c = document.createElement('canvas'); c.width = Math.max(1, Math.round(w * k)); c.height = Math.max(1, Math.round(h * k));
+    c.getContext('2d').drawImage(im, 0, 0, c.width, c.height);
+    return c.toDataURL('image/png');
+  }
+  $('libReload').onclick = loadLib;
+  $('logoFile').onchange = function () {
+    var f = this.files[0]; this.value = '';
+    if (!f) return;
+    if (!/^image[\/]/.test(f.type)) { toast('الملف ليس صورة'); return; }
+    var url = URL.createObjectURL(f), im = new Image();
+    im.onload = function () {
+      URL.revokeObjectURL(url);
+      var b64;
+      try { b64 = toPngDataUrl(im); } catch (e) { toast('تعذّرت قراءة الشعار'); return; }
+      var dup = LIB.filter(function (x) { return x.b64 === b64; })[0];
+      if (dup) { useLogo(dup.id); toast('ℹ️ هذا الشعار موجود في المكتبة باسم «' + dup.name + '»'); return; }
+      var name = (f.name.replace(/\.[^.]+$/, '').trim() || ('شعار ' + (LIB.length + 1))).slice(0, 40);
+      var add = $('libAdd'); if (add) add.disabled = true;
+      toast('☁️ جارٍ الحفظ في Drive…');
+      gasCall('so_saveLogo', [name, b64, {}], 60000).then(function (it) {
+        LIB.push(it); useLogo(it.id);
+        $('libSrc').textContent = '☁️ ' + LIB.length + ' شعار في Google Drive';
+        toast('💾 حُفظ «' + it.name + '» في المكتبة');
+      }).catch(function (e) { if (add) add.disabled = false; toast('⚠️ تعذّر الحفظ في Drive: ' + e.message); });
+    };
+    im.onerror = function () { URL.revokeObjectURL(url); toast('تعذّرت قراءة الشعار (صيغة غير مدعومة؟)'); };
+    im.src = url;
+  };
+
+  /* ═══ التصدير ═══ */
+  function fileName(sz, ext) {
+    var d = new Date(), p = function (n) { return (n < 10 ? '0' : '') + n; };
+    return 'S24News_' + S.type + '_' + sz.k + '_' + sz.w + 'x' + sz.h + '_' + d.getFullYear() + p(d.getMonth() + 1) + p(d.getDate()) + '-' + p(d.getHours()) + p(d.getMinutes()) + p(d.getSeconds()) + '.' + ext;
+  }
+  function download(canvas, name, type, q) {
+    return new Promise(function (res) {
+      canvas.toBlob(function (blob) {
+        if (!blob) { toast('تعذّر إنشاء الصورة'); res(); return; }
+        var a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = name;
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(function () { URL.revokeObjectURL(a.href); }, 60000);
+        res();
+      }, type, q);
+    });
+  }
+  $('dlPng').onclick = function () { render(); download(cv, fileName(sizeOf(S.size), 'png'), 'image/png').then(function () { toast('⬇️ تم التنزيل'); }); };
+  $('dlJpg').onclick = function () { render(); download(cv, fileName(sizeOf(S.size), 'jpg'), 'image/jpeg', 0.92).then(function () { toast('⬇️ تم التنزيل'); }); };
+  $('copyImg').onclick = function () {
+    render();
+    cv.toBlob(function (blob) {
+      try {
+        navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]).then(function () { toast('📋 نُسخت الصورة — الصقها في المنصة مباشرة'); }, function () { toast('المتصفح منع النسخ هنا — استخدم «تنزيل»'); });
+      } catch (e) { toast('المتصفح لا يدعم نسخ الصور هنا — استخدم «تنزيل»'); }
+    }, 'image/png');
+  };
+  $('batchBtn').onclick = function () {
+    var list = SIZES.filter(function (s) { return S.batch.indexOf(s.k) >= 0; });
+    if (!list.length) { toast('اختر مقاساً واحداً على الأقل'); return; }
+    var off = document.createElement('canvas'), i = 0;
+    (function next() {
+      if (i >= list.length) { toast('📦 تم تنزيل ' + list.length + ' ملفات'); return; }
+      var sz = list[i++]; render(off, sz);
+      download(off, fileName(sz, 'png'), 'image/png').then(function () { setTimeout(next, 450); });
+    })();
+  };
+
+  /* ═══ أخرى ═══ */
+  $('resetBtn').onclick = function () {
+    ['kicker', 'title', 'sub', 'credit'].forEach(function (k) { S[k] = ''; $(k).value = ''; });
+    IMG = null; S.panX = 0; S.panY = 0; S.zoom = 100; $('zoom').value = 100; $('zoomV').textContent = '100%';
+    render(); toast('منشور جديد');
+  };
+  function applyTheme(t) { document.body.classList.toggle('light', t === 'light'); $('themeBtn').textContent = t === 'light' ? '🌙' : '☀️'; }
+  $('themeBtn').onclick = function () { var t = document.body.classList.contains('light') ? 'dark' : 'light'; try { localStorage.setItem(KEY + '_theme', t); } catch (e) {} applyTheme(t); };
+  try { applyTheme(localStorage.getItem(KEY + '_theme') || 'dark'); } catch (e) {}
+
+  /* الخطوط: الرسم على القماش يحتاج تحميل الخط فعلياً */
+  function ensureFont(name, cb) {
+    if (!document.fonts || !document.fonts.load) { cb(); return; }
+    Promise.all([document.fonts.load('800 40px "' + name + '"'), document.fonts.load('900 40px "' + name + '"'), document.fonts.load('600 40px "' + name + '"')])
+      .then(function () { cb(); }, function () { cb(); });
+  }
+
+  load();
+  buildUI();
+  bindInputs();
+  renderLib();
+  render();
+  loadLib();
+  ensureFont(S.font, render);
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { render(); });
+})();
+</script>
+</body>
+</html>
