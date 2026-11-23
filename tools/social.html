@@ -35,6 +35,13 @@ window.addEventListener('error', function (e) {
      لم يعد الشعار يُحفظ في المتصفح؛ يُحفظ فقط معرّف الشعار المختار.
   v1.3 (23 نوفمبر 2026): خطوط الهوية ولونها — الواجهة Readex Pro، الخط الافتراضي للتصميم IBM Plex Sans Arabic
    (Cairo وبقية الخطوط خيارات)، أخضر «24» في الشعار النصي ولون الإبراز في الواجهة #77bd1d بدل #6db200 والبنفسجي.
+  v1.4 (23 نوفمبر 2026):
+   - «✏️ نوع من عندك»: نص حر يحلّ محلّ أنواع الخبر الثمانية في الشارة (استطلاع رأي، محلي…)، مع اللون المخصّص.
+   - شكل سابع «نص على لون» (للاستطلاعات والبيانات): لون النوع خلفيةً والنص في الوسط، والصورة اختيارية.
+   - بلا قطع: النص يلتفّ ويصغر حتى يتسع كاملاً، ولا يصعد فوق حدّ الشعار ورابط الموقع؛ الكلمة الأطول من السطر تُقسم؛
+     شارة النوع لها حدّ عرض؛ وإن لم يتسع النص رغم التصغير تظهر ⚠️ فوق المعاينة وفي رسالة التصدير دفعة واحدة.
+   - التباين: النص يصير داكناً تلقائياً على الألوان الفاتحة (ومنها #77bd1d) بدل أبيض لا يُقرأ.
+   - عبارة «📸 أضف صورة» تظهر في المعاينة فقط، لا داخل الصورة المنزَّلة.
 -->
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Readex+Pro:wght@400;500;600;700&family=Cairo:wght@400;600;700;900&family=Tajawal:wght@500;700;800;900&family=Almarai:wght@400;700;800&family=Reem+Kufi:wght@500;700&family=Amiri:wght@700&display=swap" rel="stylesheet">
 <style>
@@ -85,6 +92,7 @@ input[type=range],input[type=checkbox]{accent-color:var(--acc)}  /* v1.3: الم
 #cv.dragging{cursor:grabbing}
 .tbar{display:flex;flex-wrap:wrap;gap:8px;align-items:center;justify-content:center}
 .dim{font-size:12px;color:var(--muted);direction:ltr}
+.warn{font-size:12px;font-weight:700;color:#b42318;background:#fef3f2;border:1px solid #fda29b;border-radius:8px;padding:4px 10px}
 .hint{font-size:12px;color:var(--muted);line-height:1.6}
 .sizes{display:grid;grid-template-columns:1fr 1fr;gap:5px}
 .size{font:inherit;font-size:12px;text-align:right;border:1px solid var(--line);background:var(--bg);color:var(--ink);border-radius:8px;padding:6px 8px;cursor:pointer;display:flex;flex-direction:column}
@@ -133,6 +141,7 @@ input[type=range],input[type=checkbox]{accent-color:var(--acc)}  /* v1.3: الم
 
     <div class="sec"><h3>🏷️ نوع الخبر</h3><div class="body">
       <div class="chips" id="types"></div>
+      <label class="f">✏️ نوع من عندك (اختياري — يحلّ محلّ النوع المختار)<input class="inp" id="typeLabel" maxlength="40" placeholder="مثل: استطلاع رأي، محلي، بيان"></label>
       <label class="f">لون مخصّص (اختياري)<input type="color" id="accent" class="inp" style="padding:2px;height:34px"></label>
     </div></div>
 
@@ -181,12 +190,13 @@ input[type=range],input[type=checkbox]{accent-color:var(--acc)}  /* v1.3: الم
   <main class="stage">
     <div class="tbar">
       <span class="dim" id="dim"></span>
+      <span class="warn" id="cutWarn" hidden>⚠️ النص أطول من المساحة في هذا المقاس — اختصره أو صغّر الخط</span>
       <button class="btn pri" id="dlPng" type="button">⬇️ تنزيل PNG</button>
       <button class="btn" id="dlJpg" type="button">⬇️ JPG (أخف)</button>
       <button class="btn" id="copyImg" type="button">📋 نسخ الصورة</button>
     </div>
     <div class="canvas-box"><canvas id="cv" width="1200" height="675"></canvas></div>
-    <div class="hint">💡 العنوان يصغر تلقائياً إذا طال حتى يبقى داخل التصميم. في مقاس الستوري تُترك هوامش آمنة أعلى وأسفل لأزرار التطبيقات.</div>
+    <div class="hint">💡 النص يلتفّ ويصغر تلقائياً حتى يتسع كاملاً داخل التصميم ولا يقترب من الشعار أو الحواف؛ وإن طال جداً تظهر ⚠️ فوق المعاينة. في مقاس الستوري تُترك هوامش آمنة أعلى وأسفل لأزرار التطبيقات. شكل «نص على لون» للاستطلاعات والبيانات: الصورة فيه اختيارية، وزر Enter في العنوان يبدأ سطراً جديداً.</div>
   </main>
 </div>
 <div class="toast" id="toast"></div>
@@ -194,7 +204,7 @@ input[type=range],input[type=checkbox]{accent-color:var(--acc)}  /* v1.3: الم
 <script>
 (function () {
   'use strict';
-  var VERSION = 'S24News_Social_v1.3';
+  var VERSION = 'S24News_Social_v1.4';
 
   /* ═══ المقاسات — نفس مقاسات معالج الصور والاستوديو ═══ */
   var SIZES = [
@@ -225,14 +235,15 @@ input[type=range],input[type=checkbox]{accent-color:var(--acc)}  /* v1.3: الم
     { k: 'card',   n: 'بطاقة',       ic: '🪪' },
     { k: 'cinema', n: 'سينمائي',     ic: '🎞️' },
     { k: 'quote',  n: 'اقتباس',      ic: '❝' },
-    { k: 'split',  n: 'نصفان',       ic: '◧' }
+    { k: 'split',  n: 'نصفان',       ic: '◧' },
+    { k: 'text',   n: 'نص على لون',  ic: '🅰️' }   /* v1.4: للاستطلاعات والبيانات — الصورة اختيارية */
   ];
 
   var $ = function (id) { return document.getElementById(id); };
   var cv = $('cv'), ctx = cv.getContext('2d');
   var KEY = 's24_social_v1';
   var S = {
-    size: 'x', type: 'breaking', style: 'curve', accent: '',
+    size: 'x', type: 'breaking', typeLabel: '', style: 'curve', accent: '',  /* typeLabel: نوع يكتبه المستخدم بنفسه */
     kicker: '', title: '', sub: '', credit: '', handle: '@Syria24News',
     font: 'IBM Plex Sans Arabic', fscale: 100,  /* v1.3: خط الهوية بدل Cairo (يبقى خياراً) */ showDate: false,
     logoPos: 'tl', logoId: '', site: 'syria24.news', showSite: true,  /* logoId: الشعار المختار من مكتبة Drive ('' = الشعار النصي) */
@@ -254,36 +265,62 @@ input[type=range],input[type=checkbox]{accent-color:var(--acc)}  /* v1.3: الم
   function accent() { return S.accent || typeOf(S.type).c; }
 
   /* ═══ أدوات الألوان ═══ */
-  function hexRgb(h) { h = h.replace('#', ''); if (h.length === 3) h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2]; var n = parseInt(h, 16); return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; }
+  function hexRgb(h) { h = String(h || '#000').replace('#', ''); if (h.length === 3) h = h[0] + h[0] + h[1] + h[1] + h[2] + h[2]; var n = parseInt(h, 16) || 0; return [(n >> 16) & 255, (n >> 8) & 255, n & 255]; }
   function rgba(h, a) { var c = hexRgb(h); return 'rgba(' + c[0] + ',' + c[1] + ',' + c[2] + ',' + a + ')'; }
-  function shadeHex(h, f) { var c = hexRgb(h).map(function (v) { return Math.max(0, Math.min(255, Math.round(f < 0 ? v * (1 + f) : v + (255 - v) * f))); }); return 'rgb(' + c.join(',') + ')'; }
+  function shadeArr(h, f) { return hexRgb(h).map(function (v) { return Math.max(0, Math.min(255, Math.round(f < 0 ? v * (1 + f) : v + (255 - v) * f))); }); }
+  function shadeHex(h, f) { return 'rgb(' + shadeArr(h, f).join(',') + ')'; }
+  /* v1.4: التباين — هل الأبيض مقروء على هذا اللون (بعد تغميقه بالنسبة f)؟ الحد 3:1 (حد العناوين الكبيرة في WCAG).
+     إن لم يكن، يُكتب النص بالداكن. يحمي الألوان المخصّصة الفاتحة (والأخضر #77bd1d نفسه) من نص أبيض لا يُقرأ. */
+  function lumArr(c) { c = c.map(function (v) { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }); return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; }
+  function darkOn(h, f) { return 1.05 / (lumArr(shadeArr(h, f || 0)) + 0.05) < 3; }
+  function ink(h, f) { return darkOn(h, f) ? '#111827' : '#fff'; }
+  var INK_DARK = { titleColor: '#111827', kickerColor: '#111827', subColor: 'rgba(17,24,39,.85)', footColor: 'rgba(17,24,39,.72)', dark: true };
 
   /* ═══ النص العربي: التفاف وملاءمة تلقائية ═══ */
+  var CUT = false;      /* v1.4: يُرفع إن اضطر الرسم إلى قطع نص أو لم يتسع في مساحته — فتظهر ⚠️ فوق المعاينة */
+  var PREVIEW = false;  /* الرسم على المعاينة (لا التصدير): عبارة «أضف صورة» تظهر هنا فقط */
   function fontStr(w, px) { return w + ' ' + Math.round(px) + 'px "' + S.font + '", "IBM Plex Sans Arabic", Tahoma, sans-serif'; }
+  /* كلمة أطول من السطر نفسه (رابط أو وسم طويل) تُقسم على أكثر من سطر بدل أن تخرج عن الحافة */
+  function splitLong(w, maxW) {
+    if (ctx.measureText(w).width <= maxW) return [w];
+    var out = [], cur = '';
+    Array.from(w).forEach(function (ch) { if (cur && ctx.measureText(cur + ch).width > maxW) { out.push(cur); cur = ch; } else cur += ch; });
+    if (cur) out.push(cur);
+    return out;
+  }
   function wrap(text, maxW) {
     var out = [];
     String(text || '').split('\n').forEach(function (para) {
-      var words = para.split(/\s+/).filter(Boolean), line = '';
-      words.forEach(function (w) {
-        var t = line ? line + ' ' + w : w;
-        if (ctx.measureText(t).width > maxW && line) { out.push(line); line = w; } else line = t;
+      var line = '';
+      para.split(/\s+/).filter(Boolean).forEach(function (w0) {
+        splitLong(w0, maxW).forEach(function (w) {
+          var t = line ? line + ' ' + w : w;
+          if (ctx.measureText(t).width > maxW && line) { out.push(line); line = w; } else line = t;
+        });
       });
       if (line) out.push(line);
     });
     return out;
   }
-  /* يصغّر الخط حتى يتسع النص في عدد الأسطر المسموح */
+  /* يصغّر الخط حتى يتسع النص في عدد الأسطر المسموح؛ وإن لم يتسع عند أصغر حجم يُقطع بـ«…» (cut) */
   function fit(text, weight, startPx, minPx, maxW, maxLines) {
     var px = startPx, lines;
     for (; px >= minPx; px -= Math.max(1, px * 0.04)) {
       ctx.font = fontStr(weight, px);
       lines = wrap(text, maxW);
-      if (lines.length <= maxLines && lines.every(function (l) { return ctx.measureText(l).width <= maxW; })) break;
+      if (lines.length <= maxLines) break;
     }
     ctx.font = fontStr(weight, px);
     lines = wrap(text, maxW);
-    if (lines.length > maxLines) { lines = lines.slice(0, maxLines); lines[maxLines - 1] += '…'; }
-    return { px: px, lines: lines, lh: px * 1.45 };
+    var cut = false;
+    if (lines.length > maxLines) {
+      cut = true;
+      lines = lines.slice(0, maxLines);
+      var l = lines[maxLines - 1];
+      while (l && ctx.measureText(l + '…').width > maxW) l = l.slice(0, -1);
+      lines[maxLines - 1] = l.replace(/\s+$/, '') + '…';
+    }
+    return { px: px, lines: lines, lh: px * 1.45, cut: cut };
   }
   function drawLines(f, xRight, yTop, color, align, xCenter) {
     ctx.fillStyle = color;
@@ -308,8 +345,10 @@ input[type=range],input[type=checkbox]{accent-color:var(--acc)}  /* v1.3: الم
       var g = ctx.createLinearGradient(x, y, x + w, y + h);
       g.addColorStop(0, '#1f2937'); g.addColorStop(1, '#111827');
       ctx.fillStyle = g; ctx.fillRect(x, y, w, h);
-      ctx.fillStyle = 'rgba(255,255,255,.18)'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-      ctx.font = fontStr(700, Math.min(w, h) * 0.06); ctx.fillText('📸 أضف صورة', x + w / 2, y + h / 2);
+      if (PREVIEW) {  /* v1.4: التنبيه في المعاينة فقط — كان يُطبع داخل الصورة المنزَّلة */
+        ctx.fillStyle = 'rgba(255,255,255,.18)'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+        ctx.font = fontStr(700, Math.min(w, h) * 0.06); ctx.fillText('📸 أضف صورة', x + w / 2, y + h / 2);
+      }
     } else {
       var ir = IMG.width / IMG.height, rr2 = w / h, z = S.zoom / 100, dw, dh;
       if (ir > rr2) { dh = h * z; dw = dh * ir; } else { dw = w * z; dh = dw / ir; }
@@ -327,16 +366,27 @@ input[type=range],input[type=checkbox]{accent-color:var(--acc)}  /* v1.3: الم
     var d = new Date(), p = function (n) { return (n < 10 ? '0' : '') + n; };
     return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate());
   }
-  function drawLogo(W, H, u, safeTop) {
-    if (S.logoPos === 'off') return;
-    var m = 34 * u, y = m + safeTop, size = 120 * u;
-    var left = S.logoPos === 'tl';
+  /* مكان الشعار وحجمه (يستعمله الرسم وحساب المساحة المحجوزة أعلى التصميم معاً) */
+  function logoBox(W, H, u, safeTop) {
+    if (S.logoPos === 'off') return null;
+    var m = 34 * u, y = m + safeTop, size = 120 * u, left = S.logoPos === 'tl', lw, lh;
     if (LOGO) {
-      var lw = LOGO.width / LOGO.height >= 1.6 ? size * 2.4 : size;
-      var lh = lw * LOGO.height / LOGO.width;
+      lw = LOGO.width / LOGO.height >= 1.6 ? size * 2.4 : size;
+      lh = lw * LOGO.height / LOGO.width;
       if (lh > size * 1.1) { lh = size * 1.1; lw = lh * LOGO.width / LOGO.height; }
+    } else {
+      ctx.save(); ctx.font = fontStr(900, 40 * u);
+      lw = ctx.measureText('Syria').width + ctx.measureText('24').width + ctx.measureText('News').width + 17 * u + 32 * u;
+      ctx.restore(); lh = 64 * u;
+    }
+    return { x: left ? m : W - m - lw, y: y, w: lw, h: lh };
+  }
+  function drawLogo(W, H, u, safeTop) {
+    var b = logoBox(W, H, u, safeTop);
+    if (!b) return;
+    if (LOGO) {
       ctx.save(); ctx.shadowColor = 'rgba(0,0,0,.35)'; ctx.shadowBlur = 12 * u;
-      ctx.drawImage(LOGO, left ? m : W - m - lw, y, lw, lh); ctx.restore();
+      ctx.drawImage(LOGO, b.x, b.y, b.w, b.h); ctx.restore();
       return;
     }
     /* شعار نصي احتياطي */
@@ -344,12 +394,12 @@ input[type=range],input[type=checkbox]{accent-color:var(--acc)}  /* v1.3: الم
     ctx.font = fontStr(900, 40 * u);
     ctx.direction = 'ltr';
     var t1 = 'Syria', t2 = '24', t3 = 'News';
-    var w1 = ctx.measureText(t1).width, w2 = ctx.measureText(t2).width, w3 = ctx.measureText(t3).width;
+    var w1 = ctx.measureText(t1).width, w2 = ctx.measureText(t2).width;
     var dotR = 4.5 * u, dotW = dotR * 2 + 8 * u;  /* النقطة الصغيرة بين 24 و News */
-    var pad = 16 * u, bw = w1 + w2 + dotW + w3 + pad * 2, bh = 64 * u, bx = left ? m : W - m - bw;
-    ctx.fillStyle = 'rgba(0,0,0,.55)'; rr(bx, y, bw, bh, 12 * u); ctx.fill();
+    var pad = 16 * u, y = b.y, bh = b.h;
+    ctx.fillStyle = 'rgba(0,0,0,.55)'; rr(b.x, y, b.w, bh, 12 * u); ctx.fill();
     ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
-    var cx = bx + pad, cy = y + bh / 2 + 2 * u;
+    var cx = b.x + pad, cy = y + bh / 2 + 2 * u;
     ctx.fillStyle = '#fff'; ctx.fillText(t1, cx, cy); cx += w1;
     ctx.fillStyle = '#77bd1d'; ctx.fillText(t2, cx, cy);  /* أخضر الهوية */ cx += w2;
     ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(cx + dotW / 2, y + bh * 0.66, dotR, 0, Math.PI * 2); ctx.fill(); cx += dotW;
@@ -367,47 +417,62 @@ input[type=range],input[type=checkbox]{accent-color:var(--acc)}  /* v1.3: الم
     ctx.fillStyle = color || '#fff'; ctx.textAlign = 'left'; ctx.fillText(txt, x + 13 * u, y + 2 * u);
     ctx.restore();
   }
-  function label(x, y, u, text, bg, alignRight) {
+  /* v1.4: أعلى نقطة يُسمح للنص بالوصول إليها — أسفل الشعار ورابط الموقع بهامش — كي لا يتداخل معهما مهما طال */
+  function topReserve(W, H, u, safeTop) {
+    var bottom = safeTop + 34 * u, lb = logoBox(W, H, u, safeTop);
+    if (lb) bottom = Math.max(bottom, lb.y + lb.h);
+    if (S.showSite && S.site) bottom = Math.max(bottom, safeTop + 34 * u + 52 * u);
+    return bottom + 22 * u;
+  }
+  /* شارة نوع الخبر — align: right (x حافتها اليمنى) أو center (x منتصفها)؛ لا تتجاوز maxW (تصغر ثم «…») */
+  function label(x, y, u, text, bg, align, maxW, fg) {
     ctx.save();
-    ctx.font = fontStr(900, 30 * u); ctx.direction = 'rtl';
-    var w = ctx.measureText(text).width + 36 * u, h = 52 * u;
-    var lx = alignRight ? x - w : x;
+    var h = 52 * u, padX = 18 * u, f = fit(text, 900, 30 * u, 20 * u, Math.max(40 * u, (maxW || 1e9) - padX * 2), 1);
+    if (f.cut) CUT = true;
+    ctx.font = fontStr(900, f.px); ctx.direction = 'rtl';
+    var w = ctx.measureText(f.lines[0] || '').width + padX * 2;
+    var lx = align === 'center' ? x - w / 2 : x - w;
     ctx.fillStyle = bg; rr(lx, y, w, h, 8 * u); ctx.fill();
-    ctx.fillStyle = '#fff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
-    ctx.fillText(text, lx + w / 2, y + h / 2 + 2 * u);
+    ctx.fillStyle = fg || '#fff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillText(f.lines[0] || '', lx + w / 2, y + h / 2 + 2 * u);
     ctx.restore();
     return h;
   }
+  function typeName() { return String(S.typeLabel || '').trim() || typeOf(S.type).n; }
   function footLine(u) {
     var parts = [];
     if (S.credit) parts.push(S.credit);
-    if (S.showDate) parts.push('\u2066' + dateText() + '\u2069');
-    if (S.handle) parts.push('\u2066' + S.handle + '\u2069');  /* عزل النص اللاتيني حتى لا ينقلب ترتيبه */
+    if (S.showDate) parts.push('⁦' + dateText() + '⁩');
+    if (S.handle) parts.push('⁦' + S.handle + '⁩');  /* عزل النص اللاتيني حتى لا ينقلب ترتيبه */
     return parts.join('   •   ');
   }
 
   /* ═══ كتلة النص (مشتركة بين الأشكال): كلمة بارزة + عنوان + سطر ثانٍ + تذييل ═══
-     تُقاس أولاً (measure) ثم تُرسم في المكان الذي يحدده الشكل */
-  function textBlock(maxW, u, opts) {
-    var sc = S.fscale / 100, o = opts || {};
-    var b = { parts: [], h: 0 };
-    if (S.kicker && o.kicker !== false) {
-      var fk = fit(S.kicker, 900, 110 * u * sc, 50 * u, maxW, 1);
-      b.parts.push({ f: fk, color: o.kickerColor || '#fff', gap: 4 * u }); b.h += fk.lines.length * fk.lh + 4 * u;
-    }
-    var title = S.title || 'اكتب عنوان الخبر هنا';
-    var ft = fit(title, 800, (o.titlePx || 64) * u * sc, 30 * u, maxW, o.maxLines || 3);
-    b.parts.push({ f: ft, color: o.titleColor || '#fff', gap: 10 * u, dim: !S.title }); b.h += ft.lines.length * ft.lh + 10 * u;
-    if (S.sub) {
-      var fs = fit(S.sub, 600, 34 * u * sc, 22 * u, maxW, 2);
-      b.parts.push({ f: fs, color: o.subColor || 'rgba(255,255,255,.88)', gap: 8 * u }); b.h += fs.lines.length * fs.lh + 8 * u;
-    }
+     تُقاس أولاً ثم تُرسم في المكان الذي يحدده الشكل.
+     v1.4 — بلا قطع ما أمكن: المحاولة الأولى بالشكل المعتاد (أسطر العنوان المقترحة لكل شكل)؛ فإن طال النص
+     أو لم يتسع في الارتفاع المتاح (maxH)، تُسمح أسطر أكثر ويصغر الكل تدريجياً حتى يتسع النص كاملاً. */
+  function buildBlock(maxW, u, o, sc, first) {
+    var r = sc / (S.fscale / 100);   /* نسبة التصغير الإضافي (1 في المحاولة الأولى) */
+    /* حدّ القراءة: لا يصغر أي نص تحت هذه الأحجام (نسبةً إلى عرض 1080) مهما طال — يُسمح بأسطر أكثر بدلاً من ذلك،
+       وإن لم يتسع بعدها يُقطع وتظهر ⚠️، فلا يخرج تصميم بخط لا يُقرأ */
+    function F(text, w, start, floor, lines) { floor *= u; return fit(text, w, Math.max(start * u * sc, floor), floor, maxW, lines); }
+    var b = { parts: [], h: 0, cut: false, dark: !!o.dark };
+    function add(f, color, gap, extra) { var p = { f: f, color: color, gap: gap }; for (var k in extra) p[k] = extra[k]; b.parts.push(p); b.h += f.lines.length * f.lh + gap; if (f.cut) b.cut = true; }
+    if (S.kicker && o.kicker !== false) add(F(S.kicker, 900, 110, 50, 1), o.kickerColor || '#fff', 4 * u);
+    var title = S.title || (S.style === 'text' ? 'اكتب النص هنا' : 'اكتب عنوان الخبر هنا');
+    add(F(title, 800, o.titlePx || 64, 30, first ? (o.maxLines || 3) : (o.hardLines || 7)), o.titleColor || '#fff', 10 * u, { dim: !S.title });
+    if (S.sub) add(F(S.sub, 600, 34, 22, first ? 2 : 4), o.subColor || 'rgba(255,255,255,.88)', 8 * u);
     var foot = footLine(u);
-    if (foot) {
-      ctx.font = fontStr(600, 24 * u);
-      var ff = fit(foot, 600, 24 * u, 16 * u, maxW, 1);
-      b.parts.push({ f: ff, color: o.footColor || 'rgba(255,255,255,.75)', gap: 0, foot: true }); b.h += ff.lines.length * ff.lh;
+    if (foot) add(fit(foot, 600, Math.max(24 * u * r, 16 * u), 16 * u, maxW, first ? 1 : 2), o.footColor || 'rgba(255,255,255,.75)', 0, { foot: true });
+    return b;
+  }
+  function textBlock(maxW, u, opts) {
+    var o = opts || {}, base = S.fscale / 100, b;
+    for (var i = 0; i < 16; i++) {
+      b = buildBlock(maxW, u, o, base * Math.pow(0.93, Math.max(0, i - 1)), i === 0);
+      if (!b.cut && (!o.maxH || b.h <= o.maxH)) return b;
     }
+    CUT = true;  /* لم يتسع حتى بعد التصغير: النص طويل جداً لهذا المقاس — تظهر ⚠️ */
     return b;
   }
   function drawBlock(b, xRight, yTop, align, xCenter) {
@@ -416,44 +481,72 @@ input[type=range],input[type=checkbox]{accent-color:var(--acc)}  /* v1.3: الم
       ctx.save();
       ctx.font = fontStr(p.foot ? 600 : (p.f.px > 80 ? 900 : 800), p.f.px);
       if (p.dim) ctx.globalAlpha = 0.45;
-      ctx.shadowColor = 'rgba(0,0,0,.25)'; ctx.shadowBlur = 6;
+      if (!b.dark) { ctx.shadowColor = 'rgba(0,0,0,.25)'; ctx.shadowBlur = 6; }  /* لا ظل للنص الداكن على خلفية فاتحة */
       y = drawLines(p.f, xRight, y, p.color, align, xCenter) + p.gap;
       ctx.restore();
     });
     return y;
   }
+  function mix(o, extra) { var r = {}, k; for (k in o) r[k] = o[k]; for (k in extra) r[k] = extra[k]; return r; }
 
   /* ═══ الرسم الرئيسي ═══ */
   function render(target, sz) {
     var c = target || cv, W = sz ? sz.w : sizeOf(S.size).w, H = sz ? sz.h : sizeOf(S.size).h;
     c.width = W; c.height = H;
     var save = ctx; ctx = c.getContext('2d');
-    try { draw(W, H); } finally { ctx = save; }
-    if (!target) $('dim').textContent = W + '×' + H;
+    CUT = false; PREVIEW = !target;
+    try { draw(W, H); } finally { ctx = save; PREVIEW = false; }
+    if (!target) {
+      $('dim').textContent = W + '×' + H;
+      $('cutWarn').hidden = !CUT;
+    }
+    return !CUT;
   }
 
   function draw(W, H) {
-    var u = U(W, H), tall = H / W > 1.5, A = accent(), T = typeOf(S.type);
+    var u = U(W, H), tall = H / W > 1.5, A = accent(), TN = typeName();
     var safeTop = tall ? H * 0.08 : 0, safeBot = tall ? H * 0.14 : 0;
-    var m = 48 * u;
+    var m = 48 * u, res = topReserve(W, H, u, safeTop), avail = H - safeBot - res;
     ctx.clearRect(0, 0, W, H);
 
     if (S.style === 'split') {
       var landscape = W / H > 1.2;
       var panelW = landscape ? W * 0.46 : W, panelH = H;
-      var bl = textBlock(panelW - m * 2, u, { titlePx: landscape ? 60 : 66, maxLines: landscape ? 5 : 4 });
-      if (!landscape) panelH = Math.min(H * 0.7, Math.max(H * 0.42, bl.h + 52 * u + 20 * u + m * 2 + safeBot));
+      var dkS = darkOn(A), lh = 52 * u;  /* لون فاتح ← نص داكن وتدرّج أخف كي يبقى التباين في كل اللوحة */
+      var bl = textBlock(panelW - m * 2, u, mix(dkS ? INK_DARK : {}, { titlePx: landscape ? 60 : 66, maxLines: landscape ? 5 : 4, hardLines: 9,
+        maxH: landscape ? H - res - m - lh - 20 * u : H * 0.7 - lh - 20 * u - m * 2 - safeBot }));
+      if (!landscape) panelH = Math.min(H * 0.7, Math.max(H * 0.42, bl.h + lh + 20 * u + m * 2 + safeBot));
       if (landscape) drawPhoto(0, 0, W - panelW, H); else drawPhoto(0, 0, W, H - panelH);
       var px = landscape ? W - panelW : 0, py = landscape ? 0 : H - panelH;
       var g = ctx.createLinearGradient(px, py, px + panelW, py + panelH);
-      g.addColorStop(0, A); g.addColorStop(1, shadeHex(A, -0.45));
+      g.addColorStop(0, A); g.addColorStop(1, shadeHex(A, dkS ? -0.12 : -0.45));
       ctx.fillStyle = g; ctx.fillRect(px, py, panelW, panelH);
       ctx.fillStyle = 'rgba(255,255,255,.9)';
       if (landscape) ctx.fillRect(px, 0, 8 * u, H); else ctx.fillRect(0, py, W, 8 * u);
-      var lh = 52 * u;
-      var top = py + Math.max(m + (landscape ? 0 : 0), (panelH - safeBot - bl.h - lh - 20 * u) / 2);
-      label(px + panelW - m, top, u, T.n, 'rgba(0,0,0,.35)', true);
+      var top = py + Math.max(m, (panelH - safeBot - bl.h - lh - 20 * u) / 2);
+      if (landscape) top = Math.max(top, res);
+      label(px + panelW - m, top, u, TN, dkS ? 'rgba(17,24,39,.82)' : 'rgba(0,0,0,.35)', 'right', panelW - m * 2);
       drawBlock(bl, px + panelW - m, top + lh + 20 * u);
+      drawLogo(W, H, u, safeTop); drawSite(W, H, u, safeTop);
+      return;
+    }
+
+    if (S.style === 'text') {
+      /* v1.4: «نص على لون» — للاستطلاعات والبيانات والمنشورات النصية: لون النوع خلفيةً، والنص في الوسط.
+         الصورة اختيارية: إن وُجدت تظهر خافتة تحت اللون. */
+      if (IMG) drawPhoto(0, 0, W, H);
+      var dk = darkOn(A), a1 = IMG ? 0.86 : 1, c2 = shadeArr(A, dk ? -0.12 : -0.32);  /* لون فاتح ← نص داكن وتدرّج أخف */
+      var gt = ctx.createLinearGradient(0, 0, W, H);
+      gt.addColorStop(0, rgba(A, a1)); gt.addColorStop(1, 'rgba(' + c2.join(',') + ',' + (IMG ? 0.94 : 1) + ')');
+      ctx.fillStyle = gt; ctx.fillRect(0, 0, W, H);
+      ctx.save(); ctx.fillStyle = dk ? 'rgba(0,0,0,.05)' : 'rgba(255,255,255,.06)';  /* دائرتان خافتتان للزخرفة */
+      ctx.beginPath(); ctx.arc(W * 0.92, H * 0.12, Math.min(W, H) * 0.32, 0, Math.PI * 2); ctx.fill();
+      ctx.beginPath(); ctx.arc(W * 0.06, H * 0.95, Math.min(W, H) * 0.24, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+      var lh6 = 52 * u, gap6 = 26 * u, tw = W - m * 2 - 40 * u;
+      var b6 = textBlock(tw, u, mix(dk ? INK_DARK : {}, { titlePx: 76, maxLines: 5, hardLines: 10, maxH: avail - m - lh6 - gap6 }));
+      var tot = lh6 + gap6 + b6.h, t6 = res + Math.max(0, (H - safeBot - m - res - tot) / 2);
+      label(W / 2, t6, u, TN, dk ? '#111827' : '#fff', 'center', tw, dk ? '#fff' : '#111827');
+      drawBlock(b6, 0, t6 + lh6 + gap6, 'center', W / 2);
       drawLogo(W, H, u, safeTop); drawSite(W, H, u, safeTop);
       return;
     }
@@ -462,15 +555,17 @@ input[type=range],input[type=checkbox]{accent-color:var(--acc)}  /* v1.3: الم
     var maxW = W - m * 2;
 
     if (S.style === 'bar') {
-      var b1 = textBlock(maxW - 40 * u, u, {});
+      var dk1 = darkOn(A);
+      var b1 = textBlock(maxW - 40 * u, u, mix(dk1 ? INK_DARK : {}, { maxH: avail - 96 * u }));
       var barH = b1.h + 70 * u;
       var by = H - safeBot - barH;
       ctx.fillStyle = A; ctx.fillRect(0, by, W, barH + safeBot);
       ctx.fillStyle = shadeHex(A, -0.35); ctx.fillRect(0, by, W, 8 * u);
-      label(W - m, by - 26 * u, u, T.n, shadeHex(A, -0.35), true);
+      label(W - m, by - 26 * u, u, TN, shadeHex(A, -0.35), 'right', maxW, ink(A, -0.35));
       drawBlock(b1, W - m - 20 * u, by + 38 * u);
     } else if (S.style === 'curve') {
-      var b2 = textBlock(maxW - 30 * u, u, {});
+      var dk2 = darkOn(A);  /* لون فاتح ← نص داكن وتدرّج أخف */
+      var b2 = textBlock(maxW - 30 * u, u, mix(dk2 ? INK_DARK : {}, { maxH: avail - 150 * u }));
       var areaH = b2.h + 120 * u;
       var cy = H - safeBot - areaH;
       ctx.save();
@@ -479,34 +574,34 @@ input[type=range],input[type=checkbox]{accent-color:var(--acc)}  /* v1.3: الم
       ctx.bezierCurveTo(W * 0.25, cy - 30 * u, W * 0.6, cy + 90 * u, W, cy + 10 * u);
       ctx.lineTo(W, H); ctx.lineTo(0, H); ctx.closePath();
       var g2 = ctx.createLinearGradient(0, cy, 0, H);
-      g2.addColorStop(0, A); g2.addColorStop(1, shadeHex(A, -0.5));
+      g2.addColorStop(0, A); g2.addColorStop(1, shadeHex(A, dk2 ? -0.15 : -0.5));
       ctx.fillStyle = g2; ctx.fill();
       ctx.strokeStyle = 'rgba(255,255,255,.85)'; ctx.lineWidth = 5 * u;
       ctx.beginPath(); ctx.moveTo(0, cy + 60 * u); ctx.bezierCurveTo(W * 0.25, cy - 30 * u, W * 0.6, cy + 90 * u, W, cy + 10 * u); ctx.stroke();
       ctx.restore();
-      label(W - m, cy - 20 * u, u, T.n, shadeHex(A, -0.4), true);
+      label(W - m, cy - 20 * u, u, TN, shadeHex(A, -0.4), 'right', maxW, ink(A, -0.4));
       drawBlock(b2, W - m - 10 * u, cy + 84 * u);
     } else if (S.style === 'card') {
       var cw = Math.min(maxW, 980 * u * (W > H ? 1.2 : 1));
-      var b3 = textBlock(cw - 90 * u, u, { titleColor: '#111827', subColor: '#374151', footColor: '#6b7280', kickerColor: A });
+      var b3 = textBlock(cw - 90 * u, u, { titleColor: '#111827', subColor: '#374151', footColor: '#6b7280', kickerColor: darkOn(A) ? shadeHex(A, -0.5) : A, dark: true, maxH: avail - m - 122 * u });
       var ch = b3.h + 96 * u, cx = (W - cw) / 2, cyy = H - safeBot - ch - m;
       ctx.save(); ctx.shadowColor = 'rgba(0,0,0,.35)'; ctx.shadowBlur = 30 * u;
       ctx.fillStyle = '#ffffff'; rr(cx, cyy, cw, ch, 22 * u); ctx.fill(); ctx.restore();
       ctx.fillStyle = A; rr(cx + cw - 14 * u, cyy, 14 * u, ch, 7 * u); ctx.fill();
-      label(cx + cw - 40 * u, cyy - 26 * u, u, T.n, A, true);
+      label(cx + cw - 40 * u, cyy - 26 * u, u, TN, A, 'right', cw - 80 * u, ink(A));
       drawBlock(b3, cx + cw - 46 * u, cyy + 46 * u);
     } else if (S.style === 'cinema') {
-      var b4 = textBlock(maxW, u, { titlePx: 72 });
+      var b4 = textBlock(maxW, u, { titlePx: 72, maxH: avail - m - 74 * u });
       var gH = Math.min(H, b4.h + 300 * u + safeBot);
       var g4 = ctx.createLinearGradient(0, H - gH, 0, H);
       g4.addColorStop(0, 'rgba(0,0,0,0)'); g4.addColorStop(0.45, 'rgba(0,0,0,.65)'); g4.addColorStop(1, 'rgba(0,0,0,.92)');
       ctx.fillStyle = g4; ctx.fillRect(0, H - gH, W, gH);
       var ty = H - safeBot - m - b4.h;
-      label(W - m, ty - 74 * u, u, T.n, A, true);
+      label(W - m, ty - 74 * u, u, TN, A, 'right', maxW, ink(A));
       ctx.fillStyle = A; ctx.fillRect(W - m - 120 * u, ty - 12 * u, 120 * u, 6 * u);
       drawBlock(b4, W - m, ty);
     } else if (S.style === 'quote') {
-      var b5 = textBlock(maxW - 40 * u, u, { titlePx: 58, maxLines: 4, kicker: false, subColor: A === '#0f172a' ? '#fff' : shadeHex(A, 0.55) });
+      var b5 = textBlock(maxW - 40 * u, u, { titlePx: 58, maxLines: 4, hardLines: 8, kicker: false, subColor: A === '#0f172a' ? '#fff' : shadeHex(A, 0.55), maxH: avail - m - 170 * u });
       var gH5 = Math.min(H, b5.h + 360 * u + safeBot);
       var g5 = ctx.createLinearGradient(0, H - gH5, 0, H);
       g5.addColorStop(0, 'rgba(0,0,0,0)'); g5.addColorStop(0.35, 'rgba(0,0,0,.7)'); g5.addColorStop(1, 'rgba(0,0,0,.95)');
@@ -514,7 +609,7 @@ input[type=range],input[type=checkbox]{accent-color:var(--acc)}  /* v1.3: الم
       var qy = H - safeBot - m - b5.h;
       ctx.save(); ctx.font = '900 ' + Math.round(220 * u) + 'px Georgia, "Amiri", serif'; ctx.fillStyle = A;
       ctx.textAlign = 'right'; ctx.textBaseline = 'top'; ctx.fillText('”', W - m + 10 * u, qy - 190 * u); ctx.restore();
-      if (S.kicker) label(W - m - 130 * u, qy - 100 * u, u, S.kicker, A, true);
+      if (S.kicker) label(W - m - 130 * u, qy - 100 * u, u, S.kicker, A, 'right', maxW - 130 * u, ink(A));
       ctx.fillStyle = A; ctx.fillRect(W - m - 8 * u, qy, 8 * u, b5.h - 10 * u);
       drawBlock(b5, W - m - 30 * u, qy);
     }
@@ -534,10 +629,10 @@ input[type=range],input[type=checkbox]{accent-color:var(--acc)}  /* v1.3: الم
     });
     var tp = $('types'); tp.innerHTML = '';
     TYPES.forEach(function (t) {
-      var b = document.createElement('button'); b.type = 'button'; b.className = 'chip' + (S.type === t.k ? ' on' : '');
+      var b = document.createElement('button'); b.type = 'button'; b.className = 'chip' + (S.type === t.k && !S.typeLabel ? ' on' : '');
       var d = document.createElement('span'); d.className = 'dot'; d.style.background = t.c; b.appendChild(d);
       b.appendChild(document.createTextNode(t.n));
-      b.onclick = function () { S.type = t.k; S.accent = ''; $('accent').value = t.c; buildUI(); render(); save(); };
+      b.onclick = function () { S.type = t.k; S.typeLabel = ''; $('typeLabel').value = ''; S.accent = ''; $('accent').value = t.c; buildUI(); render(); save(); };
       tp.appendChild(b);
     });
     var st = $('styles'); st.innerHTML = '';
@@ -570,6 +665,9 @@ input[type=range],input[type=checkbox]{accent-color:var(--acc)}  /* v1.3: الم
     $('showSite').checked = S.showSite; $('showSite').onchange = function () { S.showSite = this.checked; render(); save(); };
     $('showDate').checked = S.showDate; $('showDate').onchange = function () { S.showDate = this.checked; render(); save(); };
     $('accent').value = accent();
+    /* نوع من عندك: يحلّ محلّ النوع المختار في الشارة، ويبقى لونه لون النوع الأخير أو اللون المخصّص */
+    $('typeLabel').value = S.typeLabel || '';
+    $('typeLabel').addEventListener('input', function () { S.typeLabel = this.value; buildUI(); render(); save(); });
     $('accent').oninput = function () { S.accent = this.value; render(); save(); };
     var rng = function (id, key, suffix) {
       var el = $(id); el.value = S[key]; $(id + 'V').textContent = S[key] + suffix;
@@ -703,7 +801,7 @@ input[type=range],input[type=checkbox]{accent-color:var(--acc)}  /* v1.3: الم
   /* ═══ التصدير ═══ */
   function fileName(sz, ext) {
     var d = new Date(), p = function (n) { return (n < 10 ? '0' : '') + n; };
-    return 'S24News_' + S.type + '_' + sz.k + '_' + sz.w + 'x' + sz.h + '_' + d.getFullYear() + p(d.getMonth() + 1) + p(d.getDate()) + '-' + p(d.getHours()) + p(d.getMinutes()) + p(d.getSeconds()) + '.' + ext;
+    return 'S24News_' + (String(S.typeLabel || '').trim() ? 'custom' : S.type) + '_' + sz.k + '_' + sz.w + 'x' + sz.h + '_' + d.getFullYear() + p(d.getMonth() + 1) + p(d.getDate()) + '-' + p(d.getHours()) + p(d.getMinutes()) + p(d.getSeconds()) + '.' + ext;
   }
   function download(canvas, name, type, q) {
     return new Promise(function (res) {
@@ -729,10 +827,10 @@ input[type=range],input[type=checkbox]{accent-color:var(--acc)}  /* v1.3: الم
   $('batchBtn').onclick = function () {
     var list = SIZES.filter(function (s) { return S.batch.indexOf(s.k) >= 0; });
     if (!list.length) { toast('اختر مقاساً واحداً على الأقل'); return; }
-    var off = document.createElement('canvas'), i = 0;
+    var off = document.createElement('canvas'), i = 0, cut = [];
     (function next() {
-      if (i >= list.length) { toast('📦 تم تنزيل ' + list.length + ' ملفات'); return; }
-      var sz = list[i++]; render(off, sz);
+      if (i >= list.length) { toast(cut.length ? '⚠️ نُزّلت ' + list.length + ' ملفات، والنص أطول من المساحة في: ' + cut.join('، ') : '📦 تم تنزيل ' + list.length + ' ملفات'); render(); return; }
+      var sz = list[i++]; if (!render(off, sz)) cut.push(sz.n);
       download(off, fileName(sz, 'png'), 'image/png').then(function () { setTimeout(next, 450); });
     })();
   };
