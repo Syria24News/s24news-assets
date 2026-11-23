@@ -33,14 +33,16 @@ window.addEventListener('error', function (e) {
    - الشعار من مكتبة الشعارات في Drive (S24News_PE_Logos، مشتركة مع معالج الصور) عبر بوابة الأدوات
      في اللوحة (doPost، الدوال so_listLogos وso_saveLogo في TOOLS_API_FNS) بالربط المحفوظ sy_pe_api.
      لم يعد الشعار يُحفظ في المتصفح؛ يُحفظ فقط معرّف الشعار المختار.
+  v1.3 (23 نوفمبر 2026): خطوط الهوية ولونها — الواجهة Readex Pro، الخط الافتراضي للتصميم IBM Plex Sans Arabic
+   (Cairo وبقية الخطوط خيارات)، أخضر «24» في الشعار النصي ولون الإبراز في الواجهة #77bd1d بدل #6db200 والبنفسجي.
 -->
-<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=Tajawal:wght@500;700;800;900&family=Almarai:wght@400;700;800&family=Reem+Kufi:wght@500;700&family=Amiri:wght@700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Readex+Pro:wght@400;500;600;700&family=Cairo:wght@400;600;700;900&family=Tajawal:wght@500;700;800;900&family=Almarai:wght@400;700;800&family=Reem+Kufi:wght@500;700&family=Amiri:wght@700&display=swap" rel="stylesheet">
 <style>
-:root{--bg:#0f1220;--surf:#171b2e;--surf2:#1f2440;--line:#2c3358;--ink:#e6e9f5;--muted:#8c93b8;--acc:#7c3aed;--acc2:#a78bfa;--ok:#10b981;--r:10px}
+:root{--bg:#0f1220;--surf:#171b2e;--surf2:#1f2440;--line:#2c3358;--ink:#e6e9f5;--muted:#8c93b8;--acc:#77bd1d;--acc2:#9ad14f;--ok:#10b981;--r:10px}
 body.light{--bg:#eef0f6;--surf:#ffffff;--surf2:#f5f6fa;--line:#d8dbe6;--ink:#1d2433;--muted:#667085}
 *{box-sizing:border-box}
 html,body{margin:0}
-body{font-family:'Cairo',Tahoma,sans-serif;background:var(--bg);color:var(--ink);font-size:14px}
+body{font-family:'Readex Pro','IBM Plex Sans Arabic',Tahoma,sans-serif;background:var(--bg);color:var(--ink);font-size:14px}
 /* v1.2: الترويسة الموحّدة لأدوات غرفة الأخبار — صف واحد 44px: الأيقونة والاسم · الوصف · الإصدار … الأزرار */
 header{display:flex;align-items:center;gap:12px;padding:0 16px;height:44px;background:var(--surf);border-bottom:1px solid var(--line);position:sticky;top:0;z-index:5}
 header h1{margin:0;font-size:16px;font-weight:900;white-space:nowrap}
@@ -75,6 +77,7 @@ textarea.inp{resize:vertical;min-height:58px;line-height:1.6}
 .check input{margin:0}
 .range{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted)}
 .range input{flex:1}
+input[type=range],input[type=checkbox]{accent-color:var(--acc)}  /* v1.3: المنزلقات والمربعات بأخضر الهوية */
 .drop{border:2px dashed var(--line);border-radius:10px;padding:14px;text-align:center;color:var(--muted);cursor:pointer}
 .drop.over{border-color:var(--acc);color:var(--ink)}
 .canvas-box{background:repeating-conic-gradient(#0002 0 25%,transparent 0 50%) 0 0/18px 18px;border-radius:10px;padding:8px;max-width:100%}
@@ -147,6 +150,7 @@ textarea.inp{resize:vertical;min-height:58px;line-height:1.6}
       </div>
       <div class="row2">
         <label class="f">الخط<select class="inp" id="font">
+          <option value="IBM Plex Sans Arabic">IBM Plex Sans Arabic</option><option value="Readex Pro">Readex Pro</option>
           <option value="Cairo">Cairo</option><option value="Tajawal">Tajawal</option><option value="Almarai">Almarai</option>
           <option value="Reem Kufi">Reem Kufi</option><option value="Amiri">Amiri</option></select></label>
         <label class="f">حجم الخط<div class="range" style="margin:0"><input type="range" id="fscale" min="70" max="140" value="100"><span id="fscaleV">100%</span></div></label>
@@ -190,7 +194,7 @@ textarea.inp{resize:vertical;min-height:58px;line-height:1.6}
 <script>
 (function () {
   'use strict';
-  var VERSION = 'S24News_Social_v1.2';
+  var VERSION = 'S24News_Social_v1.3';
 
   /* ═══ المقاسات — نفس مقاسات معالج الصور والاستوديو ═══ */
   var SIZES = [
@@ -230,7 +234,7 @@ textarea.inp{resize:vertical;min-height:58px;line-height:1.6}
   var S = {
     size: 'x', type: 'breaking', style: 'curve', accent: '',
     kicker: '', title: '', sub: '', credit: '', handle: '@Syria24News',
-    font: 'Cairo', fscale: 100, showDate: false,
+    font: 'IBM Plex Sans Arabic', fscale: 100,  /* v1.3: خط الهوية بدل Cairo (يبقى خياراً) */ showDate: false,
     logoPos: 'tl', logoId: '', site: 'syria24.news', showSite: true,  /* logoId: الشعار المختار من مكتبة Drive ('' = الشعار النصي) */
     zoom: 100, shade: 25, panX: 0, panY: 0, batch: ['x', 'fb', 'ig', 'story']
   };
@@ -255,7 +259,7 @@ textarea.inp{resize:vertical;min-height:58px;line-height:1.6}
   function shadeHex(h, f) { var c = hexRgb(h).map(function (v) { return Math.max(0, Math.min(255, Math.round(f < 0 ? v * (1 + f) : v + (255 - v) * f))); }); return 'rgb(' + c.join(',') + ')'; }
 
   /* ═══ النص العربي: التفاف وملاءمة تلقائية ═══ */
-  function fontStr(w, px) { return w + ' ' + Math.round(px) + 'px "' + S.font + '", "Cairo", Tahoma, sans-serif'; }
+  function fontStr(w, px) { return w + ' ' + Math.round(px) + 'px "' + S.font + '", "IBM Plex Sans Arabic", Tahoma, sans-serif'; }
   function wrap(text, maxW) {
     var out = [];
     String(text || '').split('\n').forEach(function (para) {
@@ -347,7 +351,7 @@ textarea.inp{resize:vertical;min-height:58px;line-height:1.6}
     ctx.textBaseline = 'middle'; ctx.textAlign = 'left';
     var cx = bx + pad, cy = y + bh / 2 + 2 * u;
     ctx.fillStyle = '#fff'; ctx.fillText(t1, cx, cy); cx += w1;
-    ctx.fillStyle = '#6db200'; ctx.fillText(t2, cx, cy); cx += w2;
+    ctx.fillStyle = '#77bd1d'; ctx.fillText(t2, cx, cy);  /* أخضر الهوية */ cx += w2;
     ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(cx + dotW / 2, y + bh * 0.66, dotR, 0, Math.PI * 2); ctx.fill(); cx += dotW;
     ctx.fillStyle = '#fff'; ctx.fillText(t3, cx, cy);
     ctx.restore();
@@ -642,7 +646,7 @@ textarea.inp{resize:vertical;min-height:58px;line-height:1.6}
     b.appendChild(th); b.appendChild(nm); b.onclick = click;
     return b;
   }
-  var TEXT_LOGO_THUMB = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 40"><rect width="150" height="40" rx="8" fill="#000" fill-opacity=".55"/><text x="75" y="27" text-anchor="middle" font-family="Arial" font-weight="900" font-size="20" fill="#fff">Syria<tspan fill="#6db200">24</tspan>.News</text></svg>');
+  var TEXT_LOGO_THUMB = 'data:image/svg+xml,' + encodeURIComponent('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 150 40"><rect width="150" height="40" rx="8" fill="#000" fill-opacity=".55"/><text x="75" y="27" text-anchor="middle" font-family="Arial" font-weight="900" font-size="20" fill="#fff">Syria<tspan fill="#77bd1d">24</tspan>.News</text></svg>');
   function renderLib() {
     var g = $('lib'); g.innerHTML = '';
     g.appendChild(libItem('الشعار النصي', TEXT_LOGO_THUMB, !S.logoId, function () { useLogo(''); }));
