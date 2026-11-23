@@ -129,6 +129,7 @@ input[type=range],input[type=checkbox]{accent-color:var(--acc)}  /* v1.3: الم
 .crow{display:flex;gap:6px;align-items:center}
 .crow input[type=color]{padding:2px;height:30px;flex:1}
 .cstate{font-size:11px;color:var(--acc)}
+.side .btn{white-space:normal;line-height:1.5}  /* v1.6.1: نص الزر الطويل يلتفّ داخل القائمة بدل أن يخرج عنها */
 .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#111827;color:#fff;padding:9px 16px;border-radius:8px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:50}
 .toast.show{opacity:1}
 @media (max-width:900px){.wrap{grid-template-columns:1fr}.side,.stage{max-height:none}.side{border-left:0;border-bottom:1px solid var(--line);order:2}.stage{order:1}#cv{max-height:60vh}}
@@ -195,7 +196,7 @@ input[type=range],input[type=checkbox]{accent-color:var(--acc)}  /* v1.3: الم
       <label class="f">علامة الخيار<select class="inp" id="pollMark">
         <option value="num">أرقام 1 2 3</option><option value="abc">حروف أ ب ج</option>
         <option value="box">مربع فارغ ☐</option><option value="none">بلا علامة</option></select></label>
-      <button class="btn sm" id="pollQuick" type="button">⚡ تجهيز سريع: «نص على لون» + نوع «استطلاع رأي»</button>
+      <button class="btn sm" id="pollQuick" type="button" title="يختار شكل «نص على لون» ونوع «استطلاع رأي» بنقرة واحدة">⚡ تجهيز سريع للاستطلاع</button>
       <div class="hint">من خيارين إلى ستة — الخانة الفارغة لا تظهر. ضع دعوة التصويت في «السطر الثاني» (مثل: صوّت في التعليقات 👇). يعمل الاستطلاع في كل الأشكال.</div>
     </div></div>
 
@@ -259,7 +260,7 @@ input[type=range],input[type=checkbox]{accent-color:var(--acc)}  /* v1.3: الم
 <script>
 (function () {
   'use strict';
-  var VERSION = 'S24News_Social_v1.6';
+  var VERSION = 'S24News_Social_v1.6.1';
 
   /* ═══ المقاسات — نفس مقاسات معالج الصور والاستوديو ═══ */
   var SIZES = [
