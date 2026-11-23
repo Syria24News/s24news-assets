@@ -48,6 +48,10 @@ window.addEventListener('error', function (e) {
     .app-header .app-version{font-size:10px;color:#666;letter-spacing:.3px;white-space:nowrap;}
     .app-header .hdr-gap{flex:1;}
     .app-header #totalDuration{padding:0;white-space:nowrap;}
+    /* v6.6: زرّا التراجع والإعادة — تغيّر اللون فقط عند المرور، بلا حركة */
+    .hdr-btn{background:var(--card);border:1px solid var(--border);border-radius:8px;width:32px;height:30px;cursor:pointer;font-size:16px;line-height:1;color:var(--text);font-family:inherit;transition:background .2s,color .2s,border-color .2s;}
+    .hdr-btn:hover:not(:disabled){border-color:var(--green);color:var(--green);}
+    .hdr-btn:disabled{opacity:.35;cursor:default;}
     /* الموبايل: العنوان وعدد العناصر والزر فقط — المدة ظاهرة أصلاً في لوحة الإجراءات */
     @media(max-width:768px){.app-header{padding:6px 10px;gap:8px;}.app-header .subtitle,.app-header .app-version,.app-header #totalDuration{display:none;}}
     .app-body{display:flex;flex:1;gap:0;flex-direction:row-reverse;overflow:hidden;}
@@ -460,6 +464,8 @@ window.addEventListener('error', function (e) {
     <span class="hdr-gap"></span>
     <div id="totalDuration"></div>
     <span id="imagesCountBadge">0 عنصر</span>
+    <button class="hdr-btn" id="btnUndo" type="button" disabled title="تراجع (Ctrl+Z)">↶</button>
+    <button class="hdr-btn" id="btnRedo" type="button" disabled title="إعادة (Ctrl+Y)">↷</button>
     <button class="theme-toggle" id="themeToggle" type="button">
       <span id="themeIcon">☀️</span>
       <span class="toggle-label" id="themeLabel">نهاري</span>
@@ -1847,6 +1853,11 @@ window.addEventListener('error', function (e) {
     //  • إصلاح: المعاينة الحية لم تكن تتحدث عند تغيير المقاس، ومعرّف مكرر لمدة المشروع.
     //  • إصلاح: مقاطع «تقطيع فيديو طويل» لم تكن تُعلِّم المشروع كغير محفوظ.
     //  • هيكلة: مصنع واحد لإنشاء العناصر، دالة واحدة لتغيير المقاس، قائمة واحدة لحقول حفظ المشروع.
+    // سجل التغييرات v6.6 (23 نوفمبر 2026):
+    //  • التراجع والإعادة: زرّا ↶ ↷ في الترويسة وCtrl+Z / Ctrl+Y (أو Ctrl+Shift+Z)، حتى 50 خطوة — العناصر وحقول
+    //    المشروع وجدول الشريط. داخل مربعات الكتابة يبقى تراجع المتصفح للنص. السجل يُفرَّغ عند فتح مشروع أو مشروع جديد.
+    //  • استعادة الإعدادات صارت دالة واحدة applyProjectSettings (لفتح المشروع وللتراجع).
+    //  • حذف الفيديو لا يُبطل رابطه فوراً؛ releaseMedia() تُبطله حين لا يحتاجه عنصر ولا خطوة في السجل.
     // سجل التغييرات v6.5 (23 نوفمبر 2026):
     //  • الخطوط: الصفحة تحمّل الخطوط التسعة كلها (أضيف Readex Pro)، وكان ستة منها في القائمة بلا ملف يُحمَّل.
     //  • الخط الافتراضي من الهوية: IBM Plex Sans Arabic للنص على الفيديو والشريط، وReadex Pro للواجهة (بدل Cairo).
@@ -1897,7 +1908,7 @@ window.addEventListener('error', function (e) {
     // سجل التغييرات v5.1:
     //  • إصلاح: إذا منع المتصفح التخزين المحلي داخل إطار اللوحة (حظر ملفات الطرف الثالث)، كانت الأداة
     //    تتوقف عند أول قراءة للإعدادات فلا يعمل زر ليلي/نهاري ولا ما بعده — صارت تعمل بذاكرة مؤقتة.
-    const APP_VERSION = 'S24News_Studio_v6.5';
+    const APP_VERSION = 'S24News_Studio_v6.6';
     let isExporting = false;
     let deleteItem; // تُعرَّف لاحقًا (كانت متغيرًا عامًّا ضمنيًا)
     const appVersionLabel = document.getElementById('appVersionLabel');
@@ -5202,43 +5213,7 @@ window.addEventListener('error', function (e) {
                 setResolution(project.resolution.w || 1920, project.resolution.h || 1080);
             }
 
-            const s = project.settings || {};
-            // 🆕 v5.0: كل الحقول البسيطة من قائمة واحدة (PROJECT_FIELDS)
-            PROJECT_FIELDS.forEach(id => {
-                const el = document.getElementById(id);
-                if (!el || s[id] === undefined || s[id] === null) return;
-                if (el.type === 'checkbox') el.checked = !!s[id];
-                else el.value = s[id];
-            });
-            // مشاريع ما قبل v4.16 بلا tickerDirection كانت تتحرك فعليًا يسار→يمين
-            if (s.tickerDirection === undefined) document.getElementById('tickerDirection').value = 'ltr';
-            if (s.exportFps === undefined) document.getElementById('exportFps').value = '30';
-            document.getElementById('logoOpacityLabel').textContent = document.getElementById('logoOpacity').value + '%';
-
-            if (s.outroVolume !== undefined) {
-                outroVolume = parseFloat(s.outroVolume) / 100;
-                outroVolumeSlider.value = s.outroVolume;
-                outroVolumeLabel.textContent = s.outroVolume + '%';
-                outroPreviewVideo.volume = Math.min(outroVolume, 1);
-            }
-            if (s.outroMuted !== undefined) {
-                outroMuted = !!s.outroMuted;
-                outroPreviewVideo.muted = outroMuted;
-                outroMuteBtn.textContent = outroMuted ? '🔇' : '🔊';
-                outroMuteBtn.classList.toggle('muted', outroMuted);
-            }
-
-            volumeLabel.textContent = audioVolumeSlider.value + '%';
-            voiceVolumeLabel.textContent = voiceVolumeSlider.value + '%';
-            tickerScheduleEnabled = !!s.tickerScheduleEnabled;
-            tickerCues = Array.isArray(s.tickerCues) ? s.tickerCues : [];
-            if (tickerScheduleToggle) tickerScheduleToggle.checked = tickerScheduleEnabled;
-            if (tickerScheduleBox) tickerScheduleBox.style.display = tickerScheduleEnabled ? 'block' : 'none';
-            if (tickerTextInput) { tickerTextInput.disabled = tickerScheduleEnabled; tickerTextInput.style.opacity = tickerScheduleEnabled ? 0.4 : 1; }
-            renderTickerCuesList();
-            renderTickerSchedBlocks();
-            fps = parseInt(document.getElementById('exportFps')?.value) || 30;
-            updateTickerPreview();
+            applyProjectSettings(project.settings || {});
 
             if (project.logoSrc) {
                 loadedLogo = new Image();
@@ -5308,6 +5283,7 @@ window.addEventListener('error', function (e) {
             const skipNote = skippedVideos > 0 ? (" ⚠️ تم تجاهل " + (skippedVideos) + " فيديو (أعد رفعها يدوياً)") : '';
             projStatus.textContent = ("✅ تم استعادة المشروع (" + (imageItems.length) + " عنصر)" + (dateStr) + "" + (skipNote) + "");
             projectDirty = false;
+            resetHistory();
             addLog('📂', ("تم تحميل مشروع (" + (imageItems.length) + " عنصر)."));
             updateSidebarInfo();
 
@@ -5318,6 +5294,46 @@ window.addEventListener('error', function (e) {
         }
         e.target.value = '';
     });
+
+    // v6.6: استعادة الإعدادات من كائن (ملف مشروع أو خطوة تراجع) — مكان واحد بدل نسختين
+    function applyProjectSettings(s) {
+        // 🆕 v5.0: كل الحقول البسيطة من قائمة واحدة (PROJECT_FIELDS)
+        PROJECT_FIELDS.forEach(id => {
+            const el = document.getElementById(id);
+            if (!el || s[id] === undefined || s[id] === null) return;
+            if (el.type === 'checkbox') el.checked = !!s[id];
+            else el.value = s[id];
+        });
+        // مشاريع ما قبل v4.16 بلا tickerDirection كانت تتحرك فعليًا يسار→يمين
+        if (s.tickerDirection === undefined) document.getElementById('tickerDirection').value = 'ltr';
+        if (s.exportFps === undefined) document.getElementById('exportFps').value = '30';
+        document.getElementById('logoOpacityLabel').textContent = document.getElementById('logoOpacity').value + '%';
+
+        if (s.outroVolume !== undefined) {
+            outroVolume = parseFloat(s.outroVolume) / 100;
+            outroVolumeSlider.value = s.outroVolume;
+            outroVolumeLabel.textContent = s.outroVolume + '%';
+            outroPreviewVideo.volume = Math.min(outroVolume, 1);
+        }
+        if (s.outroMuted !== undefined) {
+            outroMuted = !!s.outroMuted;
+            outroPreviewVideo.muted = outroMuted;
+            outroMuteBtn.textContent = outroMuted ? '🔇' : '🔊';
+            outroMuteBtn.classList.toggle('muted', outroMuted);
+        }
+
+        volumeLabel.textContent = audioVolumeSlider.value + '%';
+        voiceVolumeLabel.textContent = voiceVolumeSlider.value + '%';
+        tickerScheduleEnabled = !!s.tickerScheduleEnabled;
+        tickerCues = Array.isArray(s.tickerCues) ? s.tickerCues : [];
+        if (tickerScheduleToggle) tickerScheduleToggle.checked = tickerScheduleEnabled;
+        if (tickerScheduleBox) tickerScheduleBox.style.display = tickerScheduleEnabled ? 'block' : 'none';
+        if (tickerTextInput) { tickerTextInput.disabled = tickerScheduleEnabled; tickerTextInput.style.opacity = tickerScheduleEnabled ? 0.4 : 1; }
+        renderTickerCuesList();
+        renderTickerSchedBlocks();
+        fps = parseInt(document.getElementById('exportFps')?.value) || 30;
+        updateTickerPreview();
+    }
 
     let projectDirty = false;
     const markDirty  = () => { projectDirty = true; };
@@ -5361,11 +5377,8 @@ window.addEventListener('error', function (e) {
         if (item?.type === 'video') {
             item.videoEl.pause();
             allVideoEls.delete(item.videoEl);
-            // 🆕 v4.10: لا نحذف رابط الفيديو (blob URL) إلا إذا ما في أي عنصر آخر شقيق لسا يستخدمه —
-            // مقاطع "تقطيع فيديو طويل" و"تكرار العنصر" تتشارك نفس الرابط عمدًا لتوفير الذاكرة،
-            // فحذف مقطع واحد كان يكسر بقية المقاطع الشقيقة بحذف رابط ما زلن يحتجنه.
-            const stillUsed = item.videoUrl && imageItems.some((it, i) => i !== idx && it.videoUrl === item.videoUrl);
-            if (item.videoUrl && !stillUsed) URL.revokeObjectURL(item.videoUrl);
+            // v6.6: رابط الفيديو (blob URL) لا يُبطَل هنا — التراجع قد يعيد العنصر. يُبطله releaseMedia()
+            // حين لا يستعمله أي عنصر حالي (ومنها مقاطع «تقطيع فيديو طويل» و«تكرار العنصر» الشقيقة) ولا أي خطوة في السجل.
         }
         imageItems.splice(idx, 1);
         if (selectedIdx >= imageItems.length) selectedIdx = imageItems.length - 1;
@@ -6115,10 +6128,146 @@ window.addEventListener('error', function (e) {
         exportCount = 0;
         addLog('🆕', 'تم إفراغ المشروع والبدء من جديد.');
         if (statusDiv) statusDiv.textContent = '';
+        resetHistory();
     }
+
+
+    // ===== v6.6: التراجع والإعادة (Ctrl+Z / Ctrl+Y) =====
+    // كل تغيير في العناصر (إضافة، حذف، ترتيب، نص، مدة، انتقال...) أو في حقول المشروع (PROJECT_FIELDS) أو جدول
+    // الشريط يُسجَّل لقطةً. اللقطة نسخة خفيفة: الصور والفيديوهات نفسها لا تُنسخ بل يُحتفظ بمرجعها، فلا تكلّف ذاكرة.
+    // لا يشمل: الشعار، الموسيقى، التعليق الصوتي، الأوترو، الغلاف، ودقة الإخراج — هذه ملفات/مقاسات لها أزرارها.
+    // داخل مربعات الكتابة يبقى Ctrl+Z تراجع المتصفح عن الكتابة نفسها. السجل يُفرَّغ عند فتح مشروع أو بدء مشروع جديد.
+    const HISTORY_MAX = 50;
+    let undoStack = [], redoStack = [], historyNow = null, historyTimer = null, historyRestoring = false;
+    const mediaUrlPool = new Set();          // روابط الفيديو التي مرّت على السجل — تُبطَل حين لا يحتاجها أحد
+    const mediaIds = new WeakMap(); let mediaSeq = 0;
+    const isPlainVal = v => v === null || typeof v !== 'object' || Array.isArray(v) || Object.getPrototypeOf(v) === Object.prototype;
+    function cloneItem(it) {
+        const c = {};
+        Object.keys(it).forEach(k => { const v = it[k]; c[k] = (v && typeof v === 'object' && isPlainVal(v)) ? JSON.parse(JSON.stringify(v)) : v; });
+        return c;
+    }
+    // مفتاح المقارنة: الوسائط تُستبدل برقم ثابت لكل كائن، فلا تدخل بيانات الصور في المقارنة
+    function stateKey(st) {
+        return JSON.stringify({ items: st.items, fields: st.fields, cues: st.cues, sched: st.sched }, (k, v) => {
+            if (v && typeof v === 'object' && !isPlainVal(v)) {
+                if (!mediaIds.has(v)) mediaIds.set(v, ++mediaSeq);
+                return '#m' + mediaIds.get(v);
+            }
+            return v;
+        });
+    }
+    function takeSnapshot() {
+        const st = {
+            items: imageItems.map(cloneItem),
+            fields: readProjectFields(),
+            cues: JSON.parse(JSON.stringify(tickerCues || [])),
+            sched: !!tickerScheduleEnabled,
+            sel: selectedIdx
+        };
+        st.key = stateKey(st);
+        st.items.forEach(it => { if (it.videoUrl) mediaUrlPool.add(it.videoUrl); });
+        return st;
+    }
+    function updateHistoryButtons() {
+        const u = document.getElementById('btnUndo'), r = document.getElementById('btnRedo');
+        if (u) { u.disabled = !undoStack.length; u.title = 'تراجع (Ctrl+Z)' + (undoStack.length ? ' — ' + undoStack.length + ' خطوة' : ''); }
+        if (r) { r.disabled = !redoStack.length; r.title = 'إعادة (Ctrl+Y)' + (redoStack.length ? ' — ' + redoStack.length + ' خطوة' : ''); }
+    }
+    // يُبطل روابط الفيديو التي لم يعد يستعملها عنصر حالي ولا أي خطوة في السجل
+    function releaseMedia() {
+        const live = new Set();
+        const add = st => st && st.items.forEach(it => { if (it.videoUrl) live.add(it.videoUrl); });
+        imageItems.forEach(it => { if (it.videoUrl) live.add(it.videoUrl); });
+        undoStack.forEach(add); redoStack.forEach(add); add(historyNow);
+        mediaUrlPool.forEach(url => {
+            if (live.has(url)) return;
+            mediaUrlPool.delete(url);
+            if (String(url).startsWith('blob:')) { try { URL.revokeObjectURL(url); } catch (e) {} }
+        });
+    }
+    function commitHistory() {
+        clearTimeout(historyTimer); historyTimer = null;
+        if (historyRestoring || isExporting) return;
+        const st = takeSnapshot();
+        if (historyNow && st.key === historyNow.key) { historyNow.sel = st.sel; return; }
+        if (historyNow) undoStack.push(historyNow);
+        if (undoStack.length > HISTORY_MAX) undoStack.shift();
+        historyNow = st;
+        redoStack = [];
+        releaseMedia();
+        updateHistoryButtons();
+    }
+    function scheduleHistory(ms) {
+        if (historyRestoring) return;
+        clearTimeout(historyTimer);
+        historyTimer = setTimeout(commitHistory, ms);
+    }
+    function resetHistory() {
+        clearTimeout(historyTimer); historyTimer = null;
+        undoStack = []; redoStack = [];
+        historyNow = takeSnapshot();
+        releaseMedia();
+        updateHistoryButtons();
+    }
+    function restoreSnapshot(st) {
+        historyRestoring = true;
+        try {
+            if (typeof lpRunning !== 'undefined' && lpRunning) lpStop();
+            imageItems = st.items.map(cloneItem);
+            allVideoEls.clear();
+            imageItems.forEach(it => { if (it.videoEl) allVideoEls.add(it.videoEl); });
+            const s = Object.assign({}, st.fields, { tickerScheduleEnabled: st.sched, tickerCues: JSON.parse(JSON.stringify(st.cues)) });
+            applyProjectSettings(s);
+            selectedIdx = (st.sel !== null && st.sel < imageItems.length) ? st.sel : null;
+            renderMediaGrid();
+            if (selectedIdx !== null) openDetail(selectedIdx); else closeDetail();
+            updateTotalDuration();
+            updateSidebarInfo();
+            updateLogoPosIndicator();
+            markDirty();
+        } finally { historyRestoring = false; }
+    }
+    function historyStep(from, to, label) {
+        if (historyTimer) commitHistory();            // تغيير معلَّق لم يُسجَّل بعد يُسجَّل أولاً
+        if (!from.length) return;
+        if (isExporting) { statusDiv.textContent = '⏳ انتظر انتهاء التصدير قبل التراجع أو الإعادة.'; return; }
+        to.push(historyNow);
+        historyNow = from.pop();
+        restoreSnapshot(historyNow);
+        updateHistoryButtons();
+        statusDiv.textContent = label;
+    }
+    const undo = () => historyStep(undoStack, redoStack, '↶ تراجع');
+    const redo = () => historyStep(redoStack, undoStack, '↷ إعادة');
+    document.getElementById('btnUndo').addEventListener('click', undo);
+    document.getElementById('btnRedo').addEventListener('click', redo);
+
+    // مصادر التغيير: الكتابة (بعد توقف نصف ثانية)، وتغيير القوائم والمربعات، والنقر (إضافة/حذف/ترتيب/الشريط)، والإفلات
+    document.addEventListener('input',  () => scheduleHistory(500));
+    document.addEventListener('change', () => scheduleHistory(0));
+    document.addEventListener('click',  () => scheduleHistory(0));
+    document.addEventListener('drop',   () => scheduleHistory(0));
+    document.addEventListener('dragend',() => scheduleHistory(0));
+    // رفع الصور والفيديو وتقطيع الفيديو تنتهي بعد انتظار، وكلها تمرّ بـ renderMediaGrid
+    const _gridForHistory = renderMediaGrid;
+    renderMediaGrid = function() { _gridForHistory(); scheduleHistory(0); };
+
+    document.addEventListener('keydown', e => {
+        if (!(e.ctrlKey || e.metaKey) || e.altKey) return;
+        const k = e.key.toLowerCase();
+        const isUndo = k === 'z' && !e.shiftKey, isRedo = k === 'y' || (k === 'z' && e.shiftKey);
+        if (!isUndo && !isRedo) return;
+        const t = e.target;
+        if (t && (t.isContentEditable || t.tagName === 'TEXTAREA' || (t.tagName === 'INPUT' && /^(text|search|url|email|number|)$/i.test(t.type)))) return;
+        if (splitterOverlay.classList.contains('visible')) return;
+        e.preventDefault();
+        if (isUndo) undo(); else redo();
+    });
 
     document.getElementById('btnNewProject')?.addEventListener('click', resetProject);
     document.getElementById('btnNewProject2')?.addEventListener('click', resetProject);
+    resetHistory();   // لقطة البداية
 
 })();
 </script>
