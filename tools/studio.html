@@ -30,15 +30,15 @@ window.addEventListener('error', function (e) {
     <script src="tools-link.js" data-tool="🎬 الاستوديو"></script>
     <link rel="icon" type="image/png" href="https://syria24news.github.io/s24news-assets/panel-icons/studio.png">
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=IBM+Plex+Sans+Arabic:wght@400;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Readex+Pro:wght@400;700&family=IBM+Plex+Sans+Arabic:wght@400;700&family=Cairo:wght@400;700;900&family=Tajawal:wght@400;700&family=Almarai:wght@400;700&family=El+Messiri:wght@400;700&family=Changa:wght@400;700&family=Aref+Ruqaa:wght@400;700&family=Lateef:wght@400;700&display=swap" rel="stylesheet">
     <style>
     :root {
         --bg:#1e1e2f; --card:#2a2a3c; --card2:#222233; --border:#3e3e55;
-        --text:#e0e0e0; --accent:#e71414; --green:#6db200; --blue:#2980b9;
+        --text:#e0e0e0; --accent:#e71414; --green:#77bd1d; --blue:#2980b9;
         --purple:#8e44ad; --tab-h:54px; --card-title-color:#fff; --header-h:44px;
     }
     *{box-sizing:border-box;margin:0;padding:0;}
-    body{font-family:'Cairo','IBM Plex Sans Arabic',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
+    body{font-family:'Readex Pro','IBM Plex Sans Arabic',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;}
 
     .app-shell{display:flex;flex-direction:column;min-height:100vh;}
     /* v6.3: الترويسة الموحّدة لأدوات غرفة الأخبار — صف واحد 44px: الأيقونة والاسم بالعربية · الوصف · الإصدار … الأزرار */
@@ -108,7 +108,7 @@ window.addEventListener('error', function (e) {
 
     .media-type-btns{display:flex;gap:8px;margin-bottom:12px;}
     .media-type-btn{flex:1;padding:10px;border:2px solid var(--border);border-radius:10px;background:transparent;color:var(--text);cursor:pointer;font-family:inherit;font-size:13px;font-weight:bold;transition:.2s;}
-    .media-type-btn.active{border-color:var(--green);background:rgba(109,178,0,.12);color:var(--green);}
+    .media-type-btn.active{border-color:var(--green);background:rgba(119,189,29,.12);color:var(--green);}
 
     .image-item,.video-item{background:#0e0e1c;border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:10px;cursor:grab;transition:border-color .2s,box-shadow .2s;}
     .image-item:active,.video-item:active{cursor:grabbing;}
@@ -122,12 +122,12 @@ window.addEventListener('error', function (e) {
     .item-text-panel{background:rgba(255,255,255,.03);border:1px dashed var(--border);border-radius:8px;padding:12px;margin-top:10px;display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px;}
     .item-text-panel label{font-size:10px !important;color:#777 !important;margin-bottom:2px !important;font-weight:normal !important;}
     .item-type-badge{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:bold;margin-right:6px;}
-    .badge-img{background:rgba(109,178,0,.2);color:var(--green);}
+    .badge-img{background:rgba(119,189,29,.2);color:var(--green);}
     .badge-video{background:rgba(41,128,185,.2);color:#5dade2;}
     .transition-arrow{text-align:center;color:var(--accent);font-size:13px;margin:3px 0;background:rgba(231,20,20,.06);border-radius:6px;padding:5px;}
 
     .video-trim-bar{position:relative;height:44px;background:#080812;border-radius:8px;margin:10px 0;overflow:hidden;cursor:pointer;user-select:none;}
-    .video-trim-fill{position:absolute;top:0;height:100%;background:rgba(109,178,0,.3);border:2px solid var(--green);border-radius:6px;pointer-events:none;}
+    .video-trim-fill{position:absolute;top:0;height:100%;background:rgba(119,189,29,.3);border:2px solid var(--green);border-radius:6px;pointer-events:none;}
     .trim-handle{position:absolute;top:0;width:14px;height:100%;background:var(--green);border-radius:4px;cursor:ew-resize;display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;z-index:2;}
     .trim-times{display:flex;justify-content:space-between;font-size:11px;color:#666;margin-top:3px;}
     .trim-ruler{position:relative;height:16px;margin-top:2px;font-size:9px;color:#777;}
@@ -168,8 +168,8 @@ window.addEventListener('error', function (e) {
 
     /* 🆕 v4.9: تمييز مؤقت لزر "معاينة سريعة" عند توجيه المستخدم إليه من قسم جدولة الشريط */
     @keyframes pulseHighlight{
-        0%,100%{box-shadow:0 0 0 0 rgba(109,178,0,.7);}
-        50%{box-shadow:0 0 0 10px rgba(109,178,0,0);}
+        0%,100%{box-shadow:0 0 0 0 rgba(119,189,29,.7);}
+        50%{box-shadow:0 0 0 10px rgba(119,189,29,0);}
     }
     .pulse-highlight{animation:pulseHighlight 0.8s ease-in-out 3;position:relative;z-index:5;}
 
@@ -196,7 +196,7 @@ window.addEventListener('error', function (e) {
     .resolution-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px;margin-top:8px;}
     .res-btn{padding:12px 8px;background:#0e0e1c;border:2px solid var(--border);border-radius:10px;color:#888;cursor:pointer;text-align:center;transition:.2s;font-family:inherit;font-size:12px;}
     .res-btn:hover{border-color:var(--green);color:#fff;}
-    .res-btn.active{border-color:var(--green);background:rgba(109,178,0,.12);color:#fff;}
+    .res-btn.active{border-color:var(--green);background:rgba(119,189,29,.12);color:#fff;}
     .res-btn .res-label{font-weight:bold;font-size:14px;display:block;margin-bottom:2px;}
     .res-btn .res-sub{font-size:10px;color:#666;direction:ltr;unicode-bidi:isolate;display:inline-block;}
     .res-btn.active .res-sub{color:#aaa;}
@@ -208,7 +208,7 @@ window.addEventListener('error', function (e) {
     .batch-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:6px;margin:10px 0;}
     .batch-opt{display:flex;align-items:center;gap:6px;font-size:12px;padding:7px 9px;border:1px solid var(--border);border-radius:8px;cursor:pointer;}
     .batch-opt input{width:auto;margin:0;}
-    .batch-opt.on{border-color:var(--green);background:rgba(109,178,0,.08);}
+    .batch-opt.on{border-color:var(--green);background:rgba(119,189,29,.08);}
     .batch-opt small{color:#888;margin-inline-start:auto;font-size:10px;direction:ltr;}
     #livePreviewCanvas.portrait{max-height:340px;width:auto;max-width:100%;}
     #lpFullResSlot #livePreviewCanvas.portrait{max-height:78vh;}
@@ -236,7 +236,7 @@ window.addEventListener('error', function (e) {
     #recordTimer{font-size:22px;font-family:monospace;text-align:center;letter-spacing:2px;padding:4px 0;}
 
     /* v6.2: زر ليلي/نهاري داخل الترويسة بدل الزر العائم فوقها (كان يغطي العنوان) — بلا حركة عند المرور */
-    .theme-toggle{background:var(--card);border:1px solid var(--border);border-radius:50px;padding:3px 10px;cursor:pointer;font-size:14px;display:flex;align-items:center;gap:5px;font-family:'Cairo',sans-serif;color:var(--text);}
+    .theme-toggle{background:var(--card);border:1px solid var(--border);border-radius:50px;padding:3px 10px;cursor:pointer;font-size:14px;display:flex;align-items:center;gap:5px;font-family:inherit;color:var(--text);}
     .toggle-label{font-size:12px;font-weight:bold;}
 
     body.light-mode {
@@ -312,7 +312,7 @@ window.addEventListener('error', function (e) {
     .log-wrap h4{font-size:11px;font-weight:700;color:#888;padding:8px 10px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:5px;margin:0;}
     .log-list{max-height:190px;overflow-y:auto;padding:2px 0;}
     .log-entry{display:flex;align-items:flex-start;gap:7px;padding:5px 10px;border-bottom:1px solid rgba(255,255,255,0.04);font-size:11px;animation:logIn .25s ease;}
-    @keyframes logIn{from{opacity:0;background:rgba(109,178,0,.1);}to{opacity:1;background:transparent;}}
+    @keyframes logIn{from{opacity:0;background:rgba(119,189,29,.1);}to{opacity:1;background:transparent;}}
     .log-entry:last-child{border-bottom:none;}
     .log-icon{flex-shrink:0;font-size:13px;margin-top:1px;}
     .log-msg{color:var(--text);line-height:1.5;flex:1;}
@@ -339,7 +339,7 @@ window.addEventListener('error', function (e) {
     .media-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(110px,1fr));gap:8px;padding:4px;}
     .grid-item{position:relative;border-radius:10px;overflow:hidden;cursor:pointer;border:2px solid transparent;transition:.2s;aspect-ratio:16/10;background:#0a0a15;}
     .grid-item:hover{border-color:var(--blue);transform:scale(1.02);}
-    .grid-item.selected{border-color:var(--green);box-shadow:0 0 0 3px rgba(109,178,0,.3);}
+    .grid-item.selected{border-color:var(--green);box-shadow:0 0 0 3px rgba(119,189,29,.3);}
     .grid-item.dragging{opacity:.35;border-color:var(--green);}
     .grid-item.drag-over{border-color:var(--blue);box-shadow:0 0 0 3px rgba(41,128,185,.3);}
     .grid-item img,.grid-item video{width:100%;height:100%;object-fit:cover;display:block;pointer-events:none;}
@@ -349,7 +349,7 @@ window.addEventListener('error', function (e) {
     .grid-item .item-del{position:absolute;bottom:4px;right:4px;background:rgba(192,57,43,.85);color:#fff;border:none;border-radius:5px;width:22px;height:22px;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;opacity:0;transition:.2s;}
     .grid-item:hover .item-del{opacity:1;}
     .grid-add-btn{aspect-ratio:16/10;border-radius:10px;border:2px dashed var(--border);background:rgba(255,255,255,.02);display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;color:#555;font-size:12px;gap:4px;transition:.2s;}
-    .grid-add-btn:hover{border-color:var(--green);color:var(--green);background:rgba(109,178,0,.06);}
+    .grid-add-btn:hover{border-color:var(--green);color:var(--green);background:rgba(119,189,29,.06);}
     .grid-add-btn .add-icon{font-size:24px;}
     .grid-empty{text-align:center;padding:40px 20px;color:#555;}
     .grid-empty .empty-icon{font-size:48px;margin-bottom:12px;}
@@ -374,7 +374,7 @@ window.addEventListener('error', function (e) {
     .detail-grid.cols3{grid-template-columns:1fr 1fr 1fr;}
     .order-controls{display:flex;gap:6px;}
     .order-btn{flex:1;padding:8px;border:1px solid var(--border);border-radius:8px;background:transparent;color:#aaa;cursor:pointer;font-size:16px;transition:.2s;}
-    .order-btn:hover:not(:disabled){border-color:var(--green);color:var(--green);background:rgba(109,178,0,.08);}
+    .order-btn:hover:not(:disabled){border-color:var(--green);color:var(--green);background:rgba(119,189,29,.08);}
     .order-btn:disabled{opacity:.25;cursor:not-allowed;}
 
     /* ===== LIVE PREVIEW PANEL ===== */
@@ -392,7 +392,7 @@ window.addEventListener('error', function (e) {
         font-size:10px;padding:2px 8px;border-radius:10px;font-weight:bold;
         background:rgba(231,20,20,.2);color:#e74c3c;
     }
-    .live-preview-header .lp-badge.active{background:rgba(109,178,0,.2);color:var(--green);}
+    .live-preview-header .lp-badge.active{background:rgba(119,189,29,.2);color:var(--green);}
     .live-preview-canvas-wrap{
         flex:1;background:#000;display:flex;align-items:center;justify-content:center;
         overflow:hidden;padding:8px;
@@ -635,7 +635,7 @@ window.addEventListener('error', function (e) {
             <input type="text" id="tickerText" placeholder="خبر عاجل: ... ★ خبر آخر: ..." />
           </div>
 
-          <div style="background:rgba(109,178,0,0.06);border:1px solid rgba(109,178,0,0.2);border-radius:10px;padding:12px;margin-bottom:14px;">
+          <div style="background:rgba(119,189,29,0.06);border:1px solid rgba(119,189,29,0.2);border-radius:10px;padding:12px;margin-bottom:14px;">
             <div style="font-size:12px;font-weight:bold;color:var(--green);margin-bottom:8px;">✨ توليد عناوين تلقائيًا بالذكاء الاصطناعي (Gemini)</div>
             <textarea id="headlineSummary" rows="2" placeholder="اكتب ملخصًا موجزًا للخبر أو الحدث، وسيصوغ لك الذكاء الاصطناعي عناوين احترافية جاهزة للشريط..."></textarea>
             <button type="button" class="btn-icon btn-primary" id="btnGenerateHeadlines" style="width:100%;justify-content:center;margin-top:6px;">✨ توليد العناوين وتعبئتها بالشريط</button>
@@ -722,7 +722,7 @@ window.addEventListener('error', function (e) {
           <button type="button" class="btn btn-secondary btn-sm" id="btnRemoveAudio" style="margin-top:8px;display:none;width:100%;">🗑️ إزالة الموسيقى</button>
 
           <!-- 🆕 التعديل الجديد: حقول تقطيع الموسيقى (Trim Start / Trim End) -->
-          <div class="field-group cols-3" style="margin-top:12px; background: rgba(109,178,0,0.05); padding:10px; border-radius:8px; border:1px solid rgba(109,178,0,0.2);">
+          <div class="field-group cols-3" style="margin-top:12px; background: rgba(119,189,29,0.05); padding:10px; border-radius:8px; border:1px solid rgba(119,189,29,0.2);">
             <div class="field"><label class="field-label">بداية الموسيقى (ث)</label><input type="number" id="audioTrimStart" value="0" min="0" step="0.5" title="من أي ثانية في الملف الصوتي تريد أن تبدأ الموسيقى؟" /></div>
             <div class="field"><label class="field-label">نهاية الموسيقى (ث)</label><input type="number" id="audioTrimEnd" value="0" min="0" step="0.5" title="عند أي ثانية تتوقف الموسيقى؟ (إذا كان 0 سيتم تشغيلها كاملة)" /></div>
             <div class="field" style="display:flex; justify-content:center; flex-direction:column;"><span style="font-size:10px; color:#888; line-height:1.4;">حدد متى تبدأ الموسيقى ومتى تنتهي داخل الملف الصوتي لتتناسب مع طول الفيديو الخاص بك.</span></div>
@@ -749,7 +749,7 @@ window.addEventListener('error', function (e) {
             <audio id="voicePlayer" controls style="width:100%;height:38px;margin-bottom:10px;"></audio>
 
             <!-- حقول تقطيع التسجيل الصوتي — مطابقة لحقول موسيقى الخلفية -->
-            <div class="field-group cols-3" style="margin-top:12px; background: rgba(109,178,0,0.05); padding:10px; border-radius:8px; border:1px solid rgba(109,178,0,0.2);">
+            <div class="field-group cols-3" style="margin-top:12px; background: rgba(119,189,29,0.05); padding:10px; border-radius:8px; border:1px solid rgba(119,189,29,0.2);">
               <div class="field"><label class="field-label">بداية التعليق (ث)</label><input type="number" id="voiceTrimStart" value="0" min="0" step="0.1" title="من أي ثانية في التسجيل تريد أن يبدأ التعليق؟" /></div>
               <div class="field"><label class="field-label">نهاية التعليق (ث)</label><input type="number" id="voiceTrimEnd" value="0" min="0" step="0.1" title="عند أي ثانية يتوقف التعليق؟ (إذا كان 0 سيتم تشغيله كاملاً)" /></div>
               <div class="field" style="display:flex; justify-content:center; flex-direction:column;"><span style="font-size:10px; color:#888; line-height:1.4;">حدد بداية ونهاية التسجيل لقص أي صمت أو سعال أو ضجيج زائد بدون إعادة التسجيل من جديد.</span></div>
@@ -791,7 +791,7 @@ window.addEventListener('error', function (e) {
           </div>
           <div id="ttsGenStatus" style="font-size:11px;margin-top:4px;"></div>
 
-          <div id="ttsVoiceStatus" style="display:none;margin-top:10px;padding:10px;background:rgba(109,178,0,0.08);border:1px solid rgba(109,178,0,0.2);border-radius:8px;font-size:11px;align-items:center;justify-content:space-between;gap:8px;">
+          <div id="ttsVoiceStatus" style="display:none;margin-top:10px;padding:10px;background:rgba(119,189,29,0.08);border:1px solid rgba(119,189,29,0.2);border-radius:8px;font-size:11px;align-items:center;justify-content:space-between;gap:8px;">
             <span>🎙️ يوجد تعليق صوتي معيّن حاليًا للمشروع (من التسجيل أو الذكاء الاصطناعي)</span>
             <button type="button" class="btn btn-secondary btn-sm" id="btnRemoveVoiceFromTts" style="flex-shrink:0;">🗑️ إزالة</button>
           </div>
@@ -1001,8 +1001,9 @@ window.addEventListener('error', function (e) {
             </div>
             <div class="field"><label class="field-label">الخط</label>
               <select id="defaultFontFamily">
+                <option value="IBM Plex Sans Arabic" selected>IBM Plex</option>
+                <option value="Readex Pro">Readex Pro</option>
                 <option value="Cairo">Cairo</option>
-                <option value="IBM Plex Sans Arabic">IBM Plex</option>
                 <option value="Tajawal">Tajawal</option>
                 <option value="Almarai">Almarai</option>
                 <option value="El Messiri">El Messiri</option>
@@ -1042,8 +1043,9 @@ window.addEventListener('error', function (e) {
             <div class="field"><label class="field-label">حجم النص (%)</label><input type="number" id="defaultNewsTextSize" value="2.4" min="1" max="15" step="0.1" /></div>
             <div class="field"><label class="field-label">الخط</label>
               <select id="defaultNewsFontFamily">
+                <option value="IBM Plex Sans Arabic" selected>IBM Plex</option>
+                <option value="Readex Pro">Readex Pro</option>
                 <option value="Cairo">Cairo</option>
-                <option value="IBM Plex Sans Arabic">IBM Plex</option>
                 <option value="Tajawal">Tajawal</option>
                 <option value="Almarai">Almarai</option>
                 <option value="El Messiri">El Messiri</option>
@@ -1845,6 +1847,12 @@ window.addEventListener('error', function (e) {
     //  • إصلاح: المعاينة الحية لم تكن تتحدث عند تغيير المقاس، ومعرّف مكرر لمدة المشروع.
     //  • إصلاح: مقاطع «تقطيع فيديو طويل» لم تكن تُعلِّم المشروع كغير محفوظ.
     //  • هيكلة: مصنع واحد لإنشاء العناصر، دالة واحدة لتغيير المقاس، قائمة واحدة لحقول حفظ المشروع.
+    // سجل التغييرات v6.5 (23 نوفمبر 2026):
+    //  • الخطوط: الصفحة تحمّل الخطوط التسعة كلها (أضيف Readex Pro)، وكان ستة منها في القائمة بلا ملف يُحمَّل.
+    //  • الخط الافتراضي من الهوية: IBM Plex Sans Arabic للنص على الفيديو والشريط، وReadex Pro للواجهة (بدل Cairo).
+    //    Cairo باقٍ في القائمة، والمشاريع المحفوظة به تُفتح كما هي.
+    //  • ensureFonts: تحميل صريح لكل خط مستعمل قبل التصدير والمعاينة (اللوحة لا تطلب الخط وحدها).
+    //  • الأخضر صار لون الهوية #77bd1d بدل #6db200.
     // سجل التغييرات v6.4 (22 نوفمبر 2026):
     //  • شاشة القفل: الصفحة غير المربوطة لا تعرض الأداة بل «افتحها من مربّعها في اللوحة المركزية».
     //  • استقبال الربط (#pe=) والقفل صارا في الملف المشترك tools/tools-link.js بدل نسخة في كل أداة.
@@ -1889,7 +1897,7 @@ window.addEventListener('error', function (e) {
     // سجل التغييرات v5.1:
     //  • إصلاح: إذا منع المتصفح التخزين المحلي داخل إطار اللوحة (حظر ملفات الطرف الثالث)، كانت الأداة
     //    تتوقف عند أول قراءة للإعدادات فلا يعمل زر ليلي/نهاري ولا ما بعده — صارت تعمل بذاكرة مؤقتة.
-    const APP_VERSION = 'S24News_Studio_v6.4';
+    const APP_VERSION = 'S24News_Studio_v6.5';
     let isExporting = false;
     let deleteItem; // تُعرَّف لاحقًا (كانت متغيرًا عامًّا ضمنيًا)
     const appVersionLabel = document.getElementById('appVersionLabel');
@@ -2669,7 +2677,7 @@ window.addEventListener('error', function (e) {
             showNewsLocation: document.getElementById('defaultShowNewsLocation')?.checked || false,
             newsTextColor:    document.getElementById('defaultNewsTextColor')?.value || '#ffffff',
             newsTextSize:     parseFloat(document.getElementById('defaultNewsTextSize')?.value) || 2.4,
-            newsFontFamily:   document.getElementById('defaultNewsFontFamily')?.value || 'Cairo',
+            newsFontFamily:   document.getElementById('defaultNewsFontFamily')?.value || 'IBM Plex Sans Arabic',
             newsFontStyle:    document.getElementById('defaultNewsFontStyle')?.value || 'bold',
             newsBgOpacity:    parseInt(document.getElementById('defaultNewsBgOpacity')?.value || 88) / 100,
             newsShadow:       parseInt(document.getElementById('defaultNewsShadow')?.value || 0)
@@ -3096,7 +3104,7 @@ window.addEventListener('error', function (e) {
         { value: 'bottom-center', label: 'أسفل وسط' },
         { value: 'bottom-left',   label: 'أسفل يسار' },
     ];
-    const fontOptions    = ['Cairo','IBM Plex Sans Arabic','Tajawal','Almarai','El Messiri','Changa','Aref Ruqaa','Lateef'];
+    const fontOptions    = ['IBM Plex Sans Arabic','Readex Pro','Cairo','Tajawal','Almarai','El Messiri','Changa','Aref Ruqaa','Lateef'];
 
     function renderMediaGrid() {
         const mediaGrid      = document.getElementById('mediaGrid');
@@ -3243,7 +3251,7 @@ window.addEventListener('error', function (e) {
                         {value:'auto',    label:'تلقائي حسب المقاس (موصى به)'},
                         {value:'cover',   label:'ملء الإطار بالكامل (قص تلقائي للزوائد)'},
                         {value:'contain', label:'احتواء كامل بلا قص + خلفية مموّهة'}
-                    ])) + "</select>\n                </div>\n            </div>\n\n            " + (item.type !== 'video' ? ("\n            <div class=\"detail-section\">\n                <div class=\"detail-section-title\">الحركة والانتقال</div>\n                <div class=\"detail-grid\">\n                    <div class=\"field\"><label class=\"field-label\">مدة العرض (ث)</label>\n                        <input type=\"number\" id=\"dp-duration\" value=\"" + (item.duration) + "\" min=\"0.5\" step=\"0.5\" /></div>\n                    <div class=\"field\"><label class=\"field-label\">Ken Burns</label>\n                        <select id=\"dp-kenburns\">" + (sel(item.kenBurns,Object.entries(kenBurnsOptions).map(([v,l])=>({value:v,label:l})))) + "</select></div>\n                    <div class=\"field\"><label class=\"field-label\">قوة الحركة (%)</label>\n                        <input type=\"number\" id=\"dp-intensity\" value=\"" + (item.kenBurnsIntensity) + "\" min=\"1\" max=\"50\" /></div>\n                    " + (!isLast?("\n                    <div class=\"field\"><label class=\"field-label\">الانتقال</label>\n                        <select id=\"dp-trans\">" + (sel(item.transitionType,transOptions)) + "</select></div>\n                    <div class=\"field\"><label class=\"field-label\">مدة الانتقال (ث)</label>\n                        <input type=\"number\" id=\"dp-transdur\" value=\"" + (item.transitionDuration) + "\" min=\"0.2\" step=\"0.1\" /></div>\n                    "):'') + "</div>\n            </div>") : ("\n            <div class=\"detail-section\">\n                <div class=\"detail-section-title\">✂️ تقطيع المقطع (تحديد البداية والنهاية)</div>\n                <div class=\"video-trim-bar\" id=\"dp-trimBar\">\n                    <div class=\"video-trim-fill\" id=\"dp-trimFill\" style=\"left:" + (fillLeftPct) + "%;width:" + (wpct) + "%;\"></div>\n                    <div class=\"trim-handle left\"  id=\"dp-trimL\" style=\"left:" + (lHPct) + "%;\">◀</div>\n                    <div class=\"trim-handle right\" id=\"dp-trimR\" style=\"left:" + (rHPct) + "%;\">▶</div>\n                    <div class=\"trim-scrub-time\" id=\"dp-trimScrub\"></div>\n                </div>\n                <div class=\"trim-ruler\" id=\"dp-trimRuler\"></div>\n                <div class=\"trim-times\">\n                    <span id=\"dp-trimStart\">▶ " + (fmtTime(item.trimStart)) + "</span>\n                    <span style=\"color:var(--green);\" id=\"dp-trimDur\">المقطع: " + (fmtTime(item.trimEnd-item.trimStart)) + "</span>\n                    <span id=\"dp-trimEnd\">" + (fmtTime(item.trimEnd)) + " ⏹</span>\n                </div>\n\n                <div class=\"detail-section-title\" style=\"margin-top:16px;\">🔍 شاشة المعاينة الحرة للفيديو</div>\n                <video id=\"dp-videoPreview\" src=\"" + (item.videoUrl) + "\" muted playsinline preload=\"metadata\"\n                       style=\"width:100%;max-height:150px;border-radius:8px;border:1px solid var(--border);background:#000;display:block;margin-top:8px;\"></video>\n\n                <input type=\"range\" id=\"dp-previewSeek\" value=\"0\" step=\"0.01\" style=\"width:100%; margin:8px 0; accent-color: var(--blue);\" />\n                <div style=\"display:flex; justify-content:space-between; font-size:10px; color:#888; margin-top:-6px; margin-bottom:8px;\">\n                    <span id=\"dp-seekTot\">" + (fmtTime(dur||0)) + "</span>\n                    <span id=\"dp-seekCur\">0:00</span>\n                </div>\n\n                <div style=\"display:flex;gap:8px;\">\n                    <button class=\"mute-btn\" id=\"dp-play\" style=\"flex:1;\">▶️ تشغيل المعاينة</button>\n                    <button class=\"mute-btn\" id=\"dp-stop\" style=\"flex:1;\">⏹ إيقاف المعاينة</button>\n                </div>\n            </div>\n\n            <div class=\"detail-section\">\n                <div class=\"detail-section-title\">🔊 الصوت والموسيقى</div>\n                <div class=\"volume-row\" style=\"gap:8px;\">\n                    <label style=\"font-size:11px;min-width:100px;\">صوت الفيديو الأساسي</label>\n                    <input type=\"range\" id=\"dp-vol\" min=\"0\" max=\"200\" value=\"" + (Math.round(item.videoVolume*100)) + "\" style=\"flex:1;accent-color:var(--green);\" />\n                    <span id=\"dp-volLabel\" style=\"font-size:11px;color:var(--green);min-width:36px;\">" + (Math.round(item.videoVolume*100)) + "%</span>\n                    <button class=\"mute-btn " + (item.videoMuted?'muted':'') + "\" id=\"dp-mute\">" + (item.videoMuted?'🔇':'🔊') + "</button>\n                </div>\n                <div class=\"volume-row\" style=\"gap:8px; margin-top:10px; background: rgba(41,128,185,0.1); padding: 8px; border-radius: 8px; border: 1px solid rgba(41,128,185,0.3);\">\n                    <label style=\"font-size:11px;min-width:100px;color:#5dade2;\" title=\"سيتم خفض الموسيقى الخلفية إلى هذه النسبة أثناء عرض هذا المقطع\">🎧 موسيقى الخلفية</label>\n                    <input type=\"range\" id=\"dp-duckVol\" min=\"0\" max=\"100\" value=\"" + (item.duckVolume !== undefined ? Math.round(item.duckVolume*100) : 15) + "\" style=\"flex:1;accent-color:var(--blue);\" />\n                    <span id=\"dp-duckLabel\" style=\"font-size:11px;color:var(--blue);min-width:36px;\">" + (item.duckVolume !== undefined ? Math.round(item.duckVolume*100) : 15) + "%</span>\n                </div>\n            </div>\n\n            <div class=\"detail-section\">\n                <div class=\"detail-section-title\">الانتقال والطبقات</div>\n                <div class=\"detail-grid\" style=\"margin-bottom:8px;\">\n                    " + (!isLast?("\n                    <div class=\"field\"><label class=\"field-label\">تأثير</label><select id=\"dp-trans\">" + (sel(item.transitionType,transOptions)) + "</select></div>\n                    <div class=\"field\"><label class=\"field-label\">المدة (ث)</label><input type=\"number\" id=\"dp-transdur\" value=\"" + (item.transitionDuration) + "\" min=\"0.2\" step=\"0.1\" /></div>\n                    "):'<div style="color:#888;font-size:12px;">آخر عنصر — لا انتقال</div>') + "\n                </div>\n                <label style=\"display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;margin-bottom:6px;\">\n                    <input type=\"checkbox\" id=\"dp-showText\" " + (item.showTextOverlay?'checked':'') + " /> عرض النص فوق الفيديو\n                </label>\n                <label style=\"display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;\">\n                    <input type=\"checkbox\" id=\"dp-showLogo\" " + (item.showLogo?'checked':'') + " /> عرض الشعار\n                </label>\n            </div>\n            ")) + "\n\n            <div class=\"detail-section\" id=\"dp-textSection\" " + ((item.type==='video'&&!item.showTextOverlay)?'style="opacity:.4;pointer-events:none;"':'') + ">\n                <div class=\"detail-section-title\">✍️ نص الخبر</div>\n                <div class=\"field\" style=\"margin-bottom:8px;\"><label class=\"field-label\">النص</label>\n                    <input type=\"text\" id=\"dp-text\" value=\"" + (ts.text.replace(/\x22/g,'&quot;')) + "\" placeholder=\"اكتب نص الخبر هنا...\" /></div>\n                <div class=\"detail-grid\">\n                    <div class=\"field\"><label class=\"field-label\">تأثير</label>\n                        <select id=\"dp-textEffect\">\n                            <option value=\"typewriter\"" + (ts.effect==='typewriter'?' selected':'') + ">آلة كاتبة</option>\n                            <option value=\"fade\"" + (ts.effect==='fade'?' selected':'') + ">تلاشي</option>\n                            <option value=\"none\"" + (ts.effect==='none'?' selected':'') + ">فوري</option>\n                        </select></div>\n                    <div class=\"field\"><label class=\"field-label\">سرعة الظهور (ث)</label><input type=\"number\" id=\"dp-textEffectSpeed\" value=\"" + (ts.effectSpeed || 1.5) + "\" min=\"0.2\" max=\"5\" step=\"0.1\" /></div>\n                    <div class=\"field\"><label class=\"field-label\">اللون</label><input type=\"color\" id=\"dp-textColor\" value=\"" + (ts.color) + "\" /></div>\n                    <div class=\"field\"><label class=\"field-label\">الحجم (%)</label><input type=\"number\" id=\"dp-textSize\" value=\"" + (ts.size) + "\" min=\"1\" max=\"15\" step=\"0.5\" /></div>\n                    <div class=\"field\"><label class=\"field-label\">الموضع</label><select id=\"dp-textPos\">" + (sel(ts.position,posOptions)) + "</select></div>\n                    <div class=\"field\"><label class=\"field-label\">الخط</label><select id=\"dp-textFont\">" + (sel(ts.fontFamily,fontOptions)) + "</select></div>\n                </div>\n            </div>\n\n            <div class=\"detail-section\">\n                <div class=\"detail-section-title\">🏷️ تصنيف الخبر (اختياري)</div>\n                <div class=\"detail-grid\">\n                    <div class=\"field\"><label class=\"field-label\">🏷️ نوع الخبر</label>\n                        <input type=\"text\" id=\"dp-newsType\" value=\"" + ((item.newsType||'').replace(/\x22/g,'&quot;')) + "\" placeholder=\"مثال: سياسة، رياضة، عاجل...\" /></div>\n                    <div class=\"field\" style=\"display:flex;align-items:flex-end;padding-bottom:9px;\">\n                        <label style=\"display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;color:#aaa;\">\n                            <input type=\"checkbox\" id=\"dp-showNewsType\" " + (item.showNewsType?'checked':'') + " /> إظهار على الفيديو\n                        </label></div>\n                    <div class=\"field\"><label class=\"field-label\">📍 مكان الخبر</label>\n                        <input type=\"text\" id=\"dp-newsLocation\" value=\"" + ((item.newsLocation||'').replace(/\x22/g,'&quot;')) + "\" placeholder=\"مثال: دمشق، حلب...\" /></div>\n                    <div class=\"field\" style=\"display:flex;align-items:flex-end;padding-bottom:9px;\">\n                        <label style=\"display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;color:#aaa;\">\n                            <input type=\"checkbox\" id=\"dp-showNewsLocation\" " + (item.showNewsLocation?'checked':'') + " /> إظهار على الفيديو\n                        </label></div>\n                    <div class=\"field\"><label class=\"field-label\">لون النص</label><input type=\"color\" id=\"dp-newsTextColor\" value=\"" + (item.newsTextColor || '#ffffff') + "\" /></div>\n                    <div class=\"field\"><label class=\"field-label\">حجم النص (%)</label><input type=\"number\" id=\"dp-newsTextSize\" value=\"" + (item.newsTextSize || 2.4) + "\" min=\"1\" max=\"15\" step=\"0.1\" /></div>\n                    <div class=\"field\"><label class=\"field-label\">الخط</label><select id=\"dp-newsFontFamily\">" + (sel(item.newsFontFamily || 'Cairo', fontOptions)) + "</select></div>\n                    <div class=\"field\"><label class=\"field-label\">نمط الخط</label>\n                        <select id=\"dp-newsFontStyle\">\n                            <option value=\"bold\"" + ((item.newsFontStyle||'bold')==='bold'?' selected':'') + ">غامق</option>\n                            <option value=\"normal\"" + (item.newsFontStyle==='normal'?' selected':'') + ">عادي</option>\n                            <option value=\"italic\"" + (item.newsFontStyle==='italic'?' selected':'') + ">مائل</option>\n                        </select></div>\n                    <div class=\"field\"><label class=\"field-label\">شفافية الخلفية (%)</label><input type=\"number\" id=\"dp-newsBgOpacity\" value=\"" + ((typeof item.newsBgOpacity==='number')?Math.round(item.newsBgOpacity*100):88) + "\" min=\"0\" max=\"100\" /></div>\n                    <div class=\"field\"><label class=\"field-label\">ظل النص</label><input type=\"number\" id=\"dp-newsShadow\" value=\"" + (item.newsShadow || 0) + "\" min=\"0\" max=\"20\" /></div>\n                </div>\n            </div>\n        ");
+                    ])) + "</select>\n                </div>\n            </div>\n\n            " + (item.type !== 'video' ? ("\n            <div class=\"detail-section\">\n                <div class=\"detail-section-title\">الحركة والانتقال</div>\n                <div class=\"detail-grid\">\n                    <div class=\"field\"><label class=\"field-label\">مدة العرض (ث)</label>\n                        <input type=\"number\" id=\"dp-duration\" value=\"" + (item.duration) + "\" min=\"0.5\" step=\"0.5\" /></div>\n                    <div class=\"field\"><label class=\"field-label\">Ken Burns</label>\n                        <select id=\"dp-kenburns\">" + (sel(item.kenBurns,Object.entries(kenBurnsOptions).map(([v,l])=>({value:v,label:l})))) + "</select></div>\n                    <div class=\"field\"><label class=\"field-label\">قوة الحركة (%)</label>\n                        <input type=\"number\" id=\"dp-intensity\" value=\"" + (item.kenBurnsIntensity) + "\" min=\"1\" max=\"50\" /></div>\n                    " + (!isLast?("\n                    <div class=\"field\"><label class=\"field-label\">الانتقال</label>\n                        <select id=\"dp-trans\">" + (sel(item.transitionType,transOptions)) + "</select></div>\n                    <div class=\"field\"><label class=\"field-label\">مدة الانتقال (ث)</label>\n                        <input type=\"number\" id=\"dp-transdur\" value=\"" + (item.transitionDuration) + "\" min=\"0.2\" step=\"0.1\" /></div>\n                    "):'') + "</div>\n            </div>") : ("\n            <div class=\"detail-section\">\n                <div class=\"detail-section-title\">✂️ تقطيع المقطع (تحديد البداية والنهاية)</div>\n                <div class=\"video-trim-bar\" id=\"dp-trimBar\">\n                    <div class=\"video-trim-fill\" id=\"dp-trimFill\" style=\"left:" + (fillLeftPct) + "%;width:" + (wpct) + "%;\"></div>\n                    <div class=\"trim-handle left\"  id=\"dp-trimL\" style=\"left:" + (lHPct) + "%;\">◀</div>\n                    <div class=\"trim-handle right\" id=\"dp-trimR\" style=\"left:" + (rHPct) + "%;\">▶</div>\n                    <div class=\"trim-scrub-time\" id=\"dp-trimScrub\"></div>\n                </div>\n                <div class=\"trim-ruler\" id=\"dp-trimRuler\"></div>\n                <div class=\"trim-times\">\n                    <span id=\"dp-trimStart\">▶ " + (fmtTime(item.trimStart)) + "</span>\n                    <span style=\"color:var(--green);\" id=\"dp-trimDur\">المقطع: " + (fmtTime(item.trimEnd-item.trimStart)) + "</span>\n                    <span id=\"dp-trimEnd\">" + (fmtTime(item.trimEnd)) + " ⏹</span>\n                </div>\n\n                <div class=\"detail-section-title\" style=\"margin-top:16px;\">🔍 شاشة المعاينة الحرة للفيديو</div>\n                <video id=\"dp-videoPreview\" src=\"" + (item.videoUrl) + "\" muted playsinline preload=\"metadata\"\n                       style=\"width:100%;max-height:150px;border-radius:8px;border:1px solid var(--border);background:#000;display:block;margin-top:8px;\"></video>\n\n                <input type=\"range\" id=\"dp-previewSeek\" value=\"0\" step=\"0.01\" style=\"width:100%; margin:8px 0; accent-color: var(--blue);\" />\n                <div style=\"display:flex; justify-content:space-between; font-size:10px; color:#888; margin-top:-6px; margin-bottom:8px;\">\n                    <span id=\"dp-seekTot\">" + (fmtTime(dur||0)) + "</span>\n                    <span id=\"dp-seekCur\">0:00</span>\n                </div>\n\n                <div style=\"display:flex;gap:8px;\">\n                    <button class=\"mute-btn\" id=\"dp-play\" style=\"flex:1;\">▶️ تشغيل المعاينة</button>\n                    <button class=\"mute-btn\" id=\"dp-stop\" style=\"flex:1;\">⏹ إيقاف المعاينة</button>\n                </div>\n            </div>\n\n            <div class=\"detail-section\">\n                <div class=\"detail-section-title\">🔊 الصوت والموسيقى</div>\n                <div class=\"volume-row\" style=\"gap:8px;\">\n                    <label style=\"font-size:11px;min-width:100px;\">صوت الفيديو الأساسي</label>\n                    <input type=\"range\" id=\"dp-vol\" min=\"0\" max=\"200\" value=\"" + (Math.round(item.videoVolume*100)) + "\" style=\"flex:1;accent-color:var(--green);\" />\n                    <span id=\"dp-volLabel\" style=\"font-size:11px;color:var(--green);min-width:36px;\">" + (Math.round(item.videoVolume*100)) + "%</span>\n                    <button class=\"mute-btn " + (item.videoMuted?'muted':'') + "\" id=\"dp-mute\">" + (item.videoMuted?'🔇':'🔊') + "</button>\n                </div>\n                <div class=\"volume-row\" style=\"gap:8px; margin-top:10px; background: rgba(41,128,185,0.1); padding: 8px; border-radius: 8px; border: 1px solid rgba(41,128,185,0.3);\">\n                    <label style=\"font-size:11px;min-width:100px;color:#5dade2;\" title=\"سيتم خفض الموسيقى الخلفية إلى هذه النسبة أثناء عرض هذا المقطع\">🎧 موسيقى الخلفية</label>\n                    <input type=\"range\" id=\"dp-duckVol\" min=\"0\" max=\"100\" value=\"" + (item.duckVolume !== undefined ? Math.round(item.duckVolume*100) : 15) + "\" style=\"flex:1;accent-color:var(--blue);\" />\n                    <span id=\"dp-duckLabel\" style=\"font-size:11px;color:var(--blue);min-width:36px;\">" + (item.duckVolume !== undefined ? Math.round(item.duckVolume*100) : 15) + "%</span>\n                </div>\n            </div>\n\n            <div class=\"detail-section\">\n                <div class=\"detail-section-title\">الانتقال والطبقات</div>\n                <div class=\"detail-grid\" style=\"margin-bottom:8px;\">\n                    " + (!isLast?("\n                    <div class=\"field\"><label class=\"field-label\">تأثير</label><select id=\"dp-trans\">" + (sel(item.transitionType,transOptions)) + "</select></div>\n                    <div class=\"field\"><label class=\"field-label\">المدة (ث)</label><input type=\"number\" id=\"dp-transdur\" value=\"" + (item.transitionDuration) + "\" min=\"0.2\" step=\"0.1\" /></div>\n                    "):'<div style="color:#888;font-size:12px;">آخر عنصر — لا انتقال</div>') + "\n                </div>\n                <label style=\"display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;margin-bottom:6px;\">\n                    <input type=\"checkbox\" id=\"dp-showText\" " + (item.showTextOverlay?'checked':'') + " /> عرض النص فوق الفيديو\n                </label>\n                <label style=\"display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;\">\n                    <input type=\"checkbox\" id=\"dp-showLogo\" " + (item.showLogo?'checked':'') + " /> عرض الشعار\n                </label>\n            </div>\n            ")) + "\n\n            <div class=\"detail-section\" id=\"dp-textSection\" " + ((item.type==='video'&&!item.showTextOverlay)?'style="opacity:.4;pointer-events:none;"':'') + ">\n                <div class=\"detail-section-title\">✍️ نص الخبر</div>\n                <div class=\"field\" style=\"margin-bottom:8px;\"><label class=\"field-label\">النص</label>\n                    <input type=\"text\" id=\"dp-text\" value=\"" + (ts.text.replace(/\x22/g,'&quot;')) + "\" placeholder=\"اكتب نص الخبر هنا...\" /></div>\n                <div class=\"detail-grid\">\n                    <div class=\"field\"><label class=\"field-label\">تأثير</label>\n                        <select id=\"dp-textEffect\">\n                            <option value=\"typewriter\"" + (ts.effect==='typewriter'?' selected':'') + ">آلة كاتبة</option>\n                            <option value=\"fade\"" + (ts.effect==='fade'?' selected':'') + ">تلاشي</option>\n                            <option value=\"none\"" + (ts.effect==='none'?' selected':'') + ">فوري</option>\n                        </select></div>\n                    <div class=\"field\"><label class=\"field-label\">سرعة الظهور (ث)</label><input type=\"number\" id=\"dp-textEffectSpeed\" value=\"" + (ts.effectSpeed || 1.5) + "\" min=\"0.2\" max=\"5\" step=\"0.1\" /></div>\n                    <div class=\"field\"><label class=\"field-label\">اللون</label><input type=\"color\" id=\"dp-textColor\" value=\"" + (ts.color) + "\" /></div>\n                    <div class=\"field\"><label class=\"field-label\">الحجم (%)</label><input type=\"number\" id=\"dp-textSize\" value=\"" + (ts.size) + "\" min=\"1\" max=\"15\" step=\"0.5\" /></div>\n                    <div class=\"field\"><label class=\"field-label\">الموضع</label><select id=\"dp-textPos\">" + (sel(ts.position,posOptions)) + "</select></div>\n                    <div class=\"field\"><label class=\"field-label\">الخط</label><select id=\"dp-textFont\">" + (sel(ts.fontFamily,fontOptions)) + "</select></div>\n                </div>\n            </div>\n\n            <div class=\"detail-section\">\n                <div class=\"detail-section-title\">🏷️ تصنيف الخبر (اختياري)</div>\n                <div class=\"detail-grid\">\n                    <div class=\"field\"><label class=\"field-label\">🏷️ نوع الخبر</label>\n                        <input type=\"text\" id=\"dp-newsType\" value=\"" + ((item.newsType||'').replace(/\x22/g,'&quot;')) + "\" placeholder=\"مثال: سياسة، رياضة، عاجل...\" /></div>\n                    <div class=\"field\" style=\"display:flex;align-items:flex-end;padding-bottom:9px;\">\n                        <label style=\"display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;color:#aaa;\">\n                            <input type=\"checkbox\" id=\"dp-showNewsType\" " + (item.showNewsType?'checked':'') + " /> إظهار على الفيديو\n                        </label></div>\n                    <div class=\"field\"><label class=\"field-label\">📍 مكان الخبر</label>\n                        <input type=\"text\" id=\"dp-newsLocation\" value=\"" + ((item.newsLocation||'').replace(/\x22/g,'&quot;')) + "\" placeholder=\"مثال: دمشق، حلب...\" /></div>\n                    <div class=\"field\" style=\"display:flex;align-items:flex-end;padding-bottom:9px;\">\n                        <label style=\"display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;color:#aaa;\">\n                            <input type=\"checkbox\" id=\"dp-showNewsLocation\" " + (item.showNewsLocation?'checked':'') + " /> إظهار على الفيديو\n                        </label></div>\n                    <div class=\"field\"><label class=\"field-label\">لون النص</label><input type=\"color\" id=\"dp-newsTextColor\" value=\"" + (item.newsTextColor || '#ffffff') + "\" /></div>\n                    <div class=\"field\"><label class=\"field-label\">حجم النص (%)</label><input type=\"number\" id=\"dp-newsTextSize\" value=\"" + (item.newsTextSize || 2.4) + "\" min=\"1\" max=\"15\" step=\"0.1\" /></div>\n                    <div class=\"field\"><label class=\"field-label\">الخط</label><select id=\"dp-newsFontFamily\">" + (sel(item.newsFontFamily || 'IBM Plex Sans Arabic', fontOptions)) + "</select></div>\n                    <div class=\"field\"><label class=\"field-label\">نمط الخط</label>\n                        <select id=\"dp-newsFontStyle\">\n                            <option value=\"bold\"" + ((item.newsFontStyle||'bold')==='bold'?' selected':'') + ">غامق</option>\n                            <option value=\"normal\"" + (item.newsFontStyle==='normal'?' selected':'') + ">عادي</option>\n                            <option value=\"italic\"" + (item.newsFontStyle==='italic'?' selected':'') + ">مائل</option>\n                        </select></div>\n                    <div class=\"field\"><label class=\"field-label\">شفافية الخلفية (%)</label><input type=\"number\" id=\"dp-newsBgOpacity\" value=\"" + ((typeof item.newsBgOpacity==='number')?Math.round(item.newsBgOpacity*100):88) + "\" min=\"0\" max=\"100\" /></div>\n                    <div class=\"field\"><label class=\"field-label\">ظل النص</label><input type=\"number\" id=\"dp-newsShadow\" value=\"" + (item.newsShadow || 0) + "\" min=\"0\" max=\"20\" /></div>\n                </div>\n            </div>\n        ");
 
         document.getElementById('dpClose').addEventListener('click', closeDetail);
 
@@ -3825,7 +3833,7 @@ window.addEventListener('error', function (e) {
 
         const textColor  = item.newsTextColor  || '#ffffff';
         const textSizePct= (typeof item.newsTextSize === 'number' && item.newsTextSize > 0) ? item.newsTextSize : 2.4;
-        const fontFamily = item.newsFontFamily || 'Cairo';
+        const fontFamily = item.newsFontFamily || 'IBM Plex Sans Arabic';
         const fontStyleV = item.newsFontStyle  || 'bold';
         const bgOpacity  = (typeof item.newsBgOpacity === 'number') ? item.newsBgOpacity : 0.88;
         const shadowAmt  = (typeof item.newsShadow === 'number') ? item.newsShadow : 0;
@@ -4043,7 +4051,7 @@ window.addEventListener('error', function (e) {
         ctx.rect(0, yPos, OUT_W, tickerH);
         ctx.clip();
 
-        ctx.font         = ("bold " + (fontSize) + "px \"Cairo\", sans-serif");
+        ctx.font         = ("bold " + (fontSize) + "px \"IBM Plex Sans Arabic\", sans-serif");
         ctx.direction    = 'ltr';
         ctx.textAlign    = 'left';
         ctx.textBaseline = 'middle';
@@ -4308,11 +4316,39 @@ window.addEventListener('error', function (e) {
     // بقيت معرّفة (تُستخدم بأماكن أخرى — stopAllLoops و lpStart) تفاديًا لأي خطر تعديل غير ضروري.
 
     // يرجع بعد انتهاء الحفظ فعليًا: 'downloaded' | 'error'
+    // v6.5: اللوحة (canvas) لا تطلب ملف الخط من تلقاء نفسها، فكان الفيديو يُرسم بخط بديل لأي خط لم يظهر
+    // بعد في الصفحة. هنا نحمّل صراحةً كل خط مستعمل في المشروع (وزنا 400 و700) قبل التصدير والمعاينة،
+    // ومع كل تغيير لقائمة خط. مهلة 8 ثوانٍ كي لا يتعلّق التصدير إن انقطع الاتصال (يُرسم حينها بالبديل).
+    function usedFontFamilies() {
+        const set = new Set(['IBM Plex Sans Arabic', 'Readex Pro',
+            document.getElementById('defaultFontFamily')?.value,
+            document.getElementById('defaultNewsFontFamily')?.value]);
+        imageItems.forEach(it => {
+            if (it.textSettings && it.textSettings.fontFamily) set.add(it.textSettings.fontFamily);
+            if (it.newsFontFamily) set.add(it.newsFontFamily);
+        });
+        set.delete(undefined); set.delete('');
+        return [...set];
+    }
+    async function ensureFonts() {
+        if (!document.fonts || !document.fonts.load) return;
+        const jobs = [];
+        usedFontFamilies().forEach(f => ['400', '700'].forEach(w =>
+            jobs.push(document.fonts.load(w + ' 40px "' + f + '"', 'سوريا 24').catch(() => null))));
+        await Promise.race([Promise.all(jobs), new Promise(r => setTimeout(r, 8000))]);
+    }
+    document.addEventListener('change', e => {
+        const t = e.target;
+        if (t && t.tagName === 'SELECT' && /Font(Family)?$/.test(t.id)) ensureFonts();
+    });
+    ensureFonts();
+
     async function generateVideo(opts = {}) {
         if (!imageItems.length) { alert('ارفع صوراً أولاً!'); return 'error'; }
         if (isExporting) return 'error';
         isExporting = true;
         try {
+            await ensureFonts();
             // ⚡ v6.0: «MP4 سريع» أولاً؛ أي فشل قبل اكتمال الملف ⇒ المحرك التقليدي مع ذكر السبب
             if (document.getElementById('exportFormat').value === 'mp4-attempt') {
                 const tag = opts.tag ? (" " + (opts.tag) + "") : '';
@@ -4785,7 +4821,6 @@ window.addEventListener('error', function (e) {
             output.addAudioTrack(audioSource);
             await output.start();
 
-            if (document.fonts && document.fonts.ready) { try { await document.fonts.ready; } catch(e) {} }
             tickerOffset = 0;
             lastTickerTime = null;
             lastActiveCueIndex = -1;
@@ -5376,7 +5411,7 @@ window.addEventListener('error', function (e) {
                     showNewsLocation:   item.showNewsLocation || false,
                     newsTextColor:      item.newsTextColor || '#ffffff',
                     newsTextSize:       item.newsTextSize || 2.4,
-                    newsFontFamily:     item.newsFontFamily || 'Cairo',
+                    newsFontFamily:     item.newsFontFamily || 'IBM Plex Sans Arabic',
                     newsFontStyle:      item.newsFontStyle || 'bold',
                     newsBgOpacity:      (typeof item.newsBgOpacity === 'number') ? item.newsBgOpacity : 0.88,
                     newsShadow:         item.newsShadow || 0
@@ -5461,7 +5496,7 @@ window.addEventListener('error', function (e) {
             lpCtx.fillStyle = '#111';
             lpCtx.fillRect(0, 0, lpCanvas.width, lpCanvas.height);
             lpCtx.fillStyle = '#444';
-            lpCtx.font = '14px Cairo, sans-serif';
+            lpCtx.font = '14px "Readex Pro", sans-serif';
             lpCtx.textAlign = 'center';
             lpCtx.fillText('أضف صوراً أو فيديوهات', lpCanvas.width / 2, lpCanvas.height / 2);
             return;
@@ -5489,7 +5524,7 @@ window.addEventListener('error', function (e) {
             lpCtx.fillRect(W * 0.86, H * 0.45, W * 0.14, H * 0.37); // أزرار الإعجاب/المشاركة
         }
         // الإطار الآمن للعناوين (5%)
-        lpCtx.strokeStyle = 'rgba(109,178,0,0.9)';
+        lpCtx.strokeStyle = 'rgba(119,189,29,0.9)';
         lpCtx.lineWidth = Math.max(1, Math.round(2 * k * OUT_W / 1080));
         lpCtx.setLineDash([6, 4]);
         const m = Math.min(W, H) * 0.05;
@@ -5645,6 +5680,7 @@ window.addEventListener('error', function (e) {
         if (!imageItems.length) { alert('أضف صوراً أو فيديوهات أولاً!'); return; }
         if (isExporting) { statusDiv.textContent = '⏳ انتظر انتهاء التصدير قبل تشغيل المعاينة.'; return; }
         if (lpRunning) return;
+        await ensureFonts();
 
         const isResume = lpFrameIdx > 0;
         const resumeFrameIdx = lpFrameIdx;
@@ -5847,7 +5883,7 @@ window.addEventListener('error', function (e) {
     lpCtx.fillStyle = '#111';
     lpCtx.fillRect(0, 0, lpCanvas.width, lpCanvas.height);
     lpCtx.fillStyle = '#333';
-    lpCtx.font = '13px Cairo, sans-serif';
+    lpCtx.font = '13px "Readex Pro", sans-serif';
     lpCtx.textAlign = 'center';
     lpCtx.fillText('أضف وسائط ثم اضغط ▶ تشغيل', lpCanvas.width/2, lpCanvas.height/2);
 
