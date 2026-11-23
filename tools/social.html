@@ -42,6 +42,9 @@ window.addEventListener('error', function (e) {
      شارة النوع لها حدّ عرض؛ وإن لم يتسع النص رغم التصغير تظهر ⚠️ فوق المعاينة وفي رسالة التصدير دفعة واحدة.
    - التباين: النص يصير داكناً تلقائياً على الألوان الفاتحة (ومنها #77bd1d) بدل أبيض لا يُقرأ.
    - عبارة «📸 أضف صورة» تظهر في المعاينة فقط، لا داخل الصورة المنزَّلة.
+  v1.5 (23 نوفمبر 2026): خطّان منفصلان — «خط العنوان» للعنوان والكلمة البارزة وشارة النوع (افتراضياً IBM Plex Sans Arabic)،
+   و«خط النص» للسطر الثاني والتذييل (افتراضياً Readex Pro)، كما في القالب (--font-title و--font-main).
+   وكل نص يُرسم بالوزن نفسه الذي قيس به (كان السطر الثاني يُقاس بـ600 ويُرسم بـ800، والعنوان الكبير يُقاس بـ800 ويُرسم بـ900).
 -->
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Readex+Pro:wght@400;500;600;700&family=Cairo:wght@400;600;700;900&family=Tajawal:wght@500;700;800;900&family=Almarai:wght@400;700;800&family=Reem+Kufi:wght@500;700&family=Amiri:wght@700&display=swap" rel="stylesheet">
 <style>
@@ -158,12 +161,13 @@ input[type=range],input[type=checkbox]{accent-color:var(--acc)}  /* v1.3: الم
         <label class="f">الوسم أو الحساب<input class="inp" id="handle" placeholder="@Syria24News" dir="ltr"></label>
       </div>
       <div class="row2">
-        <label class="f">الخط<select class="inp" id="font">
+        <label class="f">خط العنوان<select class="inp" id="font" title="العنوان والكلمة البارزة وشارة النوع">
           <option value="IBM Plex Sans Arabic">IBM Plex Sans Arabic</option><option value="Readex Pro">Readex Pro</option>
           <option value="Cairo">Cairo</option><option value="Tajawal">Tajawal</option><option value="Almarai">Almarai</option>
           <option value="Reem Kufi">Reem Kufi</option><option value="Amiri">Amiri</option></select></label>
-        <label class="f">حجم الخط<div class="range" style="margin:0"><input type="range" id="fscale" min="70" max="140" value="100"><span id="fscaleV">100%</span></div></label>
+        <label class="f">خط النص<select class="inp" id="font2" title="السطر الثاني والتذييل (المصدر والتاريخ والحساب)"></select></label>
       </div>
+      <label class="f">حجم الخط<div class="range" style="margin:0"><input type="range" id="fscale" min="70" max="140" value="100"><span id="fscaleV">100%</span></div></label>
       <label class="check"><input type="checkbox" id="showDate"> إظهار التاريخ</label>
     </div></div>
 
@@ -204,7 +208,7 @@ input[type=range],input[type=checkbox]{accent-color:var(--acc)}  /* v1.3: الم
 <script>
 (function () {
   'use strict';
-  var VERSION = 'S24News_Social_v1.4';
+  var VERSION = 'S24News_Social_v1.5';
 
   /* ═══ المقاسات — نفس مقاسات معالج الصور والاستوديو ═══ */
   var SIZES = [
@@ -245,7 +249,7 @@ input[type=range],input[type=checkbox]{accent-color:var(--acc)}  /* v1.3: الم
   var S = {
     size: 'x', type: 'breaking', typeLabel: '', style: 'curve', accent: '',  /* typeLabel: نوع يكتبه المستخدم بنفسه */
     kicker: '', title: '', sub: '', credit: '', handle: '@Syria24News',
-    font: 'IBM Plex Sans Arabic', fscale: 100,  /* v1.3: خط الهوية بدل Cairo (يبقى خياراً) */ showDate: false,
+    font: 'IBM Plex Sans Arabic', font2: 'Readex Pro', fscale: 100,  /* v1.5: font للعنوان، font2 للنص (كما في القالب: --font-title و--font-main) */ showDate: false,
     logoPos: 'tl', logoId: '', site: 'syria24.news', showSite: true,  /* logoId: الشعار المختار من مكتبة Drive ('' = الشعار النصي) */
     zoom: 100, shade: 25, panX: 0, panY: 0, batch: ['x', 'fb', 'ig', 'story']
   };
@@ -279,7 +283,8 @@ input[type=range],input[type=checkbox]{accent-color:var(--acc)}  /* v1.3: الم
   /* ═══ النص العربي: التفاف وملاءمة تلقائية ═══ */
   var CUT = false;      /* v1.4: يُرفع إن اضطر الرسم إلى قطع نص أو لم يتسع في مساحته — فتظهر ⚠️ فوق المعاينة */
   var PREVIEW = false;  /* الرسم على المعاينة (لا التصدير): عبارة «أضف صورة» تظهر هنا فقط */
-  function fontStr(w, px) { return w + ' ' + Math.round(px) + 'px "' + S.font + '", "IBM Plex Sans Arabic", Tahoma, sans-serif'; }
+  /* fam: اسم الخط — الافتراضي خط العنوان (S.font)؛ السطر الثاني والتذييل يمرّران خط النص (S.font2) */
+  function fontStr(w, px, fam) { return w + ' ' + Math.round(px) + 'px "' + (fam || S.font) + '", "IBM Plex Sans Arabic", Tahoma, sans-serif'; }
   /* كلمة أطول من السطر نفسه (رابط أو وسم طويل) تُقسم على أكثر من سطر بدل أن تخرج عن الحافة */
   function splitLong(w, maxW) {
     if (ctx.measureText(w).width <= maxW) return [w];
@@ -303,14 +308,14 @@ input[type=range],input[type=checkbox]{accent-color:var(--acc)}  /* v1.3: الم
     return out;
   }
   /* يصغّر الخط حتى يتسع النص في عدد الأسطر المسموح؛ وإن لم يتسع عند أصغر حجم يُقطع بـ«…» (cut) */
-  function fit(text, weight, startPx, minPx, maxW, maxLines) {
+  function fit(text, weight, startPx, minPx, maxW, maxLines, fam) {
     var px = startPx, lines;
     for (; px >= minPx; px -= Math.max(1, px * 0.04)) {
-      ctx.font = fontStr(weight, px);
+      ctx.font = fontStr(weight, px, fam);
       lines = wrap(text, maxW);
       if (lines.length <= maxLines) break;
     }
-    ctx.font = fontStr(weight, px);
+    ctx.font = fontStr(weight, px, fam);
     lines = wrap(text, maxW);
     var cut = false;
     if (lines.length > maxLines) {
@@ -320,7 +325,7 @@ input[type=range],input[type=checkbox]{accent-color:var(--acc)}  /* v1.3: الم
       while (l && ctx.measureText(l + '…').width > maxW) l = l.slice(0, -1);
       lines[maxLines - 1] = l.replace(/\s+$/, '') + '…';
     }
-    return { px: px, lines: lines, lh: px * 1.45, cut: cut };
+    return { px: px, lines: lines, lh: px * 1.45, cut: cut, fam: fam, w: weight };
   }
   function drawLines(f, xRight, yTop, color, align, xCenter) {
     ctx.fillStyle = color;
@@ -455,15 +460,15 @@ input[type=range],input[type=checkbox]{accent-color:var(--acc)}  /* v1.3: الم
     var r = sc / (S.fscale / 100);   /* نسبة التصغير الإضافي (1 في المحاولة الأولى) */
     /* حدّ القراءة: لا يصغر أي نص تحت هذه الأحجام (نسبةً إلى عرض 1080) مهما طال — يُسمح بأسطر أكثر بدلاً من ذلك،
        وإن لم يتسع بعدها يُقطع وتظهر ⚠️، فلا يخرج تصميم بخط لا يُقرأ */
-    function F(text, w, start, floor, lines) { floor *= u; return fit(text, w, Math.max(start * u * sc, floor), floor, maxW, lines); }
+    function F(text, w, start, floor, lines, fam) { floor *= u; return fit(text, w, Math.max(start * u * sc, floor), floor, maxW, lines, fam); }
     var b = { parts: [], h: 0, cut: false, dark: !!o.dark };
     function add(f, color, gap, extra) { var p = { f: f, color: color, gap: gap }; for (var k in extra) p[k] = extra[k]; b.parts.push(p); b.h += f.lines.length * f.lh + gap; if (f.cut) b.cut = true; }
     if (S.kicker && o.kicker !== false) add(F(S.kicker, 900, 110, 50, 1), o.kickerColor || '#fff', 4 * u);
     var title = S.title || (S.style === 'text' ? 'اكتب النص هنا' : 'اكتب عنوان الخبر هنا');
     add(F(title, 800, o.titlePx || 64, 30, first ? (o.maxLines || 3) : (o.hardLines || 7)), o.titleColor || '#fff', 10 * u, { dim: !S.title });
-    if (S.sub) add(F(S.sub, 600, 34, 22, first ? 2 : 4), o.subColor || 'rgba(255,255,255,.88)', 8 * u);
+    if (S.sub) add(F(S.sub, 600, 34, 22, first ? 2 : 4, S.font2), o.subColor || 'rgba(255,255,255,.88)', 8 * u);
     var foot = footLine(u);
-    if (foot) add(fit(foot, 600, Math.max(24 * u * r, 16 * u), 16 * u, maxW, first ? 1 : 2), o.footColor || 'rgba(255,255,255,.75)', 0, { foot: true });
+    if (foot) add(fit(foot, 600, Math.max(24 * u * r, 16 * u), 16 * u, maxW, first ? 1 : 2, S.font2), o.footColor || 'rgba(255,255,255,.75)', 0, { foot: true });
     return b;
   }
   function textBlock(maxW, u, opts) {
@@ -479,7 +484,7 @@ input[type=range],input[type=checkbox]{accent-color:var(--acc)}  /* v1.3: الم
     var y = yTop;
     b.parts.forEach(function (p) {
       ctx.save();
-      ctx.font = fontStr(p.foot ? 600 : (p.f.px > 80 ? 900 : 800), p.f.px);
+      ctx.font = fontStr(p.f.w, p.f.px, p.f.fam);  /* بالوزن والخط نفسيهما اللذين قيس بهما — وإلا قد يُرسم أعرض مما قيس */
       if (p.dim) ctx.globalAlpha = 0.45;
       if (!b.dark) { ctx.shadowColor = 'rgba(0,0,0,.25)'; ctx.shadowBlur = 6; }  /* لا ظل للنص الداكن على خلفية فاتحة */
       y = drawLines(p.f, xRight, y, p.color, align, xCenter) + p.gap;
@@ -661,6 +666,9 @@ input[type=range],input[type=checkbox]{accent-color:var(--acc)}  /* v1.3: الم
     });
     $('font').value = S.font;
     $('font').onchange = function () { S.font = this.value; ensureFont(S.font, render); save(); };
+    $('font2').innerHTML = $('font').innerHTML;  /* القائمة نفسها، بلا تكرار في الصفحة */
+    $('font2').value = S.font2;
+    $('font2').onchange = function () { S.font2 = this.value; ensureFont(S.font2, render); save(); };
     $('logoPos').value = S.logoPos; $('logoPos').onchange = function () { S.logoPos = this.value; render(); save(); };
     $('showSite').checked = S.showSite; $('showSite').onchange = function () { S.showSite = this.checked; render(); save(); };
     $('showDate').checked = S.showDate; $('showDate').onchange = function () { S.showDate = this.checked; render(); save(); };
@@ -859,6 +867,7 @@ input[type=range],input[type=checkbox]{accent-color:var(--acc)}  /* v1.3: الم
   render();
   loadLib();
   ensureFont(S.font, render);
+  ensureFont(S.font2, render);
   if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { render(); });
 })();
 </script>
