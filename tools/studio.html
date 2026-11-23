@@ -903,6 +903,33 @@ window.addEventListener('error', function (e) {
           <p style="font-size:11px;color:#666;margin-top:4px;">«MP4 سريع» يرسم الفيديو إطارًا إطارًا ويرمّزه مباشرة دون انتظار الزمن الحقيقي، فيُنتج ملف MP4 قياسيًا (H.264 + AAC) يعمل على الهواتف والمنصات وبرامج المونتاج. يحتاج Chrome أو Edge حديثًا، واتصالاً بالإنترنت عند أول تصدير في الجلسة لتحميل مكتبة الترميز. إن تعذّر لأي سبب يُكمل تلقائيًا بالمحرك التقليدي بالوقت الحقيقي ويُذكر السبب في السجل. الصيغتان الأخريان تسجّلان بالوقت الحقيقي كما في الإصدارات السابقة. الوضع "تلقائي" للجودة يختار بترييت مناسب حسب الدقة ومعدّل الإطارات المختارَين.</p>
         </div>
 
+        <div class="card">
+          <div class="card-title"><span class="ct-icon">🧩</span> القوالب الجاهزة</div>
+          <p style="font-size:12px;color:#888;margin-bottom:10px;">القالب يحفظ كل الإعدادات (المقاس، الشريط، الشعار، الخطوط والألوان، الانتقالات، الصوت، التصدير) بلا الصور والفيديوهات ونص الشريط. احفظ مثلاً «عاجل» و«تقرير» و«ريلز» مرة واحدة، ثم طبّقها بنقرة.</p>
+          <div class="field-group cols-2" style="margin-bottom:8px;">
+            <div class="field"><label class="field-label">القوالب المحفوظة</label><select id="tplSelect"></select></div>
+            <div class="field" style="display:flex;align-items:flex-end;">
+              <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;"><input type="checkbox" id="tplApplyItems" style="width:auto;" /> تطبيق على العناصر الحالية أيضاً</label>
+            </div>
+          </div>
+          <div class="btn-row">
+            <button class="btn btn-primary btn-sm" id="tplApply" style="flex:1;">✅ تطبيق القالب</button>
+            <button class="btn btn-secondary btn-sm" id="tplDelete" style="flex:1;">🗑️ حذف القالب</button>
+          </div>
+          <div class="field-group cols-2" style="margin-top:12px;margin-bottom:8px;">
+            <div class="field"><label class="field-label">اسم القالب الجديد</label><input type="text" id="tplName" placeholder="مثال: عاجل" maxlength="40" /></div>
+            <div class="field" style="display:flex;align-items:flex-end;">
+              <label style="display:flex;align-items:center;gap:6px;font-size:12px;cursor:pointer;"><input type="checkbox" id="tplWithLogo" style="width:auto;" checked /> مع الشعار</label>
+            </div>
+          </div>
+          <button class="btn btn-blue btn-sm" id="tplSave" style="width:100%;">💾 حفظ الإعدادات الحالية كقالب</button>
+          <div class="btn-row" style="margin-top:8px;">
+            <button class="btn btn-secondary btn-sm" id="tplExport" style="flex:1;">📤 تصدير القوالب (ملف)</button>
+            <label class="btn btn-secondary btn-sm" style="flex:1;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:6px;">📥 استيراد قوالب<input type="file" id="tplImport" accept=".json" style="display:none;" /></label>
+          </div>
+          <div id="tplStatus" style="font-size:12px;color:var(--green);margin-top:8px;min-height:18px;"></div>
+        </div>
+
         <div class="card" style="border-color:var(--blue);">
           <div class="card-title" style="color:#5dade2;"><span class="ct-icon">💾</span> حفظ المشروع واسترجاعه</div>
           <p style="font-size:12px;color:#888;margin-bottom:12px;">احفظ المشروع كـ JSON لاسترجاعه والتعديل عليه لاحقاً. ملاحظة: ملفات الفيديو نفسها لا تُحفظ داخل المشروع.</p>
@@ -1853,9 +1880,12 @@ window.addEventListener('error', function (e) {
     //  • إصلاح: المعاينة الحية لم تكن تتحدث عند تغيير المقاس، ومعرّف مكرر لمدة المشروع.
     //  • إصلاح: مقاطع «تقطيع فيديو طويل» لم تكن تُعلِّم المشروع كغير محفوظ.
     //  • هيكلة: مصنع واحد لإنشاء العناصر، دالة واحدة لتغيير المقاس، قائمة واحدة لحقول حفظ المشروع.
+    // سجل التغييرات v6.7 (23 نوفمبر 2026):
+    //  • القوالب الجاهزة (تبويب التصدير): حفظ كل الإعدادات + المقاس + الشعار باسم (عاجل، تقرير، ريلز...)، وتطبيقها بنقرة،
+    //    اختيارياً على العناصر الحالية (الأسلوب فقط، لا النصوص). حذف بتأكيد، وتصدير/استيراد ملف للنقل بين الأجهزة.
     // سجل التغييرات v6.6 (23 نوفمبر 2026):
     //  • التراجع والإعادة: زرّا ↶ ↷ في الترويسة وCtrl+Z / Ctrl+Y (أو Ctrl+Shift+Z)، حتى 50 خطوة — العناصر وحقول
-    //    المشروع وجدول الشريط. داخل مربعات الكتابة يبقى تراجع المتصفح للنص. السجل يُفرَّغ عند فتح مشروع أو مشروع جديد.
+    //    المشروع وجدول الشريط (ومنذ v6.7 المقاس والشعار). داخل مربعات الكتابة يبقى تراجع المتصفح للنص. السجل يُفرَّغ عند فتح مشروع أو مشروع جديد.
     //  • استعادة الإعدادات صارت دالة واحدة applyProjectSettings (لفتح المشروع وللتراجع).
     //  • حذف الفيديو لا يُبطل رابطه فوراً؛ releaseMedia() تُبطله حين لا يحتاجه عنصر ولا خطوة في السجل.
     // سجل التغييرات v6.5 (23 نوفمبر 2026):
@@ -1908,7 +1938,7 @@ window.addEventListener('error', function (e) {
     // سجل التغييرات v5.1:
     //  • إصلاح: إذا منع المتصفح التخزين المحلي داخل إطار اللوحة (حظر ملفات الطرف الثالث)، كانت الأداة
     //    تتوقف عند أول قراءة للإعدادات فلا يعمل زر ليلي/نهاري ولا ما بعده — صارت تعمل بذاكرة مؤقتة.
-    const APP_VERSION = 'S24News_Studio_v6.6';
+    const APP_VERSION = 'S24News_Studio_v6.7';
     let isExporting = false;
     let deleteItem; // تُعرَّف لاحقًا (كانت متغيرًا عامًّا ضمنيًا)
     const appVersionLabel = document.getElementById('appVersionLabel');
@@ -3496,6 +3526,7 @@ window.addEventListener('error', function (e) {
                 updateLogoPreview();
                 updateSidebarInfo();
                 addLog('🏷️', 'تم رفع الشعار.');
+                scheduleHistory(0);   // v6.7: رفع الشعار خطوة في التراجع
             };
             img.src = ev.target.result;
         };
@@ -6135,7 +6166,7 @@ window.addEventListener('error', function (e) {
     // ===== v6.6: التراجع والإعادة (Ctrl+Z / Ctrl+Y) =====
     // كل تغيير في العناصر (إضافة، حذف، ترتيب، نص، مدة، انتقال...) أو في حقول المشروع (PROJECT_FIELDS) أو جدول
     // الشريط يُسجَّل لقطةً. اللقطة نسخة خفيفة: الصور والفيديوهات نفسها لا تُنسخ بل يُحتفظ بمرجعها، فلا تكلّف ذاكرة.
-    // لا يشمل: الشعار، الموسيقى، التعليق الصوتي، الأوترو، الغلاف، ودقة الإخراج — هذه ملفات/مقاسات لها أزرارها.
+    // ويشمل المقاس والشعار (v6.7، كي يُتراجع عن تطبيق القالب كاملاً). لا يشمل: الموسيقى، التعليق الصوتي، الأوترو، الغلاف.
     // داخل مربعات الكتابة يبقى Ctrl+Z تراجع المتصفح عن الكتابة نفسها. السجل يُفرَّغ عند فتح مشروع أو بدء مشروع جديد.
     const HISTORY_MAX = 50;
     let undoStack = [], redoStack = [], historyNow = null, historyTimer = null, historyRestoring = false;
@@ -6149,7 +6180,7 @@ window.addEventListener('error', function (e) {
     }
     // مفتاح المقارنة: الوسائط تُستبدل برقم ثابت لكل كائن، فلا تدخل بيانات الصور في المقارنة
     function stateKey(st) {
-        return JSON.stringify({ items: st.items, fields: st.fields, cues: st.cues, sched: st.sched }, (k, v) => {
+        return JSON.stringify({ items: st.items, fields: st.fields, cues: st.cues, sched: st.sched, res: st.res, logo: st.logo || null }, (k, v) => {
             if (v && typeof v === 'object' && !isPlainVal(v)) {
                 if (!mediaIds.has(v)) mediaIds.set(v, ++mediaSeq);
                 return '#m' + mediaIds.get(v);
@@ -6163,6 +6194,8 @@ window.addEventListener('error', function (e) {
             fields: readProjectFields(),
             cues: JSON.parse(JSON.stringify(tickerCues || [])),
             sched: !!tickerScheduleEnabled,
+            res: [OUT_W, OUT_H],
+            logo: loadedLogo,
             sel: selectedIdx
         };
         st.key = stateKey(st);
@@ -6219,6 +6252,12 @@ window.addEventListener('error', function (e) {
             imageItems.forEach(it => { if (it.videoEl) allVideoEls.add(it.videoEl); });
             const s = Object.assign({}, st.fields, { tickerScheduleEnabled: st.sched, tickerCues: JSON.parse(JSON.stringify(st.cues)) });
             applyProjectSettings(s);
+            if (st.res[0] !== OUT_W || st.res[1] !== OUT_H) setResolution(st.res[0], st.res[1]);
+            if (st.logo !== loadedLogo) {
+                loadedLogo = st.logo;
+                if (loadedLogo) updateLogoPreview();
+                else { const w = document.getElementById('logoPreviewWrap'); if (w) w.style.display = 'none'; }
+            }
             selectedIdx = (st.sel !== null && st.sel < imageItems.length) ? st.sel : null;
             renderMediaGrid();
             if (selectedIdx !== null) openDetail(selectedIdx); else closeDetail();
@@ -6264,6 +6303,133 @@ window.addEventListener('error', function (e) {
         e.preventDefault();
         if (isUndo) undo(); else redo();
     });
+
+    // ===== v6.7: القوالب الجاهزة (حزمة الهوية) =====
+    // القالب = كل حقول المشروع (PROJECT_FIELDS) + المقاس + الشعار اختيارياً، بلا الوسائط ونص الشريط ونقاط قص الصوت
+    // (هذه خاصة بكل خبر). تُحفظ في هذا المتصفح (localStorage) ويمكن تصديرها ملفاً لنقلها إلى جهاز آخر أو زميل.
+    // تطبيق القالب يغيّر الإعدادات الافتراضية (للعناصر الجديدة)، ومع الخيار يطبّق الأسلوب على العناصر الحالية أيضاً
+    // دون أن يمسّ نصوصها أو نوع الخبر ومكانه. التطبيق خطوة واحدة في التراجع (Ctrl+Z).
+    const TPL_KEY = 's24-studio-templates';
+    const TPL_SKIP = ['tickerText', 'audioTrimStart', 'audioTrimEnd', 'voiceTrimStart', 'voiceTrimEnd'];
+    const tplSelect = document.getElementById('tplSelect');
+    const tplStatus = document.getElementById('tplStatus');
+    function tplLoad() {
+        try { const v = JSON.parse(localStorage.getItem(TPL_KEY) || '[]'); return Array.isArray(v) ? v.filter(t => t && t.name && t.fields) : []; }
+        catch (e) { return []; }
+    }
+    function tplStore(list) {
+        try { localStorage.setItem(TPL_KEY, JSON.stringify(list)); return true; }
+        catch (e) { tplStatus.textContent = '❌ تعذّر الحفظ في المتصفح (المساحة ممتلئة؟ جرّب الحفظ بلا الشعار).'; return false; }
+    }
+    function tplRender(selectName) {
+        const list = tplLoad();
+        tplSelect.innerHTML = list.length
+            ? list.map(t => '<option>' + t.name.replace(/[<&>"]/g, c => ({ '<': '&lt;', '&': '&amp;', '>': '&gt;', '"': '&quot;' })[c]) + '</option>').join('')
+            : '<option value="">— لا قوالب بعد —</option>';
+        if (selectName) tplSelect.value = selectName;
+        document.getElementById('tplApply').disabled = !list.length;
+        document.getElementById('tplDelete').disabled = !list.length;
+    }
+    function tplCurrent(name, withLogo) {
+        const fields = readProjectFields();
+        TPL_SKIP.forEach(k => delete fields[k]);
+        return {
+            name, savedAt: new Date().toISOString(), version: APP_VERSION,
+            fields, resolution: { w: OUT_W, h: OUT_H },
+            outroVolume: outroVolumeSlider.value, outroMuted: outroMuted,
+            logoSrc: (withLogo && loadedLogo) ? loadedLogo.src : null
+        };
+    }
+    document.getElementById('tplSave').addEventListener('click', () => {
+        const name = document.getElementById('tplName').value.trim();
+        if (!name) { tplStatus.textContent = '✍️ اكتب اسماً للقالب أولاً.'; return; }
+        const list = tplLoad();
+        const i = list.findIndex(t => t.name === name);
+        if (i > -1 && !confirm('يوجد قالب باسم «' + name + '». هل تريد استبداله بالإعدادات الحالية؟')) return;
+        const tpl = tplCurrent(name, document.getElementById('tplWithLogo').checked);
+        if (i > -1) list[i] = tpl; else list.push(tpl);
+        if (!tplStore(list)) return;
+        tplRender(name);
+        document.getElementById('tplName').value = '';
+        tplStatus.textContent = '✅ حُفظ القالب «' + name + '»' + (tpl.logoSrc ? ' مع الشعار.' : '.');
+        addLog('🧩', 'حُفظ القالب «' + name + '».');
+    });
+    document.getElementById('tplApply').addEventListener('click', () => {
+        const tpl = tplLoad().find(t => t.name === tplSelect.value);
+        if (!tpl || isExporting) return;
+        applyProjectSettings(Object.assign({}, tpl.fields, {
+            outroVolume: tpl.outroVolume, outroMuted: tpl.outroMuted,
+            tickerScheduleEnabled: tickerScheduleEnabled, tickerCues: tickerCues   // جدول الشريط خاص بالخبر: يبقى كما هو
+        }));
+        if (tpl.resolution) setResolution(tpl.resolution.w, tpl.resolution.h);
+        if (tpl.logoSrc) {
+            const img = new Image();
+            img.onload = async () => {
+                loadedLogo = img;
+                try { loadedLogo.bmp = await createImageBitmap(img); } catch (e) {}
+                updateLogoPreview(); updateSidebarInfo();
+                scheduleHistory(0);   // الشعار يصل بعد التحميل: يُضم إلى خطوة تطبيق القالب
+            };
+            img.src = tpl.logoSrc;
+        }
+        let n = 0;
+        if (document.getElementById('tplApplyItems').checked) {
+            const ts = getDefaultTextSettings(), ns = getDefaultNewsSettings();
+            const dur = +document.getElementById('defaultImageDuration').value || 10;
+            imageItems.forEach(it => {
+                it.transitionType = document.getElementById('defaultTransitionType').value;
+                it.transitionDuration = +document.getElementById('defaultTransitionDuration').value || 1.5;
+                it.fitMode = document.getElementById('defaultFitMode')?.value || 'auto';
+                if (it.type !== 'video') {
+                    it.duration = dur;
+                    it.kenBurns = document.getElementById('defaultKenBurns').value;
+                    it.kenBurnsIntensity = parseInt(document.getElementById('defaultKenBurnsIntensity').value) || 14;
+                }
+                it.textSettings = Object.assign({}, ts, { text: (it.textSettings && it.textSettings.text) || '' });
+                ['showNewsType', 'showNewsLocation', 'newsTextColor', 'newsTextSize', 'newsFontFamily', 'newsFontStyle', 'newsBgOpacity', 'newsShadow']
+                    .forEach(k => { it[k] = ns[k]; });
+                n++;
+            });
+        }
+        ensureFonts();
+        renderMediaGrid();
+        if (selectedIdx !== null) openDetail(selectedIdx);
+        updateTotalDuration(); updateSidebarInfo(); updateLogoPosIndicator();
+        markDirty();
+        tplStatus.textContent = '✅ طُبّق القالب «' + tpl.name + '»' + (n ? ' على الإعدادات و' + n + ' عنصر.' : ' على الإعدادات (للعناصر الجديدة).');
+        addLog('🧩', 'طُبّق القالب «' + tpl.name + '».');
+    });
+    document.getElementById('tplDelete').addEventListener('click', () => {
+        const name = tplSelect.value;
+        if (!name || !confirm('هل تريد حذف القالب «' + name + '»؟')) return;
+        if (!tplStore(tplLoad().filter(t => t.name !== name))) return;
+        tplRender();
+        tplStatus.textContent = '🗑️ حُذف القالب «' + name + '».';
+    });
+    document.getElementById('tplExport').addEventListener('click', () => {
+        const list = tplLoad();
+        if (!list.length) { tplStatus.textContent = 'لا قوالب لتصديرها.'; return; }
+        downloadBlob(new Blob([JSON.stringify({ type: 's24-studio-templates', templates: list }, null, 2)], { type: 'application/json' }),
+            'S24News_Studio_Templates_' + Date.now() + '.json');
+        tplStatus.textContent = '📤 صُدّرت ' + list.length + ' قوالب إلى مجلد التنزيلات.';
+    });
+    document.getElementById('tplImport').addEventListener('change', async e => {
+        const f = e.target.files[0]; e.target.value = '';
+        if (!f) return;
+        try {
+            const d = JSON.parse(await f.text());
+            const incoming = (d && Array.isArray(d.templates) ? d.templates : []).filter(t => t && t.name && t.fields);
+            if (!incoming.length) throw new Error('الملف لا يحوي قوالب.');
+            const list = tplLoad();
+            const clash = incoming.filter(t => list.some(x => x.name === t.name)).map(t => t.name);
+            if (clash.length && !confirm('هذه القوالب موجودة وستُستبدل: ' + clash.join('، ') + '. متابعة؟')) return;
+            incoming.forEach(t => { const i = list.findIndex(x => x.name === t.name); if (i > -1) list[i] = t; else list.push(t); });
+            if (!tplStore(list)) return;
+            tplRender(incoming[0].name);
+            tplStatus.textContent = '📥 استُورد ' + incoming.length + ' قالب.';
+        } catch (err) { tplStatus.textContent = '❌ ' + (err.message || 'ملف غير صالح.'); }
+    });
+    tplRender();
 
     document.getElementById('btnNewProject')?.addEventListener('click', resetProject);
     document.getElementById('btnNewProject2')?.addEventListener('click', resetProject);
