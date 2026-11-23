@@ -45,6 +45,13 @@ window.addEventListener('error', function (e) {
   v1.5 (23 نوفمبر 2026): خطّان منفصلان — «خط العنوان» للعنوان والكلمة البارزة وشارة النوع (افتراضياً IBM Plex Sans Arabic)،
    و«خط النص» للسطر الثاني والتذييل (افتراضياً Readex Pro)، كما في القالب (--font-title و--font-main).
    وكل نص يُرسم بالوزن نفسه الذي قيس به (كان السطر الثاني يُقاس بـ600 ويُرسم بـ800، والعنوان الكبير يُقاس بـ800 ويُرسم بـ900).
+  v1.6 (23 نوفمبر 2026):
+   - «📊 استطلاع الرأي»: السؤال هو العنوان، وستة خيارات (الفارغ لا يظهر — من 2 إلى 6)، كل خيار بطاقة بعلامة (أرقام، حروف،
+     مربع فارغ، بلا)، وعمودان في المقاسات العريضة مع 4 خيارات فأكثر؛ يعمل في كل الأشكال. زر «تجهيز سريع».
+   - «🔤 تنسيق النص» لكل الأشكال: المحاذاة (تلقائي/يمين/وسط/يسار)، وزن العنوان، تباعد الأسطر، لون النص، ولون التمييز:
+     الكلمة بين نجمتين *هكذا* تُلوَّن (والنجوم لا تُرسم ولا تدخل في القياس).
+   - «🖼️ خلفية نص على لون»: تسع خلفيات بمصغّرات حية (تدرّج، لون واحد، توهّج، خطوط، نقاط، شبكة، أمواج، لونان، إطار)،
+     و«قوة اللون فوق الصورة» لتصير نصاً على صورة.
 -->
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Readex+Pro:wght@400;500;600;700&family=Cairo:wght@400;600;700;900&family=Tajawal:wght@500;700;800;900&family=Almarai:wght@400;700;800&family=Reem+Kufi:wght@500;700&family=Amiri:wght@700&display=swap" rel="stylesheet">
 <style>
@@ -113,6 +120,15 @@ input[type=range],input[type=checkbox]{accent-color:var(--acc)}  /* v1.3: الم
 .lib-it[disabled]{opacity:.5;cursor:wait}
 .lib-src{display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted)}
 .lib-src span{flex:1}
+/* v1.6 */
+.bgs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px}
+.bgs .style{padding:4px}
+.bgs canvas{display:block;width:100%;height:auto;border-radius:5px;margin-bottom:3px}
+.polls{display:grid;grid-template-columns:1fr 1fr;gap:6px}
+.polls[hidden]{display:none}
+.crow{display:flex;gap:6px;align-items:center}
+.crow input[type=color]{padding:2px;height:30px;flex:1}
+.cstate{font-size:11px;color:var(--acc)}
 .toast{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);background:#111827;color:#fff;padding:9px 16px;border-radius:8px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:50}
 .toast.show{opacity:1}
 @media (max-width:900px){.wrap{grid-template-columns:1fr}.side,.stage{max-height:none}.side{border-left:0;border-bottom:1px solid var(--line);order:2}.stage{order:1}#cv{max-height:60vh}}
@@ -152,6 +168,12 @@ input[type=range],input[type=checkbox]{accent-color:var(--acc)}  /* v1.3: الم
       <div class="styles" id="styles"></div>
     </div></div>
 
+    <div class="sec" id="bgSec"><h3>🖼️ خلفية «نص على لون»</h3><div class="body">
+      <div class="bgs" id="bgs"></div>
+      <div class="range">قوة اللون فوق الصورة<input type="range" id="bgA" min="20" max="100" value="86"><span id="bgAV">86%</span></div>
+      <div class="hint">الخلفيات من لون النوع (أو اللون المخصّص). أضف صورة واخفض قوة اللون ليصير «نصاً على صورة»؛ تحت 70% يصير النص أبيض بظل.</div>
+    </div></div>
+
     <div class="sec"><h3>✍️ النصوص</h3><div class="body">
       <label class="f">الكلمة البارزة (اختياري — مثل: سوريا)<input class="inp" id="kicker" placeholder="سوريا"></label>
       <label class="f">العنوان<textarea class="inp" id="title" placeholder="اكتب عنوان الخبر هنا…"></textarea></label>
@@ -160,15 +182,44 @@ input[type=range],input[type=checkbox]{accent-color:var(--acc)}  /* v1.3: الم
         <label class="f">المصدر / الائتمان<input class="inp" id="credit" placeholder="المصدر: وكالات"></label>
         <label class="f">الوسم أو الحساب<input class="inp" id="handle" placeholder="@Syria24News" dir="ltr"></label>
       </div>
+      <label class="check"><input type="checkbox" id="showDate"> إظهار التاريخ</label>
+    </div></div>
+
+    <div class="sec"><h3>📊 استطلاع الرأي</h3><div class="body">
+      <label class="check"><input type="checkbox" id="pollOn"> تفعيل الاستطلاع — السؤال هو «العنوان»</label>
+      <div class="polls" id="pollBox">
+        <input class="inp po" placeholder="الخيار 1"><input class="inp po" placeholder="الخيار 2">
+        <input class="inp po" placeholder="الخيار 3"><input class="inp po" placeholder="الخيار 4">
+        <input class="inp po" placeholder="الخيار 5"><input class="inp po" placeholder="الخيار 6">
+      </div>
+      <label class="f">علامة الخيار<select class="inp" id="pollMark">
+        <option value="num">أرقام 1 2 3</option><option value="abc">حروف أ ب ج</option>
+        <option value="box">مربع فارغ ☐</option><option value="none">بلا علامة</option></select></label>
+      <button class="btn sm" id="pollQuick" type="button">⚡ تجهيز سريع: «نص على لون» + نوع «استطلاع رأي»</button>
+      <div class="hint">من خيارين إلى ستة — الخانة الفارغة لا تظهر. ضع دعوة التصويت في «السطر الثاني» (مثل: صوّت في التعليقات 👇). يعمل الاستطلاع في كل الأشكال.</div>
+    </div></div>
+
+    <div class="sec"><h3>🔤 تنسيق النص</h3><div class="body">
+      <label class="f">المحاذاة<div class="chips" id="aligns">
+        <button type="button" class="chip" data-v="auto">تلقائي</button><button type="button" class="chip" data-v="right">يمين</button>
+        <button type="button" class="chip" data-v="center">وسط</button><button type="button" class="chip" data-v="left">يسار</button></div></label>
       <div class="row2">
         <label class="f">خط العنوان<select class="inp" id="font" title="العنوان والكلمة البارزة وشارة النوع">
-          <option value="IBM Plex Sans Arabic">IBM Plex Sans Arabic</option><option value="Readex Pro">Readex Pro</option>
+          <option value="IBM Plex Sans Arabic">IBM Plex Arabic</option><option value="Readex Pro">Readex Pro</option>
           <option value="Cairo">Cairo</option><option value="Tajawal">Tajawal</option><option value="Almarai">Almarai</option>
           <option value="Reem Kufi">Reem Kufi</option><option value="Amiri">Amiri</option></select></label>
         <label class="f">خط النص<select class="inp" id="font2" title="السطر الثاني والتذييل (المصدر والتاريخ والحساب)"></select></label>
       </div>
-      <label class="f">حجم الخط<div class="range" style="margin:0"><input type="range" id="fscale" min="70" max="140" value="100"><span id="fscaleV">100%</span></div></label>
-      <label class="check"><input type="checkbox" id="showDate"> إظهار التاريخ</label>
+      <div class="row2">
+        <label class="f">وزن العنوان<select class="inp" id="tw"><option value="400">عادي</option><option value="600">متوسط</option><option value="800">عريض</option><option value="900">أعرض</option></select></label>
+        <label class="f">حجم الخط<div class="range" style="margin:0"><input type="range" id="fscale" min="70" max="140" value="100"><span id="fscaleV">100%</span></div></label>
+      </div>
+      <div class="range">تباعد الأسطر<input type="range" id="lh" min="115" max="200" value="145"><span id="lhV">145%</span></div>
+      <div class="row2">
+        <label class="f">لون النص <span class="cstate" id="tcState"></span><span class="crow"><input type="color" id="tcolor" class="inp"><button class="btn sm" type="button" id="tcAuto">تلقائي</button></span></label>
+        <label class="f">لون التمييز <span class="cstate" id="hcState"></span><span class="crow"><input type="color" id="hcolor" class="inp"><button class="btn sm" type="button" id="hcAuto">تلقائي</button></span></label>
+      </div>
+      <div class="hint">✨ ضع الكلمة بين نجمتين *هكذا* لتلوينها بلون التمييز — في العنوان والسطر الثاني والخيارات. «تلقائي» يختار لوناً مقروءاً على الخلفية.</div>
     </div></div>
 
     <div class="sec"><h3>🔰 الهوية</h3><div class="body">
@@ -208,7 +259,7 @@ input[type=range],input[type=checkbox]{accent-color:var(--acc)}  /* v1.3: الم
 <script>
 (function () {
   'use strict';
-  var VERSION = 'S24News_Social_v1.5';
+  var VERSION = 'S24News_Social_v1.6';
 
   /* ═══ المقاسات — نفس مقاسات معالج الصور والاستوديو ═══ */
   var SIZES = [
@@ -251,17 +302,23 @@ input[type=range],input[type=checkbox]{accent-color:var(--acc)}  /* v1.3: الم
     kicker: '', title: '', sub: '', credit: '', handle: '@Syria24News',
     font: 'IBM Plex Sans Arabic', font2: 'Readex Pro', fscale: 100,  /* v1.5: font للعنوان، font2 للنص (كما في القالب: --font-title و--font-main) */ showDate: false,
     logoPos: 'tl', logoId: '', site: 'syria24.news', showSite: true,  /* logoId: الشعار المختار من مكتبة Drive ('' = الشعار النصي) */
-    zoom: 100, shade: 25, panX: 0, panY: 0, batch: ['x', 'fb', 'ig', 'story']
+    zoom: 100, shade: 25, panX: 0, panY: 0, batch: ['x', 'fb', 'ig', 'story'],
+    /* v1.6: الاستطلاع، وتنسيق النص، وخلفية «نص على لون» */
+    poll: false, pollOpts: ['', '', '', '', '', ''], pollMark: 'num',
+    align: 'auto', tw: 800, lh: 145, tcolor: '', hcolor: '',
+    bg: 'grad', bgA: 86
   };
   var IMG = null, LOGO = null;
 
   function toast(m) { var t = $('toast'); t.textContent = m; t.classList.add('show'); clearTimeout(toast.t); toast.t = setTimeout(function () { t.classList.remove('show'); }, 2600); }
   function load() {
     try { var v = JSON.parse(localStorage.getItem(KEY) || 'null'); if (v) for (var k in v) if (k in S) S[k] = v[k]; } catch (e) {}
+    if (!Array.isArray(S.pollOpts)) S.pollOpts = ['', '', '', '', '', ''];
   }
   function save() {
     var c = {}; for (var k in S) c[k] = S[k];
     c.title = ''; c.sub = ''; c.kicker = ''; c.credit = ''; c.panX = 0; c.panY = 0; c.zoom = 100;  /* النصوص لا تُحفظ — كل منشور جديد */
+    c.pollOpts = ['', '', '', '', '', ''];  /* وكذلك خيارات الاستطلاع */
     try { localStorage.setItem(KEY, JSON.stringify(c)); } catch (e) {}
   }
   function sizeOf(k) { for (var i = 0; i < SIZES.length; i++) if (SIZES[i].k === k) return SIZES[i]; return SIZES[0]; }
@@ -276,7 +333,8 @@ input[type=range],input[type=checkbox]{accent-color:var(--acc)}  /* v1.3: الم
   /* v1.4: التباين — هل الأبيض مقروء على هذا اللون (بعد تغميقه بالنسبة f)؟ الحد 3:1 (حد العناوين الكبيرة في WCAG).
      إن لم يكن، يُكتب النص بالداكن. يحمي الألوان المخصّصة الفاتحة (والأخضر #77bd1d نفسه) من نص أبيض لا يُقرأ. */
   function lumArr(c) { c = c.map(function (v) { v /= 255; return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4); }); return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2]; }
-  function darkOn(h, f) { return 1.05 / (lumArr(shadeArr(h, f || 0)) + 0.05) < 3; }
+  /* v1.6: الأوضح من الاثنين — تباين الداكن (#111827) مقابل تباين الأبيض على هذا اللون — لا «الأبيض ما لم يسقط تحت 3» */
+  function darkOn(h, f) { var L = lumArr(shadeArr(h, f || 0)); return (L + 0.05) / 0.0637 > 1.05 / (L + 0.05); }
   function ink(h, f) { return darkOn(h, f) ? '#111827' : '#fff'; }
   var INK_DARK = { titleColor: '#111827', kickerColor: '#111827', subColor: 'rgba(17,24,39,.85)', footColor: 'rgba(17,24,39,.72)', dark: true };
 
@@ -285,11 +343,14 @@ input[type=range],input[type=checkbox]{accent-color:var(--acc)}  /* v1.3: الم
   var PREVIEW = false;  /* الرسم على المعاينة (لا التصدير): عبارة «أضف صورة» تظهر هنا فقط */
   /* fam: اسم الخط — الافتراضي خط العنوان (S.font)؛ السطر الثاني والتذييل يمرّران خط النص (S.font2) */
   function fontStr(w, px, fam) { return w + ' ' + Math.round(px) + 'px "' + (fam || S.font) + '", "IBM Plex Sans Arabic", Tahoma, sans-serif'; }
+  /* v1.6: التمييز — الكلمة بين نجمتين *هكذا* تُلوَّن بلون التمييز؛ النجوم لا تُرسم ولا تدخل في القياس */
+  function plain(t) { return String(t || '').replace(/\*/g, ''); }
+  function mw(t) { return ctx.measureText(plain(t)).width; }
   /* كلمة أطول من السطر نفسه (رابط أو وسم طويل) تُقسم على أكثر من سطر بدل أن تخرج عن الحافة */
   function splitLong(w, maxW) {
-    if (ctx.measureText(w).width <= maxW) return [w];
+    if (mw(w) <= maxW) return [w];
     var out = [], cur = '';
-    Array.from(w).forEach(function (ch) { if (cur && ctx.measureText(cur + ch).width > maxW) { out.push(cur); cur = ch; } else cur += ch; });
+    Array.from(w).forEach(function (ch) { if (cur && mw(cur + ch) > maxW) { out.push(cur); cur = ch; } else cur += ch; });
     if (cur) out.push(cur);
     return out;
   }
@@ -300,7 +361,7 @@ input[type=range],input[type=checkbox]{accent-color:var(--acc)}  /* v1.3: الم
       para.split(/\s+/).filter(Boolean).forEach(function (w0) {
         splitLong(w0, maxW).forEach(function (w) {
           var t = line ? line + ' ' + w : w;
-          if (ctx.measureText(t).width > maxW && line) { out.push(line); line = w; } else line = t;
+          if (mw(t) > maxW && line) { out.push(line); line = w; } else line = t;
         });
       });
       if (line) out.push(line);
@@ -322,17 +383,31 @@ input[type=range],input[type=checkbox]{accent-color:var(--acc)}  /* v1.3: الم
       cut = true;
       lines = lines.slice(0, maxLines);
       var l = lines[maxLines - 1];
-      while (l && ctx.measureText(l + '…').width > maxW) l = l.slice(0, -1);
+      while (l && mw(l + '…') > maxW) l = l.slice(0, -1);
       lines[maxLines - 1] = l.replace(/\s+$/, '') + '…';
     }
-    return { px: px, lines: lines, lh: px * 1.45, cut: cut, fam: fam, w: weight };
+    return { px: px, lines: lines, lh: px * (S.lh || 145) / 100, cut: cut, fam: fam, w: weight };  /* v1.6: تباعد الأسطر من «تنسيق النص» */
   }
-  function drawLines(f, xRight, yTop, color, align, xCenter) {
-    ctx.fillStyle = color;
+  /* يرسم أسطر نص مقيس. x: الحافة اليمنى (right) أو المنتصف (center) أو الحافة اليسرى (left).
+     السطر بلا تمييز يُرسم دفعة واحدة؛ والسطر المميَّز قطعاً من اليمين، كل قطعة بلونها (التمييز يمتد عبر الأسطر). */
+  function drawLines(f, x, yTop, color, align, hl) {
     ctx.textBaseline = 'top';
     ctx.direction = 'rtl';
-    ctx.textAlign = align || 'right';
-    f.lines.forEach(function (l, i) { ctx.fillText(l, align === 'center' ? xCenter : xRight, yTop + i * f.lh); });
+    ctx.textAlign = 'right';
+    var on = false;
+    f.lines.forEach(function (l, i) {
+      var y = yTop + i * f.lh, w = mw(l);
+      var right = align === 'center' ? x + w / 2 : align === 'left' ? x + w : x;
+      if (l.indexOf('*') < 0) { ctx.fillStyle = on ? (hl || color) : color; ctx.fillText(l, right, y); return; }
+      var used = 0;
+      l.split('*').forEach(function (seg, k) {
+        if (k > 0) on = !on;
+        if (!seg) return;
+        ctx.fillStyle = on ? (hl || color) : color;
+        ctx.fillText(seg, right - used, y);
+        used += ctx.measureText(seg).width;
+      });
+    });
     return yTop + f.lines.length * f.lh;
   }
   function rr(x, y, w, h, r) {
@@ -431,12 +506,13 @@ input[type=range],input[type=checkbox]{accent-color:var(--acc)}  /* v1.3: الم
   }
   /* شارة نوع الخبر — align: right (x حافتها اليمنى) أو center (x منتصفها)؛ لا تتجاوز maxW (تصغر ثم «…») */
   function label(x, y, u, text, bg, align, maxW, fg) {
+    text = plain(text);
     ctx.save();
     var h = 52 * u, padX = 18 * u, f = fit(text, 900, 30 * u, 20 * u, Math.max(40 * u, (maxW || 1e9) - padX * 2), 1);
     if (f.cut) CUT = true;
     ctx.font = fontStr(900, f.px); ctx.direction = 'rtl';
     var w = ctx.measureText(f.lines[0] || '').width + padX * 2;
-    var lx = align === 'center' ? x - w / 2 : x - w;
+    var lx = align === 'center' ? x - w / 2 : align === 'left' ? x : x - w;
     ctx.fillStyle = bg; rr(lx, y, w, h, 8 * u); ctx.fill();
     ctx.fillStyle = fg || '#fff'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
     ctx.fillText(f.lines[0] || '', lx + w / 2, y + h / 2 + 2 * u);
@@ -461,11 +537,14 @@ input[type=range],input[type=checkbox]{accent-color:var(--acc)}  /* v1.3: الم
     /* حدّ القراءة: لا يصغر أي نص تحت هذه الأحجام (نسبةً إلى عرض 1080) مهما طال — يُسمح بأسطر أكثر بدلاً من ذلك،
        وإن لم يتسع بعدها يُقطع وتظهر ⚠️، فلا يخرج تصميم بخط لا يُقرأ */
     function F(text, w, start, floor, lines, fam) { floor *= u; return fit(text, w, Math.max(start * u * sc, floor), floor, maxW, lines, fam); }
-    var b = { parts: [], h: 0, cut: false, dark: !!o.dark };
+    var tc = S.tcolor || o.titleColor || '#fff';   /* لون النص: اختيار المستخدم، وإلا التلقائي حسب الخلفية */
+    var b = { parts: [], h: 0, cut: false, dark: !!o.dark, maxW: maxW, hl: S.hcolor || o.hl || (o.dark ? '#7f1d1d' : '#fde047') };  /* التمييز التلقائي: أحمر داكن على الفاتح، أصفر على الداكن */
     function add(f, color, gap, extra) { var p = { f: f, color: color, gap: gap }; for (var k in extra) p[k] = extra[k]; b.parts.push(p); b.h += f.lines.length * f.lh + gap; if (f.cut) b.cut = true; }
-    if (S.kicker && o.kicker !== false) add(F(S.kicker, 900, 110, 50, 1), o.kickerColor || '#fff', 4 * u);
-    var title = S.title || (S.style === 'text' ? 'اكتب النص هنا' : 'اكتب عنوان الخبر هنا');
-    add(F(title, 800, o.titlePx || 64, 30, first ? (o.maxLines || 3) : (o.hardLines || 7)), o.titleColor || '#fff', 10 * u, { dim: !S.title });
+    if (S.kicker && o.kicker !== false) add(F(S.kicker, 900, 110, 50, 1), S.tcolor || o.kickerColor || '#fff', 4 * u);
+    var title = S.title || (S.poll ? 'اكتب السؤال هنا' : S.style === 'text' ? 'اكتب النص هنا' : 'اكتب عنوان الخبر هنا');
+    add(F(title, +S.tw || 800, o.titlePx || 64, 30, first ? (o.maxLines || 3) : (o.hardLines || 7)), tc, 10 * u, { dim: !S.title });
+    var po = pollPart(maxW, u, sc, first, tc);   /* خيارات الاستطلاع بين السؤال والسطر الثاني (دعوة التصويت) */
+    if (po) { b.parts.push(po); b.h += po.h; if (po.cut) b.cut = true; }
     if (S.sub) add(F(S.sub, 600, 34, 22, first ? 2 : 4, S.font2), o.subColor || 'rgba(255,255,255,.88)', 8 * u);
     var foot = footLine(u);
     if (foot) add(fit(foot, 600, Math.max(24 * u * r, 16 * u), 16 * u, maxW, first ? 1 : 2, S.font2), o.footColor || 'rgba(255,255,255,.75)', 0, { foot: true });
@@ -477,20 +556,161 @@ input[type=range],input[type=checkbox]{accent-color:var(--acc)}  /* v1.3: الم
       b = buildBlock(maxW, u, o, base * Math.pow(0.93, Math.max(0, i - 1)), i === 0);
       if (!b.cut && (!o.maxH || b.h <= o.maxH)) return b;
     }
+    if (o.soft) { b.fail = true; return b; }  /* محاولة تجريبية: الشكل يعيد المحاولة بمساحة أكبر قبل التحذير */
     CUT = true;  /* لم يتسع حتى بعد التصغير: النص طويل جداً لهذا المقاس — تظهر ⚠️ */
     return b;
   }
-  function drawBlock(b, xRight, yTop, align, xCenter) {
+  /* styleAlign: محاذاة الشكل الافتراضية ('center' مع xCenter، وإلا يمين عند xRight)؛ «تنسيق النص ← المحاذاة» يتقدّم عليها */
+  function textAlignOf(styleAlign) { return S.align && S.align !== 'auto' ? S.align : (styleAlign || 'right'); }
+  function drawBlock(b, xRight, yTop, styleAlign, xCenter) {
+    var right = styleAlign === 'center' ? xCenter + b.maxW / 2 : xRight;
+    var al = textAlignOf(styleAlign);
+    var x = al === 'center' ? right - b.maxW / 2 : al === 'left' ? right - b.maxW : right;
     var y = yTop;
     b.parts.forEach(function (p) {
       ctx.save();
+      if (!b.dark) { ctx.shadowColor = 'rgba(0,0,0,.25)'; ctx.shadowBlur = 6; }  /* لا ظل للنص الداكن على خلفية فاتحة */
+      if (p.opts) { y = drawPoll(p, b, right, y) + p.gap; ctx.restore(); return; }
       ctx.font = fontStr(p.f.w, p.f.px, p.f.fam);  /* بالوزن والخط نفسيهما اللذين قيس بهما — وإلا قد يُرسم أعرض مما قيس */
       if (p.dim) ctx.globalAlpha = 0.45;
-      if (!b.dark) { ctx.shadowColor = 'rgba(0,0,0,.25)'; ctx.shadowBlur = 6; }  /* لا ظل للنص الداكن على خلفية فاتحة */
-      y = drawLines(p.f, xRight, y, p.color, align, xCenter) + p.gap;
+      y = drawLines(p.f, x, y, p.color, al, b.hl) + p.gap;
       ctx.restore();
     });
     return y;
+  }
+
+  /* ═══ v1.6: الاستطلاع — من خيارين إلى ستة، كل خيار بطاقة بعلامته ═══
+     السؤال هو العنوان. الخانة الفارغة لا تظهر. بخط النص، وبحجم واحد لكل الخيارات (حجم أطولها).
+     في المقاسات العريضة مع 4 خيارات فأكثر: عمودان (الأول يميناً). */
+  var POLL_MARKS = { num: ['1', '2', '3', '4', '5', '6'], abc: ['أ', 'ب', 'ج', 'د', 'هـ', 'و'] };
+  var WIDE = false;
+  function pollItems() { return (S.pollOpts || []).map(function (x) { return String(x || '').trim(); }).filter(Boolean).slice(0, 6); }
+  function pollPart(maxW, u, sc, first, tc) {
+    if (!S.poll) return null;
+    var items = pollItems(), dim = false;
+    if (items.length < 2) {  /* أقل من خيارين: نموذج باهت في المعاينة فقط، ولا شيء في الصورة المنزَّلة */
+      if (!PREVIEW) return null;
+      items = ['الخيار الأول', 'الخيار الثاني']; dim = true;
+    }
+    var n = items.length, cols = WIDE && n >= 4 ? 2 : 1, gapC = 18 * u, rowGap = 12 * u;
+    var colW = (maxW - gapC * (cols - 1)) / cols, mark = S.pollMark !== 'none', lines = first ? 1 : 2;
+    var floor = 22 * u, px = Math.max(36 * u * sc, floor);
+    function geo(px) { var padX = px * 0.7, bw = mark ? px * 1.6 : 0; return { padX: padX, bw: bw, tw: colW - padX * 2 - (mark ? bw + px * 0.55 : 0) }; }
+    for (;;) {  /* أصغر حجم يتسع فيه كل خيار في أسطره، لا تحت حدّ القراءة */
+      var g0 = geo(px);
+      ctx.font = fontStr(600, px, S.font2);
+      if (items.every(function (t) { return wrap(t, g0.tw).length <= lines; }) || px <= floor) break;
+      px = Math.max(floor, px - Math.max(1, px * 0.05));
+    }
+    var g = geo(px), padY = px * 0.45;
+    var fs = items.map(function (t) { return fit(t, 600, px, px, g.tw, lines, S.font2); });
+    var rows = [], h = 0;
+    for (var i = 0; i < n; i += cols) {
+      var rh = 0;
+      for (var j = i; j < Math.min(n, i + cols); j++) rh = Math.max(rh, Math.max(fs[j].lines.length * fs[j].lh, g.bw) + padY * 2);
+      rows.push(rh); h += rh + rowGap;
+    }
+    return { opts: true, items: fs, cols: cols, colW: colW, gapC: gapC, rowGap: rowGap, rows: rows, padX: g.padX, bw: g.bw, px: px,
+      color: tc, dim: dim, gap: 16 * u, h: h - rowGap + 16 * u, cut: fs.some(function (f) { return f.cut; }) };
+  }
+  function inkFor(css) { return /^#/.test(css) ? ink(css) : '#111827'; }
+  function drawPoll(p, b, right, y) {
+    var top = y, dark = b.dark, mark = S.pollMark !== 'none';
+    for (var r = 0; r < p.rows.length; r++) {
+      for (var c = 0; c < p.cols; c++) {
+        var i = r * p.cols + c, f = p.items[i];
+        if (!f) continue;
+        var rh = p.rows[r], x1 = right - c * (p.colW + p.gapC), x0 = x1 - p.colW;
+        ctx.save();
+        if (p.dim) ctx.globalAlpha = 0.45;
+        ctx.shadowColor = 'transparent';
+        ctx.fillStyle = dark ? 'rgba(17,24,39,.07)' : 'rgba(255,255,255,.13)';
+        rr(x0, top, p.colW, rh, Math.min(rh / 2, p.px * 0.9)); ctx.fill();
+        ctx.lineWidth = Math.max(1.5, p.px * 0.07); ctx.strokeStyle = dark ? 'rgba(17,24,39,.3)' : 'rgba(255,255,255,.4)'; ctx.stroke();
+        var tx = x1 - p.padX, cy = top + rh / 2;
+        if (mark) {
+          var bx = x1 - p.padX - p.bw / 2, br = p.bw / 2;
+          if (S.pollMark === 'box') {  /* مربع فارغ للاختيار */
+            ctx.strokeStyle = p.color; ctx.lineWidth = Math.max(2, p.px * 0.1);
+            rr(bx - br * 0.75, cy - br * 0.75, br * 1.5, br * 1.5, br * 0.3); ctx.stroke();
+          } else {
+            ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(bx, cy, br, 0, Math.PI * 2); ctx.fill();
+            ctx.fillStyle = inkFor(p.color); ctx.font = fontStr(800, p.px * 0.95, S.font2);
+            ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.direction = 'rtl';
+            ctx.fillText((POLL_MARKS[S.pollMark] || POLL_MARKS.num)[i], bx, cy + p.px * 0.04);
+          }
+          tx = x1 - p.padX - p.bw - p.px * 0.55;
+        }
+        if (!dark) { ctx.shadowColor = 'rgba(0,0,0,.25)'; ctx.shadowBlur = 6; }
+        ctx.font = fontStr(f.w, f.px, f.fam);
+        var th = f.lines.length * f.lh;
+        drawLines(f, tx, cy - th / 2 + (f.lh - f.px * 1.2) / 2, p.color, 'right', b.hl);
+        ctx.restore();
+      }
+      top += p.rows[r] + p.rowGap;
+    }
+    return top - p.rowGap;
+  }
+
+  /* ═══ v1.6: خلفيات «نص على لون» — تسع خلفيات من اللون نفسه. alpha < 1 عند وجود صورة تحتها.
+     تعيد: هل يُكتب النص بالداكن (dk)، ولوني الشارة. ═══ */
+  var BGS = [
+    { k: 'grad', n: 'تدرّج' }, { k: 'flat', n: 'لون واحد' }, { k: 'glow', n: 'توهّج' },
+    { k: 'stripes', n: 'خطوط' }, { k: 'dots', n: 'نقاط' }, { k: 'grid', n: 'شبكة' },
+    { k: 'waves', n: 'أمواج' }, { k: 'duo', n: 'لونان' }, { k: 'frame', n: 'إطار' }
+  ];
+  function textBg(W, H, A, u, key, alpha) {
+    var dk = darkOn(A), mn = Math.min(W, H), pc = dk ? 'rgba(0,0,0,' : 'rgba(255,255,255,';
+    ctx.save(); ctx.globalAlpha = alpha;
+    if (key === 'frame') {  /* خلفية داكنة وإطار بلون النوع */
+      ctx.fillStyle = '#0f172a'; ctx.fillRect(0, 0, W, H);
+      var gf = ctx.createRadialGradient(W / 2, H / 2, 0, W / 2, H / 2, Math.max(W, H) * 0.7);
+      gf.addColorStop(0, rgba(A, 0.25)); gf.addColorStop(1, 'rgba(15,23,42,0)');
+      ctx.fillStyle = gf; ctx.fillRect(0, 0, W, H);
+      ctx.strokeStyle = A; ctx.lineWidth = 10 * u; rr(16 * u, 16 * u, W - 32 * u, H - 32 * u, 18 * u); ctx.stroke();
+      ctx.restore();
+      return { dk: false, lbg: A, lfg: ink(A) };
+    }
+    if (key === 'flat') { ctx.fillStyle = A; ctx.fillRect(0, 0, W, H); }
+    else if (key === 'glow') {  /* توهّج في الوسط حيث النص، وأطراف أغمق */
+      var gg = ctx.createRadialGradient(W / 2, H * 0.48, 0, W / 2, H * 0.48, Math.hypot(W, H) * 0.6);
+      gg.addColorStop(0, shadeHex(A, dk ? 0.22 : 0.12)); gg.addColorStop(1, shadeHex(A, dk ? -0.15 : -0.42));
+      ctx.fillStyle = gg; ctx.fillRect(0, 0, W, H);
+    } else if (key === 'duo') {  /* لونان بقطر مائل */
+      ctx.fillStyle = A; ctx.fillRect(0, 0, W, H);
+      ctx.fillStyle = shadeHex(A, dk ? -0.12 : -0.3);
+      ctx.beginPath(); ctx.moveTo(0, H * 0.3); ctx.lineTo(W * 0.78, H); ctx.lineTo(0, H); ctx.closePath(); ctx.fill();
+    } else {  /* تدرّج قطري، وفوقه زخرفة خافتة */
+      var gt = ctx.createLinearGradient(0, 0, W, H);
+      gt.addColorStop(0, A); gt.addColorStop(1, shadeHex(A, dk ? -0.12 : -0.32));
+      ctx.fillStyle = gt; ctx.fillRect(0, 0, W, H);
+      var d, q;
+      if (key === 'grad') {
+        ctx.fillStyle = pc + '.06)';
+        ctx.beginPath(); ctx.arc(W * 0.92, H * 0.12, mn * 0.32, 0, Math.PI * 2); ctx.fill();
+        ctx.beginPath(); ctx.arc(W * 0.06, H * 0.95, mn * 0.24, 0, Math.PI * 2); ctx.fill();
+      } else if (key === 'stripes') {
+        ctx.strokeStyle = pc + '.07)'; ctx.lineWidth = 14 * u;
+        for (d = -H; d < W + H; d += 46 * u) { ctx.beginPath(); ctx.moveTo(d, 0); ctx.lineTo(d + H, H); ctx.stroke(); }
+      } else if (key === 'dots') {
+        ctx.fillStyle = pc + '.15)';
+        for (d = 17 * u; d < W; d += 34 * u) for (q = 17 * u; q < H; q += 34 * u) { ctx.beginPath(); ctx.arc(d, q, 3.2 * u, 0, Math.PI * 2); ctx.fill(); }
+      } else if (key === 'grid') {
+        ctx.strokeStyle = pc + '.09)'; ctx.lineWidth = Math.max(1, 1.6 * u);
+        for (d = 0; d < W; d += 64 * u) { ctx.beginPath(); ctx.moveTo(d, 0); ctx.lineTo(d, H); ctx.stroke(); }
+        for (q = 0; q < H; q += 64 * u) { ctx.beginPath(); ctx.moveTo(0, q); ctx.lineTo(W, q); ctx.stroke(); }
+      } else if (key === 'waves') {  /* ثلاث موجات خافتة أسفل التصميم */
+        for (var k = 0; k < 3; k++) {
+          var y0 = H * (0.74 + k * 0.08), amp = 18 * u, len = W / 2.2;
+          ctx.fillStyle = pc + (0.06 + k * 0.03).toFixed(2) + ')';
+          ctx.beginPath(); ctx.moveTo(0, H);
+          for (d = 0; d <= W; d += 8 * u) ctx.lineTo(d, y0 + Math.sin(d / len * Math.PI * 2 + k * 1.3) * amp);
+          ctx.lineTo(W, H); ctx.closePath(); ctx.fill();
+        }
+      }
+    }
+    ctx.restore();
+    return { dk: dk, lbg: dk ? '#111827' : '#fff', lfg: dk ? '#fff' : '#111827' };
   }
   function mix(o, extra) { var r = {}, k; for (k in o) r[k] = o[k]; for (k in extra) r[k] = extra[k]; return r; }
 
@@ -512,15 +732,18 @@ input[type=range],input[type=checkbox]{accent-color:var(--acc)}  /* v1.3: الم
     var u = U(W, H), tall = H / W > 1.5, A = accent(), TN = typeName();
     var safeTop = tall ? H * 0.08 : 0, safeBot = tall ? H * 0.14 : 0;
     var m = 48 * u, res = topReserve(W, H, u, safeTop), avail = H - safeBot - res;
+    WIDE = W / H > 1.25;   /* عمودان لخيارات الاستطلاع في المقاسات العريضة */
     ctx.clearRect(0, 0, W, H);
 
     if (S.style === 'split') {
       var landscape = W / H > 1.2;
       var panelW = landscape ? W * 0.46 : W, panelH = H;
       var dkS = darkOn(A), lh = 52 * u;  /* لون فاتح ← نص داكن وتدرّج أخف كي يبقى التباين في كل اللوحة */
-      var bl = textBlock(panelW - m * 2, u, mix(dkS ? INK_DARK : {}, { titlePx: landscape ? 60 : 66, maxLines: landscape ? 5 : 4, hardLines: 9,
-        maxH: landscape ? H - res - m - lh - 20 * u : H * 0.7 - lh - 20 * u - m * 2 - safeBot }));
-      if (!landscape) panelH = Math.min(H * 0.7, Math.max(H * 0.42, bl.h + lh + 20 * u + m * 2 + safeBot));
+      var chrome = lh + 20 * u + m * 2 + safeBot, so = mix(dkS ? INK_DARK : {}, { titlePx: landscape ? 60 : 66, maxLines: landscape ? 5 : 4, hardLines: 9 });
+      var bl = textBlock(panelW - m * 2, u, mix(so, { maxH: landscape ? H - res - m - lh - 20 * u : H * 0.7 - chrome, soft: !landscape }));
+      /* v1.6: العمودي — اللوحة حتى 70% من الارتفاع كالمعتاد؛ وإن لم يتسع النص فيها تمتد لأعلى حتى ما تحت الشعار، بدل أن يخرج النص من أسفل */
+      if (!landscape && bl.fail) bl = textBlock(panelW - m * 2, u, mix(so, { maxH: H - res - chrome }));
+      if (!landscape) panelH = Math.min(H - res, Math.max(H * 0.42, bl.h + chrome));
       if (landscape) drawPhoto(0, 0, W - panelW, H); else drawPhoto(0, 0, W, H - panelH);
       var px = landscape ? W - panelW : 0, py = landscape ? 0 : H - panelH;
       var g = ctx.createLinearGradient(px, py, px + panelW, py + panelH);
@@ -537,20 +760,17 @@ input[type=range],input[type=checkbox]{accent-color:var(--acc)}  /* v1.3: الم
     }
 
     if (S.style === 'text') {
-      /* v1.4: «نص على لون» — للاستطلاعات والبيانات والمنشورات النصية: لون النوع خلفيةً، والنص في الوسط.
-         الصورة اختيارية: إن وُجدت تظهر خافتة تحت اللون. */
+      /* «نص على لون» — للاستطلاعات والبيانات والمنشورات النصية. v1.6: تسع خلفيات، والصورة اختيارية تحت اللون
+         بقوة يختارها المستخدم؛ تحت 70% يُعامل كنص على صورة (أبيض بظل). */
       if (IMG) drawPhoto(0, 0, W, H);
-      var dk = darkOn(A), a1 = IMG ? 0.86 : 1, c2 = shadeArr(A, dk ? -0.12 : -0.32);  /* لون فاتح ← نص داكن وتدرّج أخف */
-      var gt = ctx.createLinearGradient(0, 0, W, H);
-      gt.addColorStop(0, rgba(A, a1)); gt.addColorStop(1, 'rgba(' + c2.join(',') + ',' + (IMG ? 0.94 : 1) + ')');
-      ctx.fillStyle = gt; ctx.fillRect(0, 0, W, H);
-      ctx.save(); ctx.fillStyle = dk ? 'rgba(0,0,0,.05)' : 'rgba(255,255,255,.06)';  /* دائرتان خافتتان للزخرفة */
-      ctx.beginPath(); ctx.arc(W * 0.92, H * 0.12, Math.min(W, H) * 0.32, 0, Math.PI * 2); ctx.fill();
-      ctx.beginPath(); ctx.arc(W * 0.06, H * 0.95, Math.min(W, H) * 0.24, 0, Math.PI * 2); ctx.fill(); ctx.restore();
-      var lh6 = 52 * u, gap6 = 26 * u, tw = W - m * 2 - 40 * u;
+      var tb = textBg(W, H, A, u, S.bg || 'grad', IMG ? (S.bgA || 86) / 100 : 1);
+      var dk = tb.dk && !(IMG && S.bgA < 70);
+      var lh6 = 52 * u, gap6 = 26 * u, tw = W - m * 2 - (S.bg === 'frame' ? 64 : 40) * u;
       var b6 = textBlock(tw, u, mix(dk ? INK_DARK : {}, { titlePx: 76, maxLines: 5, hardLines: 10, maxH: avail - m - lh6 - gap6 }));
       var tot = lh6 + gap6 + b6.h, t6 = res + Math.max(0, (H - safeBot - m - res - tot) / 2);
-      label(W / 2, t6, u, TN, dk ? '#111827' : '#fff', 'center', tw, dk ? '#fff' : '#111827');
+      var al6 = textAlignOf('center');  /* الشارة تتبع محاذاة النص */
+      label(al6 === 'center' ? W / 2 : al6 === 'left' ? W / 2 - tw / 2 : W / 2 + tw / 2, t6, u, TN,
+        dk === tb.dk ? tb.lbg : '#fff', al6, tw, dk === tb.dk ? tb.lfg : '#111827');
       drawBlock(b6, 0, t6 + lh6 + gap6, 'center', W / 2);
       drawLogo(W, H, u, safeTop); drawSite(W, H, u, safeTop);
       return;
@@ -588,7 +808,7 @@ input[type=range],input[type=checkbox]{accent-color:var(--acc)}  /* v1.3: الم
       drawBlock(b2, W - m - 10 * u, cy + 84 * u);
     } else if (S.style === 'card') {
       var cw = Math.min(maxW, 980 * u * (W > H ? 1.2 : 1));
-      var b3 = textBlock(cw - 90 * u, u, { titleColor: '#111827', subColor: '#374151', footColor: '#6b7280', kickerColor: darkOn(A) ? shadeHex(A, -0.5) : A, dark: true, maxH: avail - m - 122 * u });
+      var b3 = textBlock(cw - 90 * u, u, { titleColor: '#111827', subColor: '#374151', footColor: '#6b7280', kickerColor: darkOn(A) ? shadeHex(A, -0.5) : A, hl: darkOn(A) ? shadeHex(A, -0.5) : A, dark: true, maxH: avail - m - 122 * u });
       var ch = b3.h + 96 * u, cx = (W - cw) / 2, cyy = H - safeBot - ch - m;
       ctx.save(); ctx.shadowColor = 'rgba(0,0,0,.35)'; ctx.shadowBlur = 30 * u;
       ctx.fillStyle = '#ffffff'; rr(cx, cyy, cw, ch, 22 * u); ctx.fill(); ctx.restore();
@@ -656,7 +876,25 @@ input[type=range],input[type=checkbox]{accent-color:var(--acc)}  /* v1.3: الم
       var sm = document.createElement('small'); sm.style.cssText = 'color:var(--muted);direction:ltr'; sm.textContent = s.w + '×' + s.h; l.appendChild(sm);
       bt.appendChild(l);
     });
-    $('subWrap').firstChild.textContent = S.style === 'quote' ? 'اسم المتحدث وصفته' : 'سطر ثانٍ (اختياري)';
+    $('subWrap').firstChild.textContent = S.style === 'quote' ? 'اسم المتحدث وصفته' : S.poll ? 'سطر ثانٍ — دعوة التصويت (اختياري)' : 'سطر ثانٍ (اختياري)';
+    /* v1.6: المحاذاة، وحالة الألوان، والاستطلاع، وخلفيات «نص على لون» بمصغّرات حية بلون النوع */
+    Array.prototype.forEach.call($('aligns').children, function (el) { el.classList.toggle('on', el.getAttribute('data-v') === S.align); });
+    $('tcState').textContent = S.tcolor ? '(مخصّص)' : '(تلقائي)';
+    $('hcState').textContent = S.hcolor ? '(مخصّص)' : '(تلقائي)';
+    $('pollBox').hidden = !S.poll;
+    $('bgSec').hidden = S.style !== 'text';
+    if (S.style === 'text') {
+      var bg = $('bgs'); bg.innerHTML = '';
+      BGS.forEach(function (x) {
+        var b = document.createElement('button'); b.type = 'button'; b.className = 'style' + ((S.bg || 'grad') === x.k ? ' on' : '');
+        var c = document.createElement('canvas'); c.width = 96; c.height = 60;
+        var sv = ctx; ctx = c.getContext('2d');
+        try { textBg(96, 60, accent(), U(96, 60) * 2.2, x.k, 1); } finally { ctx = sv; }
+        b.appendChild(c); b.appendChild(document.createTextNode(x.n));
+        b.onclick = function () { S.bg = x.k; buildUI(); render(); save(); };
+        bg.appendChild(b);
+      });
+    }
   }
 
   function bindInputs() {
@@ -682,6 +920,29 @@ input[type=range],input[type=checkbox]{accent-color:var(--acc)}  /* v1.3: الم
       el.oninput = function () { S[key] = +el.value; $(id + 'V').textContent = el.value + suffix; render(); save(); };
     };
     rng('zoom', 'zoom', '%'); rng('shade', 'shade', '%'); rng('fscale', 'fscale', '%');
+    /* v1.6 */
+    rng('lh', 'lh', '%'); rng('bgA', 'bgA', '%');
+    $('tw').value = String(S.tw); $('tw').onchange = function () { S.tw = +this.value; ensureFont(S.font, render); save(); };
+    Array.prototype.forEach.call($('aligns').children, function (el) {
+      el.onclick = function () { S.align = el.getAttribute('data-v'); buildUI(); render(); save(); };
+    });
+    [['tcolor', 'tcAuto', '#ffffff'], ['hcolor', 'hcAuto', '#fde047']].forEach(function (q) {
+      $(q[0]).value = S[q[0]] || q[2];
+      $(q[0]).oninput = function () { S[q[0]] = this.value; buildUI(); render(); save(); };
+      $(q[1]).onclick = function () { S[q[0]] = ''; $(q[0]).value = q[2]; buildUI(); render(); save(); };
+    });
+    $('pollOn').checked = S.poll;
+    $('pollOn').onchange = function () { S.poll = this.checked; buildUI(); render(); save(); };
+    Array.prototype.forEach.call(document.querySelectorAll('#pollBox .po'), function (el, i) {
+      el.value = S.pollOpts[i] || '';
+      el.addEventListener('input', function () { S.pollOpts[i] = el.value; render(); save(); });
+    });
+    $('pollMark').value = S.pollMark; $('pollMark').onchange = function () { S.pollMark = this.value; render(); save(); };
+    $('pollQuick').onclick = function () {
+      S.poll = true; S.style = 'text'; S.typeLabel = 'استطلاع رأي';
+      $('pollOn').checked = true; $('typeLabel').value = S.typeLabel;
+      buildUI(); render(); save(); toast('📊 جاهز: اكتب السؤال في «العنوان» والخيارات هنا');
+    };
   }
 
   /* ═══ الصورة: اختيار / سحب / لصق ═══ */
@@ -846,6 +1107,7 @@ input[type=range],input[type=checkbox]{accent-color:var(--acc)}  /* v1.3: الم
   /* ═══ أخرى ═══ */
   $('resetBtn').onclick = function () {
     ['kicker', 'title', 'sub', 'credit'].forEach(function (k) { S[k] = ''; $(k).value = ''; });
+    S.pollOpts = ['', '', '', '', '', '']; Array.prototype.forEach.call(document.querySelectorAll('#pollBox .po'), function (el) { el.value = ''; });
     IMG = null; S.panX = 0; S.panY = 0; S.zoom = 100; $('zoom').value = 100; $('zoomV').textContent = '100%';
     render(); toast('منشور جديد');
   };
@@ -856,7 +1118,7 @@ input[type=range],input[type=checkbox]{accent-color:var(--acc)}  /* v1.3: الم
   /* الخطوط: الرسم على القماش يحتاج تحميل الخط فعلياً */
   function ensureFont(name, cb) {
     if (!document.fonts || !document.fonts.load) { cb(); return; }
-    Promise.all([document.fonts.load('800 40px "' + name + '"'), document.fonts.load('900 40px "' + name + '"'), document.fonts.load('600 40px "' + name + '"')])
+    Promise.all(['400', '600', '800', '900'].map(function (w) { return document.fonts.load(w + ' 40px "' + name + '"'); }))
       .then(function () { cb(); }, function () { cb(); });
   }
 
