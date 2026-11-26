@@ -2,6 +2,9 @@
    S24News — مشغّل البث المباشر (playFast / loadVideoLibs)
    playFast تُستدعى من onclick داخل HTML القالب — يجب أن تبقى دالة عامة
 
+   الإصدار 2.21 — 26 نوفمبر 2026: صندوق التغطية في العمود الأيسر بالرئيسية تحت المشغّل الجانبي (الكمبيوتر فقط):
+                آخر 4 أخبار من التغطية التي يختارها حسان في لوحة 24، من مستند واحد coverage_side/current
+                (يكتبه Syria24_Coverage_Sync 2.8) — قراءة واحدة لكل زائر كل 5 دقائق
    الإصدار 2.20 — 17 نوفمبر 2026: شارة «الرئيسية» في شريط القنوات بصفحة البث؛ إن كان البث الرئيسي إحدى قنوات الشريط
                 (زر «★ اجعلها الرئيسية» في لوحة 24) تبقى في مكانها بترتيب حسان بدل نقلها إلى أول الشريط؛
                 وإن لم يكن منها يبقى أولاً كما كان (strip.mainIdx بدل strip.hasMain)
@@ -1628,3 +1631,103 @@ function closeMiniLive() {
     var arrow = document.querySelector('.progress-wrap');
     if (arrow) arrow.style.setProperty('bottom', '20px', 'important');
 }
+
+/* ============================================================
+   صندوق التغطية في العمود الأيسر بالرئيسية (2.21 — 26 نوفمبر 2026)
+   تحت المشغّل الجانبي مباشرة (.live-tv-widget)، على الكمبيوتر فقط (العمود الأيسر مخفي تحت 1024px).
+   المصدر: مستند واحد coverage_side/current يكتبه Syria24_Coverage_Sync 2.8 وحده:
+     { gid, name, pinned, last, items: [{ t, title, url, urgent }] (حتى 4), at }
+   والتغطية المعروضة يختارها حسان من لوحة 24 (تبويب التغطية ← «العمود الأيسر»): تلقائي، أو تغطية بعينها، أو إيقاف.
+   الكلفة: قراءة واحدة لكل زائر كل 5 دقائق على الأكثر (نسخة S24Cache)، والصفحة المخفية لا تقرأ.
+   يختفي الصندوق إن لم توجد تغطية، أو كانت غير مثبّتة ولم يصلها خبر خلال 24 ساعة
+   (المزامنة التلقائية تتوقف في الهدوء، فيُحسم ذلك هنا بلا كتابة إضافية).
+   ============================================================ */
+(function () {
+    var TTL = 5 * 60 * 1000, DAY = 24 * 60 * 60 * 1000;
+    var box = null, feed = null, fmt = null;
+
+    function clock(ms) {
+        try {
+            fmt = fmt || new Intl.DateTimeFormat('ar-u-nu-latn', { hour: 'numeric', minute: '2-digit', timeZone: 'Asia/Damascus' });
+            return fmt.format(new Date(ms));
+        } catch (e) { return ''; }
+    }
+    // «منذ 12 د» — كما في تغطيات الجزيرة، مع الساعة بين قوسين
+    function ago(ms) {
+        var m = Math.floor((Date.now() - ms) / 60000);
+        if (m < 1) return 'الآن';
+        if (m < 60) return 'منذ ' + m + ' د';
+        var h = Math.floor(m / 60);
+        if (h < 24) return 'منذ ' + h + ' س';
+        return clock(ms);
+    }
+    function visible(d) {
+        if (!d || !d.gid || !Array.isArray(d.items) || !d.items.length) return false;
+        return d.pinned === true || (Number(d.last) || 0) >= Date.now() - DAY;
+    }
+    function draw() {
+        if (!visible(feed)) { box.hidden = true; box.innerHTML = ''; return; }
+        var href = '/p/lbs24n.html?tab=' + encodeURIComponent(feed.gid);
+        box.innerHTML = '';
+        var head = document.createElement('a');
+        head.className = 's24-sc-head';
+        head.href = href;
+        head.innerHTML = '<span class="s24-sc-badge"><span class="pulse-dot" aria-hidden="true"></span>مباشر</span><span class="s24-sc-name"></span>';
+        head.querySelector('.s24-sc-name').textContent = feed.name || '';
+        var upd = document.createElement('div');
+        upd.className = 's24-sc-upd';
+        upd.textContent = 'آخر تحديث ' + ago(Number(feed.items[0].t) || 0);
+        var list = document.createElement('ol');
+        list.className = 's24-sc-list';
+        feed.items.forEach(function (n) {
+            var t = Number(n.t) || 0;
+            var li = document.createElement('li');
+            li.className = 's24-sc-item' + (n.urgent ? ' is-urgent' : '');
+            var el = document.createElement(n.url ? 'a' : 'div');
+            el.className = 's24-sc-link';
+            if (n.url) el.href = n.url;
+            el.innerHTML = '<time class="s24-sc-time"></time><span class="s24-sc-title"></span>';
+            var tm = el.querySelector('time');
+            tm.setAttribute('datetime', new Date(t).toISOString());
+            tm.setAttribute('data-t', String(t));
+            tm.textContent = (n.urgent ? 'عاجل · ' : '') + ago(t) + ' (' + clock(t) + ')';
+            el.querySelector('.s24-sc-title').textContent = n.title || '';
+            li.appendChild(el);
+            list.appendChild(li);
+        });
+        var all = document.createElement('a');
+        all.className = 's24-sc-all';
+        all.href = href;
+        all.innerHTML = 'تابع التغطية كاملة &rsaquo;';
+        box.appendChild(head);
+        box.appendChild(upd);
+        box.appendChild(list);
+        box.appendChild(all);
+        box.hidden = false;
+    }
+    function load(force) {
+        if (document.hidden || !window.S24Feed) return;
+        window.S24Feed.get('coverage_side/current', { key: 's24_side_cov', ttl: TTL, force: !!force }).then(function (d) {
+            feed = d || null;
+            draw();
+        });
+    }
+    function init() {
+        if (location.pathname !== '/') return;                                   // الرئيسية وحدها
+        if (!window.matchMedia || !window.matchMedia('(min-width: 1024px)').matches) return;   // الكمبيوتر فقط
+        var player = document.querySelector('#force-left-sidebar .live-tv-widget');
+        if (!player || document.getElementById('s24-side-cov')) return;
+        box = document.createElement('section');
+        box.id = 's24-side-cov';
+        box.className = 's24-side-cov';
+        box.setAttribute('aria-label', 'آخر أخبار التغطية المباشرة');
+        box.hidden = true;
+        player.insertAdjacentElement('afterend', box);
+        load();
+        setInterval(load, TTL);                          // قراءة كل 5 دقائق والصفحة ظاهرة
+        setInterval(function () { if (feed) draw(); }, 60 * 1000);   // تحديث «منذ…» كل دقيقة بلا قراءة
+        document.addEventListener('visibilitychange', function () { if (!document.hidden) load(); });
+    }
+    if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', init);
+    else init();
+})();

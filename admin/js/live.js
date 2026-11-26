@@ -1,5 +1,9 @@
 /* ============================================================
    S24News — وحدة التغطية الحية في لوحة التحكم (admin/js/live.js)
+   الإصدار 1.7 — 26 نوفمبر 2026 (صندوق التغطية في العمود الأيسر بالرئيسية — يتطلب Syria24_Coverage_Sync 2.8
+     وlive-player.js 2.21: سطر «العمود الأيسر في الرئيسية» يختار تلقائي / تغطية بعينها / إيقاف، ويُحفظ في الحقل side
+     (يتطلب 'side' ضمن حقول coverage_groups في قواعد Firestore). بعد تغيير الاختيار أو الحالة أو الاسم أو البداية،
+     وبعد نشر خبر سريع أو تعديله أو حذفه أو إخفاء خبر، تطلب اللوحة إعادة بناء الصندوق (?action=side) بعد 6 ثوانٍ من آخر تغيير)
    الإصدار 1.6 — 14 نوفمبر 2026 (وقت الخبر السريع: حقل «وقت الخبر» تاريخاً وساعةً معاً، عند النشر وعند التعديل.
      فارغ = الآن؛ وقت سابق يُقبل حتى بداية التغطية الحالية؛ لا وقت لاحق (التغطية لا تدعم الجدولة).
      الربط بمقالة لا يغيّر الوقت. lastAt.grN يُضبط معه (يرتفع إن صار الخبر الأحدث، ويُعاد حسابه إن تأخّر آخر خبر).
@@ -28,6 +32,7 @@
    - groups.grN    اسم التغطية الظاهر في الصفحة وصندوق الرئيسية
    - statuses.grN  active | pinned | inactive | closed
    - since.grN     بداية التغطية الحالية (زر "تغطية جديدة") — الأقدم لا يُعرض
+   - side           التغطية في العمود الأيسر بالرئيسية: auto | off | grN (1.7) — Apps Script يبني منها coverage_side/current
    - archive.<grN_ms>  التغطيات السابقة: { gid, name, from, to, last, hidden }
                        يُضاف تلقائياً عند "تغطية جديدة" إن كان للتغطية السابقة أخبار
    ولا تلمس lastAt (يكتبه Apps Script وحده بعد كل خبر).
@@ -121,6 +126,9 @@ const MARKUP = `
           حين تنشر مقالته لاحقاً: «الأخبار» ← «تعديل» على الخبر السريع ← اختر المقالة، فيصبح قابلاً للضغط ولا يتكرر.</li>
         <li><b>وقت الخبر السريع:</b> حقل «وقت الخبر» (التاريخ والساعة معاً) عند النشر، ويُعدَّل لاحقاً من «تعديل / ربط».
           فارغ = الآن، ويُقبل وقت سابق حتى بداية التغطية الحالية، ولا يُقبل وقت لاحق. الربط بمقالة لا يغيّر الوقت.</li>
+        <li><b>العمود الأيسر في الرئيسية:</b> تحت المشغّل الجانبي، آخر 4 أخبار من التغطية المختارة (الكمبيوتر فقط).
+          «تلقائي» = المثبّتة، وإلا الأحدث خبراً. إن اخترت تغطية بعينها ثم انتهت أو لم يصلها خبر منذ 24 ساعة، يعرض الصندوق التغطية النشطة الأخرى، فإن لم توجد يختفي.
+          «إيقاف» يخفيه دائماً. يتحدّث عند القراء خلال 5 دقائق تقريباً.</li>
       </ol>
     </details>
 
@@ -130,6 +138,12 @@ const MARKUP = `
       <button class="btn" id="lvReload" type="button">تحديث</button>
       <button class="btn" id="lvAdd" type="button">+ مجموعة</button>
       <button class="btn btn-primary" id="lvSync" type="button">زامن الآن</button>
+    </div>
+
+    <div class="card toolbar">
+      <label for="lvSide"><b>العمود الأيسر في الرئيسية:</b></label>
+      <select class="input btn-sm status-sel" id="lvSide" aria-label="التغطية في العمود الأيسر بالرئيسية"></select>
+      <span class="hint" id="lvSideInfo"></span>
     </div>
 
     <div class="card table-wrap">
@@ -256,6 +270,24 @@ function homeState(id, d, now) {
   return { show: true };
 }
 
+// التغطية التي يعرضها صندوق العمود الأيسر — نفس منطق Apps Script (pickSideGroup_)
+function sidePick(d, now) {
+  const groups = d.groups || {};
+  const choice = String(d.side || 'auto');
+  if (choice === 'off') return null;
+  if (choice !== 'auto' && groups[choice] && homeState(choice, d, now).show) return choice;
+  let best = null, bestPinned = false, bestLast = -1;
+  Object.keys(groups).forEach((id) => {
+    if (!homeState(id, d, now).show) return;
+    const pinned = (d.statuses || {})[id] === 'pinned';
+    const last = num((d.lastAt || {})[id]);
+    if (best === null || (pinned && !bestPinned) || (pinned === bestPinned && last > bestLast)) {
+      best = id; bestPinned = pinned; bestLast = last;
+    }
+  });
+  return best;
+}
+
 async function copyText(text) {
   try { await navigator.clipboard.writeText(text); toast('نُسخ: ' + text); }
   catch (e) { prompt('انسخ النص:', text); }
@@ -366,8 +398,48 @@ export default {
       tb.innerHTML = '';
       $('lvEmpty').hidden = ids.length > 0;
       ids.forEach((id) => tb.appendChild(rowFor(id, now)));
+      renderSide(ids, now);
       renderArchive();
     }
+
+    /* ============================================================
+       العمود الأيسر في الرئيسية (1.7)
+       ============================================================ */
+    function renderSide(ids, now) {
+      const sel = $('lvSide');
+      const choice = String(data.side || 'auto');
+      const groups = data.groups || {};
+      const opts = [['auto', 'تلقائي (المثبّتة أو الأحدث خبراً)']]
+        .concat(ids.map((id) => [id, id + ' — ' + (groups[id] || '')]))
+        .concat([['off', 'إيقاف (لا صندوق)']]);
+      sel.innerHTML = opts.map(([v, l]) => '<option value="' + esc(v) + '"' + (v === choice ? ' selected' : '') + '>' + esc(l) + '</option>').join('');
+      const shown = sidePick(data, now);
+      let info;
+      if (choice === 'off') info = 'الصندوق متوقف.';
+      else if (!shown) info = 'لا يظهر الآن: لا توجد تغطية ظاهرة.';
+      else if (choice !== 'auto' && shown !== choice) info = '«' + (groups[choice] || choice) + '» غير ظاهرة الآن، فيُعرض بدلها: «' + (groups[shown] || shown) + '».';
+      else info = 'يظهر الآن: «' + (groups[shown] || shown) + '».';
+      $('lvSideInfo').textContent = info;
+    }
+
+    // إعادة بناء صندوق العمود الأيسر في Apps Script — بعد 6 ثوانٍ من آخر تغيير (تُجمع التغييرات المتتالية في طلب واحد)
+    let sideTimer = null;
+    function refreshSide() {
+      if (!SYNC_URL) return;
+      clearTimeout(sideTimer);
+      sideTimer = setTimeout(() => {
+        if (!isOnline()) return;
+        fetch(SYNC_URL + '?action=side').then((r) => r.json()).then((j) => {
+          if (j && j.error) toast('تعذّر تحديث صندوق العمود الأيسر: ' + j.error, true);
+        }).catch(() => {});
+      }, 6000);
+    }
+
+    $('lvSide').addEventListener('change', (e) => {
+      const v = e.target.value;
+      const label = v === 'auto' ? 'تلقائي' : v === 'off' ? 'إيقاف' : ((data.groups || {})[v] || v);
+      save({ side: v }, 'العمود الأيسر: ' + label + ' — يظهر عند القراء خلال 5 دقائق تقريباً');
+    });
 
     /* ============================================================
        الأرشيف: التغطيات السابقة
@@ -535,6 +607,8 @@ export default {
         toast(r.queued ? 'حُفظ على الجهاز — يُرسل تلقائياً عند عودة الاتصال' : (okMsg || 'حُفظ'));
         // تغيّر ما يحدد نشاط التغطية (الحالة أو البداية) ← إيقاظ المزامنة التلقائية فوراً
         if (!r.queued && Object.keys(fields).some((k) => /^(statuses|since)\./.test(k))) wakeSync();
+        // ما يغيّر محتوى صندوق العمود الأيسر (الاختيار، الحالة، الاسم، البداية) ← إعادة بنائه
+        if (!r.queued && Object.keys(fields).some((k) => k === 'side' || /^(statuses|since|groups)\./.test(k))) refreshSide();
       } catch (e) {
         toast('تعذّر الحفظ: ' + errText(e), true);
         load(true);
@@ -864,6 +938,7 @@ export default {
         toast(r.queued ? 'حُفظ على الجهاز — يُنشر عند عودة الاتصال'
           : (old ? 'حُفظ الخبر السريع' : 'نُشر الخبر السريع') + (url ? ' (مرتبط بمقالة)' : '') +
             (timeChanged || (!old && tVal) ? ' — بوقت ' + fmtDate(ts) : ''));
+        if (!r.queued) refreshSide();
         // تعديل النص أو الربط ← تحديثه في شريط العاجل إن كان فيه (قراءة واحدة)
         if (old && isOnline()) {
           syncQuickToBreaking(qid, { title, url: url || '', isUrgent }).catch((e) =>
@@ -893,6 +968,7 @@ export default {
         }
         renderNews();
         toast('حُذف الخبر السريع');
+        refreshSide();
       } catch (e) {
         toast('تعذّر الحذف: ' + errText(e), true);
       }
@@ -907,6 +983,7 @@ export default {
         const r = await w;
         toast(r.queued ? 'حُفظ على الجهاز — يُرسل عند عودة الاتصال'
           : (v ? 'أُخفي الخبر من صفحة التغطية' : 'أُعيد إظهار الخبر'));
+        if (!r.queued) refreshSide();
         // الخبر العاجل: ما يُخفى من التغطية يُخفى من شريط العاجل أيضاً
         if (n.isUrgent && isOnline()) {
           const job = n.quick === true

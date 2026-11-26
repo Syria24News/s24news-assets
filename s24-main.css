@@ -5156,6 +5156,32 @@ body.live-page-mode .main-container { max-width: 720px !important; margin: 0 aut
 .s24-cov-link { display: flex; gap: 12px; align-items: baseline; padding: 10px 0; border-bottom: 1px solid var(--border-color, #eee); color: var(--text-main); text-decoration: none; }
 .s24-cov-item:last-child .s24-cov-link { border-bottom: 0; }
 a.s24-cov-link:hover .s24-cov-title { color: #77bd1d; }
+/* صندوق التغطية في العمود الأيسر بالرئيسية (live-player.js 2.21) — تحت المشغّل الجانبي، الكمبيوتر فقط.
+   محدّدات #force-left-sidebar مع !important لأن روابط العمود عامةً flex بحشوة وخط عريض 14.5px (القسم «القوائم الجانبية»).
+   المرور = تغيّر لون فقط بلا حركة */
+#force-left-sidebar .s24-side-cov { background: var(--bg-card, #fff); border: 1px solid var(--border-color, #e0e0e0); margin-bottom: 20px; flex-shrink: 0 !important; }
+#force-left-sidebar .s24-side-cov[hidden] { display: none !important; }
+#force-left-sidebar .s24-side-cov a, #force-left-sidebar .s24-side-cov .s24-sc-link { border-radius: 0 !important; }   /* روابط العمود عامةً بزوايا 8px؛ الصندوق بزوايا مربعة كالمشغّل */
+#force-left-sidebar .s24-side-cov a.s24-sc-head { display: flex !important; align-items: center; gap: 8px; padding: 10px 12px !important; border-bottom: 1px solid var(--border-color, #e0e0e0) !important; color: var(--text-main); text-decoration: none; min-width: 0; }
+#force-left-sidebar .s24-side-cov a.s24-sc-head:hover { opacity: 1; }
+#force-left-sidebar .s24-side-cov a.s24-sc-head:hover .s24-sc-name { color: #77bd1d; }
+.s24-sc-badge { flex-shrink: 0; display: inline-flex; align-items: center; gap: 6px; background: var(--color-red, #e71414); color: #fff; font-family: var(--font-main); font-size: 12px; font-weight: 700; line-height: 1; padding: 5px 8px; }
+.s24-sc-badge .pulse-dot { width: 7px; height: 7px; background-color: #fff; }
+#force-left-sidebar .s24-sc-name { font-family: var(--font-title); font-size: 15px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+.s24-sc-upd { font-family: var(--font-main); font-size: 12px; color: var(--text-sec); padding: 8px 12px 0; }
+.s24-sc-list { list-style: none; margin: 8px 22px 6px 12px; padding: 0; border-inline-start: 2px solid var(--border-color, #eee); }
+.s24-sc-item { position: relative; padding-inline-start: 14px; }
+.s24-sc-item::before { content: ""; position: absolute; right: -6px; top: 13px; width: 10px; height: 10px; border-radius: 50%; background: #77bd1d; box-shadow: 0 0 0 3px var(--bg-card, #fff); }
+.s24-sc-item.is-urgent::before { background: var(--color-red, #e71414); }
+#force-left-sidebar .s24-side-cov .s24-sc-link { display: block !important; padding: 8px 0 !important; border-bottom: 1px solid var(--border-color, #eee) !important; color: var(--text-main); text-decoration: none; }
+#force-left-sidebar .s24-side-cov .s24-sc-item:last-child .s24-sc-link { border-bottom: 0 !important; }
+#force-left-sidebar .s24-side-cov a.s24-sc-link:hover { opacity: 1; }
+#force-left-sidebar .s24-side-cov a.s24-sc-link:hover .s24-sc-title { color: #77bd1d; }
+.s24-sc-time { display: block; font-family: var(--font-main); font-size: 12px; font-weight: 400; color: var(--text-sec); margin-bottom: 2px; }
+.s24-sc-item.is-urgent .s24-sc-time { color: var(--color-red, #e71414); font-weight: 700; }
+#force-left-sidebar .s24-sc-title { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; font-family: var(--font-main); font-size: 14px !important; font-weight: 600 !important; line-height: 1.6; }
+#force-left-sidebar .s24-side-cov a.s24-sc-all { display: block !important; text-align: center; background: #77bd1d; color: #fff !important; font-family: var(--font-main); font-size: 14px !important; font-weight: 700 !important; padding: 10px !important; border-bottom: 0 !important; text-decoration: none; }
+#force-left-sidebar .s24-side-cov a.s24-sc-all:hover { opacity: 1; background: #69a818; }
 .s24-cov-time { flex-shrink: 0; min-width: 52px; font-family: var(--font-main); font-size: 13px; font-weight: 700; color: var(--text-sec); }
 .s24-cov-title { font-family: var(--font-main); font-size: 15px; font-weight: 600; line-height: 1.6; }
 .s24-cov-item.is-urgent .s24-cov-title { color: var(--color-red, #e71414); }
