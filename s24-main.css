@@ -2575,7 +2575,7 @@ a.sy-news-link:last-child {
     text-decoration: none;
     text-align: left;
 }
-.poll-all-link:hover { text-decoration: underline; }
+.poll-all-link:hover { color: #5a9216; }   /* تغيّر اللون فقط — بلا خط ولا حركة */
 
 #poll-content-area {
     opacity: 0;

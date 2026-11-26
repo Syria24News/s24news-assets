@@ -1,5 +1,6 @@
 /* ============================================================
    S24News — صفحة الاستطلاعات /p/polls.html (poll-page.js)
+   v1.2 — 27 نوفمبر 2026: هامش سفلي تحت آخر استطلاع، ورابط «اقرأ الخبر المرتبط» يتغيّر لونه فقط عند المرور (بلا خط)
    v1.1 — 27 نوفمبر 2026: «استطلاعات سابقة» مقسّمة بعنوان لكل شهر (تشرين الثاني 2026…) — بلا أي قراءة إضافية
    v1.0 — 26 نوفمبر 2026
    - على نسق صفحة استطلاعات روسيا اليوم: بطاقة لكل استطلاع، النسبة لكل خيار، و«عدد المشاركين»
@@ -25,7 +26,7 @@
   var fmtMonth = new Intl.DateTimeFormat('ar-SY-u-nu-latn', { month: 'long', year: 'numeric', timeZone: 'Asia/Damascus' });
 
   var PAGE_CSS = [
-    '#s24-polls-page{display:flex;flex-direction:column;gap:18px;direction:rtl}',
+    '#s24-polls-page{display:flex;flex-direction:column;gap:18px;direction:rtl;padding-bottom:24px}',
     '.s24pl-h{font-family:var(--font-title);font-size:20px;font-weight:700;margin:10px 0 0;padding-bottom:8px;border-bottom:2px solid var(--sy-green,#77bd1d);color:var(--text-main,#111)}',
     '.s24pl-card{background:var(--card-bg,#fff);border:1px solid #e6e6e6;border-radius:8px;padding:20px;display:flex;flex-direction:column;gap:14px}',
     '.s24pl-badge{align-self:flex-start;font-size:12px;font-weight:700;padding:3px 10px;border-radius:12px;background:#f1f1f1;color:#666}',
@@ -38,7 +39,7 @@
     '.s24pl-msg{font-size:14px;color:#c0392b;margin:0}',
     '.s24pl-msg:empty{display:none}',
     '.s24pl-link{align-self:flex-start;font-size:14px;font-weight:700;color:var(--sy-green,#77bd1d);text-decoration:none}',
-    '.s24pl-link:hover{text-decoration:underline}',
+    '.s24pl-link:hover{color:#5a9216}',
     '.s24pl-more{align-self:center;min-width:200px;padding:11px 22px;border:1px solid var(--sy-green,#77bd1d);background:transparent;color:var(--sy-green,#77bd1d);border-radius:6px;font:inherit;font-weight:700;cursor:pointer}',
     '.s24pl-more:hover{background:var(--sy-green,#77bd1d);color:#fff}',
     '.s24pl-more[disabled]{opacity:.6;cursor:default}',
