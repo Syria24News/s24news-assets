@@ -5158,7 +5158,7 @@ body.live-page-mode .main-container { max-width: 720px !important; margin: 0 aut
 a.s24-cov-link:hover .s24-cov-title { color: #77bd1d; }
 /* صندوق التغطية في العمود الأيسر بالرئيسية (live-player.js 2.21) — تحت المشغّل الجانبي، الكمبيوتر فقط.
    محدّدات #force-left-sidebar مع !important لأن روابط العمود عامةً flex بحشوة وخط عريض 14.5px (القسم «القوائم الجانبية»).
-   المرور = تغيّر لون فقط بلا حركة */
+   المرور = تغيّر لون فقط بلا حركة. العنوان 13px بحد 3 أسطر (27 نوفمبر: ليظهر كاملاً في العمود الضيق) */
 #force-left-sidebar .s24-side-cov { background: var(--bg-card, #fff); border: 1px solid var(--border-color, #e0e0e0); margin-bottom: 20px; flex-shrink: 0 !important; }
 #force-left-sidebar .s24-side-cov[hidden] { display: none !important; }
 #force-left-sidebar .s24-side-cov a, #force-left-sidebar .s24-side-cov .s24-sc-link { border-radius: 0 !important; }   /* روابط العمود عامةً بزوايا 8px؛ الصندوق بزوايا مربعة كالمشغّل */
@@ -5179,7 +5179,7 @@ a.s24-cov-link:hover .s24-cov-title { color: #77bd1d; }
 #force-left-sidebar .s24-side-cov a.s24-sc-link:hover .s24-sc-title { color: #77bd1d; }
 .s24-sc-time { display: block; font-family: var(--font-main); font-size: 12px; font-weight: 400; color: var(--text-sec); margin-bottom: 2px; }
 .s24-sc-item.is-urgent .s24-sc-time { color: var(--color-red, #e71414); font-weight: 700; }
-#force-left-sidebar .s24-sc-title { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; font-family: var(--font-main); font-size: 14px !important; font-weight: 600 !important; line-height: 1.6; }
+#force-left-sidebar .s24-sc-title { display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 3; overflow: hidden; font-family: var(--font-main); font-size: 13px !important; font-weight: 600 !important; line-height: 1.6; }
 #force-left-sidebar .s24-side-cov a.s24-sc-all { display: block !important; text-align: center; background: #77bd1d; color: #fff !important; font-family: var(--font-main); font-size: 14px !important; font-weight: 700 !important; padding: 10px !important; border-bottom: 0 !important; text-decoration: none; }
 #force-left-sidebar .s24-side-cov a.s24-sc-all:hover { opacity: 1; background: #69a818; }
 .s24-cov-time { flex-shrink: 0; min-width: 52px; font-family: var(--font-main); font-size: 13px; font-weight: 700; color: var(--text-sec); }
