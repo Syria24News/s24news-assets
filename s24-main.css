@@ -2389,12 +2389,12 @@ a.sy-news-link:last-child {
     background-color: #9bc34a; color: #fff;
     border: none; border-radius: 4px;
     font-size: 16px; font-weight: bold;
-    cursor: pointer; transition: opacity 0.3s, transform 0.2s;
+    cursor: pointer; transition: opacity 0.3s;
 }
 
+/* بلا حركة عند المرور — تغيّر الشفافية فقط */
 .poll__submit-button:hover:not(:disabled) {
     opacity: 0.9;
-    transform: translateY(-1px);
 }
 
 .poll__submit-button:focus-visible {
@@ -2453,11 +2453,11 @@ a.sy-news-link:last-child {
     font-size: 14px;
     font-weight: bold;
     color: var(--text-main);
-    min-width: 80px;
+    min-width: 44px;
     transition: color 0.3s ease;
 }
 
-.stat-count { color: #555; }
+/* poll.js 2.6: النتائج كما في روسيا اليوم — النسبة وحدها لكل خيار، والعدد الإجمالي في «عدد المشاركين» */
 .stat-perc { color: var(--color-black); }
 
 .progress-bg {
@@ -2565,6 +2565,18 @@ a.sy-news-link:last-child {
     color: #fff;
 }
 
+/* رابط «كل الاستطلاعات» أسفل ودجت الرئيسية — إلى صفحة /p/polls.html */
+.poll-all-link {
+    display: block;
+    margin-top: 14px;
+    font-size: 14px;
+    font-weight: bold;
+    color: var(--sy-green, #77bd1d);
+    text-decoration: none;
+    text-align: left;
+}
+.poll-all-link:hover { text-decoration: underline; }
+
 #poll-content-area {
     opacity: 0;
     transition: opacity 0.5s ease;
@@ -2665,10 +2677,6 @@ a.sy-news-link:last-child {
 
 [data-theme="dark"] .result-stats {
     color: #e0e0e0;
-}
-
-[data-theme="dark"] .stat-count {
-    color: #aaa;
 }
 
 [data-theme="dark"] .stat-perc {
