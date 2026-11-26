@@ -2,6 +2,9 @@
    S24News — مشغّل البث المباشر (playFast / loadVideoLibs)
    playFast تُستدعى من onclick داخل HTML القالب — يجب أن تبقى دالة عامة
 
+   الإصدار 2.22 — 27 نوفمبر 2026: صندوق التغطية في العمود الأيسر في كل الصفحات (الكمبيوتر فقط): في الرئيسية تحت المشغّل
+                الجانبي كما كان، وفي غيرها أول العمود الأيسر؛ ما عدا lbs24n وlive وcoverages وquran وshorts،
+                وكل صفحة فيها نص آيات قرآنية (مقالات الموسوعة القرآنية)، ووضع الصيانة
    الإصدار 2.21 — 26 نوفمبر 2026: صندوق التغطية في العمود الأيسر بالرئيسية تحت المشغّل الجانبي (الكمبيوتر فقط):
                 آخر 4 أخبار من التغطية التي يختارها حسان في لوحة 24، من مستند واحد coverage_side/current
                 (يكتبه Syria24_Coverage_Sync 2.8) — قراءة واحدة لكل زائر كل 5 دقائق
@@ -1633,8 +1636,12 @@ function closeMiniLive() {
 }
 
 /* ============================================================
-   صندوق التغطية في العمود الأيسر بالرئيسية (2.21 — 26 نوفمبر 2026)
-   تحت المشغّل الجانبي مباشرة (.live-tv-widget)، على الكمبيوتر فقط (العمود الأيسر مخفي تحت 1024px).
+   صندوق التغطية في العمود الأيسر (2.21 — 26 نوفمبر 2026؛ كل الصفحات منذ 2.22 — 27 نوفمبر 2026)
+   على الكمبيوتر فقط (العمود الأيسر مخفي تحت 1024px). في الرئيسية تحت المشغّل الجانبي (.live-tv-widget)،
+   وفي بقية الصفحات أول العمود الأيسر #force-left-sidebar (المشغّل الجانبي في الرئيسية وحدها).
+   لا يظهر في: صفحة التغطية نفسها lbs24n، وصفحة البث (فيها التغطية تحت الشاشة)، وصفحة التغطيات، وصفحة القرآن،
+   وصفحة الفيديوهات القصيرة، وأي صفحة فيها نص آيات قرآنية (SKIP_CONTENT)، ووضع الصيانة.
+   إنهاء التغطية أو «إيقاف» من اللوحة يخفيه من كل الصفحات معاً (المستند واحد)، عند القراء خلال 5 دقائق.
    المصدر: مستند واحد coverage_side/current يكتبه Syria24_Coverage_Sync 2.8 وحده:
      { gid, name, pinned, last, items: [{ t, title, url, urgent }] (حتى 4), at }
    والتغطية المعروضة يختارها حسان من لوحة 24 (تبويب التغطية ← «العمود الأيسر»): تلقائي، أو تغطية بعينها، أو إيقاف.
@@ -1644,6 +1651,10 @@ function closeMiniLive() {
    ============================================================ */
 (function () {
     var TTL = 5 * 60 * 1000, DAY = 24 * 60 * 60 * 1000;
+    // صفحات لا يظهر فيها الصندوق
+    var SKIP = /^\/p\/(lbs24n|live|coverages|quran|shorts)\.html$/;
+    // ولا في أي صفحة فيها نص آيات قرآنية (مقالات الموسوعة القرآنية) — المحدّدات نفسها في encyclopedia.js
+    var SKIP_CONTENT = '.s24-ayah,.s24-quran-text,.s24-ayah-block,.s24-quran-basmala';
     var box = null, feed = null, fmt = null;
 
     function clock(ms) {
@@ -1666,7 +1677,7 @@ function closeMiniLive() {
         return d.pinned === true || (Number(d.last) || 0) >= Date.now() - DAY;
     }
     function draw() {
-        if (!visible(feed)) { box.hidden = true; box.innerHTML = ''; return; }
+        if (!visible(feed) || document.body.classList.contains('maintenance-active')) { box.hidden = true; box.innerHTML = ''; return; }
         var href = '/p/lbs24n.html?tab=' + encodeURIComponent(feed.gid);
         box.innerHTML = '';
         var head = document.createElement('a');
@@ -1713,16 +1724,18 @@ function closeMiniLive() {
         });
     }
     function init() {
-        if (location.pathname !== '/') return;                                   // الرئيسية وحدها
+        if (SKIP.test(location.pathname) || document.querySelector(SKIP_CONTENT)) return;
         if (!window.matchMedia || !window.matchMedia('(min-width: 1024px)').matches) return;   // الكمبيوتر فقط
-        var player = document.querySelector('#force-left-sidebar .live-tv-widget');
-        if (!player || document.getElementById('s24-side-cov')) return;
+        var side = document.getElementById('force-left-sidebar');
+        if (!side || document.getElementById('s24-side-cov')) return;
+        var player = side.querySelector('.live-tv-widget');                     // الرئيسية وحدها
         box = document.createElement('section');
         box.id = 's24-side-cov';
         box.className = 's24-side-cov';
         box.setAttribute('aria-label', 'آخر أخبار التغطية المباشرة');
         box.hidden = true;
-        player.insertAdjacentElement('afterend', box);
+        if (player) player.insertAdjacentElement('afterend', box);              // الرئيسية: تحت المشغّل
+        else side.insertBefore(box, side.firstChild);                           // غيرها: أول العمود
         load();
         setInterval(load, TTL);                          // قراءة كل 5 دقائق والصفحة ظاهرة
         setInterval(function () { if (feed) draw(); }, 60 * 1000);   // تحديث «منذ…» كل دقيقة بلا قراءة
