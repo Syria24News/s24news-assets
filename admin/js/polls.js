@@ -1,5 +1,10 @@
 /* ============================================================
    S24News — وحدة الاستطلاعات في لوحة التحكم (admin/js/polls.js)
+   الإصدار 2.2 — 26 نوفمبر 2026 (صفحة الاستطلاعات /p/polls.html + البوابة 1.4.0:
+     - «مؤرشف» صار «مخفي» (القيمة المخزنة archived لم تتغيّر): لا يظهر في أي مكان، ولا في صفحة الاستطلاعات
+     - closedAt: يُكتب عند الإغلاق ويُمسح عند الخروج من «مغلق» — تاريخ دخول الأرشيف الشهري العام
+     - كل إعادة بناء تمرّر أشهر الأرشيف المتأثرة (months=) فيُحدَّث حتى الشهر القديم فوراً
+     - نافذة النتائج تعرض تاريخ الإغلاق)
    الإصدار 2.1 — 19 أكتوبر 2026 (الجلب حسب النشاط: رسائل الحفظ وتلميح الجدولة تذكر أزمنة الظهور الجديدة —
      poll.js 2.4 يحتفظ بنسخة 30 دقيقة حين لا يوجد استطلاع، والبوابة 1.3.0 لا تعيد البناء كل ساعة إلا عند موعد مجدول)
    الإصدار 2.0 — 10 أكتوبر 2026 (للهاتف أولاً + العمل دون اتصال)
@@ -31,7 +36,7 @@ const MARKUP = `
         <option value="ended">منتهي المدة</option>
         <option value="draft">مسودة</option>
         <option value="closed">مغلق</option>
-        <option value="archived">مؤرشف</option>
+        <option value="archived">مخفي</option>
       </select>
       <select class="input" id="fSort" aria-label="الترتيب">
         <option value="new">الأحدث أولاً</option>
@@ -87,8 +92,8 @@ const MARKUP = `
               <select class="input" id="eStatus">
                 <option value="draft">مسودة (لا يظهر)</option>
                 <option value="open">منشور</option>
-                <option value="closed">مغلق</option>
-                <option value="archived">مؤرشف</option>
+                <option value="closed">مغلق (يظهر بنتائجه في صفحة الاستطلاعات)</option>
+                <option value="archived">مخفي (لا يظهر في أي مكان)</option>
               </select>
             </label>
             <label class="field"><span>التثبيت (رقم أعلى يظهر أولاً)</span>
@@ -106,7 +111,8 @@ const MARKUP = `
           <label class="field"><span>رابط المقالة المرتبطة (اختياري)</span>
             <input class="input" id="eUrl" type="url" dir="ltr" placeholder="https://www.syria24.news/...">
           </label>
-          <div class="hint">التوقيت حسب ساعة جهازك. "منشور" مع تاريخ بدء لاحق = مجدول، ويظهر تلقائياً خلال ساعة من موعده (وحتى نصف ساعة إضافية لمن كان يتصفح الموقع وقتها). وكذلك الإغلاق عند تاريخ الانتهاء.</div>
+          <div class="hint">التوقيت حسب ساعة جهازك. "منشور" مع تاريخ بدء لاحق = مجدول، ويظهر تلقائياً خلال ساعة من موعده (وحتى نصف ساعة إضافية لمن كان يتصفح الموقع وقتها). وكذلك الإغلاق عند تاريخ الانتهاء.<br>
+            «مغلق» و«منتهي المدة» ينتقلان إلى «استطلاعات سابقة» في صفحة الاستطلاعات (/p/polls.html) بنتائجهما النهائية ظاهرة للجميع، ومعهما رابط المقالة إن وُجد — بشرط صوت واحد على الأقل. «مخفي» و«مسودة» لا يظهران في أي مكان.</div>
         </div>
         <div>
           <div class="hint" style="margin-bottom:6px">معاينة</div>
@@ -173,7 +179,41 @@ function viewStatus(p, now = new Date()) {
   }
   return p.status || 'draft';
 }
-const STATUS_LABEL = { open: 'منشور', scheduled: 'مجدول', ended: 'منتهي المدة', draft: 'مسودة', closed: 'مغلق', archived: 'مؤرشف' };
+// archived = «مخفي» (26 نوفمبر 2026: الاسم فقط تغيّر، والقيمة المخزنة كما هي)
+const STATUS_LABEL = { open: 'منشور', scheduled: 'مجدول', ended: 'منتهي المدة', draft: 'مسودة', closed: 'مغلق', archived: 'مخفي' };
+
+// شهر الأرشيف (بتوقيت دمشق) الذي يقع فيه الاستطلاع الآن، أو '' إن لم يكن من الأرشيف
+// نفس قاعدة البوابة: «مغلق» بتاريخ closedAt (أو آخر تعديل)، و«منتهي المدة» بتاريخ الانتهاء
+function archiveMonthOf(p, now = new Date()) {
+  let d = null;
+  if (p.status === 'closed') d = toDate(p.closedAt) || toDate(p.updatedAt) || toDate(p.createdAt);
+  else if (p.status === 'open') { const e = toDate(p.endAt); if (e && e <= now) d = e; }
+  if (!d) return '';
+  const x = partsTZ(d);
+  return x.year + '_' + x.month;
+}
+// أشهر الأرشيف المتأثرة بتعديل (قبله وبعده) — تُمرَّر إلى البوابة
+function monthsOf(...list) {
+  return [...new Set(list.map((p) => (p ? archiveMonthOf(p) : '')).filter(Boolean))];
+}
+// closedAt عند تغيّر الحالة: يُكتب عند دخول «مغلق»، ويُمسح عند الخروج منه
+// p: الاستطلاع قبل التغيير ({ status, endAt }) — إغلاق «منتهي المدة» يحفظ تاريخ انتهائه الأصلي لا لحظة الإغلاق
+function closedAtPatch(p, toStatus) {
+  const from = (p && p.status) || '';
+  if (toStatus === 'closed' && from !== 'closed') {
+    const e = p && toDate(p.endAt);
+    if (from === 'open' && e && e <= new Date()) return { closedAt: Timestamp.fromDate(e) };
+    return { closedAt: serverTimestamp() };
+  }
+  if (from === 'closed' && toStatus !== 'closed') return { closedAt: null };
+  return {};
+}
+// قيمة closedAt للحساب المحلي (الطابع الزمني للخادم لم يعد بعد)
+function localClosedAt(patch, fallback) {
+  if (!('closedAt' in patch)) return fallback;
+  const c = patch.closedAt;
+  return c ? (typeof c.toDate === 'function' ? c.toDate() : new Date()) : null;
+}
 const REASON_LABEL = {
   duplicate: 'تصويت مكرر', closed: 'استطلاع مغلق', not_found: 'استطلاع غير موجود', invalid_option: 'خيار غير صالح',
   recaptcha_missing: 'بلا رمز reCAPTCHA', recaptcha_fail: 'فشل reCAPTCHA', recaptcha_low: 'درجة reCAPTCHA منخفضة',
@@ -208,9 +248,11 @@ export default {
 
     // إعادة بناء ما يظهر على الموقع (المكان الوحيد للبناء هو البوابة)
     // تُرجع عدد الظاهر على الموقع، أو 'later' إن تأجّل الطلب لعدم الاتصال، أو null عند الفشل
-    async function rebuildSite() {
+    // months: أشهر الأرشيف المتأثرة (من monthsOf) — البوابة تعيد بناءها مع الشهرين الأخيرين
+    async function rebuildSite(months) {
       try {
-        const r = await callDeferred(GATEWAY + '?action=rebuild');
+        const m = (months || []).filter((x) => /^\d{4}_\d{2}$/.test(x));
+        const r = await callDeferred(GATEWAY + '?action=rebuild' + (m.length ? '&months=' + m.join(',') : ''));
         if (r.deferred) return 'later';
         return r.data.count;
       } catch (e) {
@@ -335,11 +377,14 @@ export default {
        ============================================================ */
     async function quickUpdate(p, fields) {
       try {
+        const before = { ...p };
+        if ('status' in fields) Object.assign(fields, closedAtPatch(p, fields.status));
         const w = commit(updateDoc(doc(db, 'polls', p.id), { ...fields, updatedAt: serverTimestamp() }));
         Object.assign(p, fields);
+        p.closedAt = localClosedAt(fields, before.closedAt);   // للحساب المحلي حتى يعود الطابع الزمني من الخادم
         render();
         await w;
-        savedMsg('حُفظ', await rebuildSite());
+        savedMsg('حُفظ', await rebuildSite(monthsOf(before, p)));
       } catch (e) {
         toast('تعذّر الحفظ: ' + errText(e), true);
         loadPolls();
@@ -458,6 +503,7 @@ export default {
 
       const btn = $('btnSave');
       btn.disabled = true;
+      let affected = [];   // أشهر الأرشيف المتأثرة بالتعديل
       try {
         // توزيع الخيارات على الخانات 1–6
         const slots = {};
@@ -491,7 +537,8 @@ export default {
             resultsVisibility: 'after_vote',
             createdAt: serverTimestamp(),
             createdBy: (auth.currentUser && auth.currentUser.email) || '',
-            source: 'dashboard'
+            source: 'dashboard',
+            ...closedAtPatch(null, status)
           }));
         } else {
           const ref = doc(db, 'polls', editing.id);
@@ -514,13 +561,15 @@ export default {
             if (!same) upd[k] = a;
           });
           if (!Object.keys(upd).length) { $('pDlgEdit').close(); toast('لا تغييرات'); btn.disabled = false; return; }
+          if ('status' in upd) Object.assign(upd, closedAtPatch({ status: o.status, endAt: base.endAt }, upd.status));
           upd.updatedAt = serverTimestamp();
           await commit(updateDoc(ref, upd));
+          affected = monthsOf(o, { ...o, ...upd, closedAt: localClosedAt(upd, o.closedAt) });
         }
 
         $('pDlgEdit').close();
         await loadPolls();
-        savedMsg('حُفظ الاستطلاع', await rebuildSite());
+        savedMsg('حُفظ الاستطلاع', await rebuildSite(affected));
       } catch (e) {
         msg.textContent = 'تعذّر الحفظ: ' + errText(e);
       } finally {
@@ -575,7 +624,7 @@ export default {
           counts: { o1: 0, o2: 0, o3: 0, o4: 0, o5: 0, o6: 0 }, total: 0, daily: {}, updatedAt: serverTimestamp()
         });
         await loadPolls();
-        await rebuildSite();
+        await rebuildSite(monthsOf(p));
         toast('صُفّرت الأصوات (' + n + ' سجل)');
       } catch (e) { toast('تعذّر التصفير: ' + errText(e), true); }
     }
@@ -588,7 +637,7 @@ export default {
         await deleteVotes(p.id);
         await deleteDoc(doc(db, 'polls', p.id));
         await loadPolls();
-        await rebuildSite();
+        await rebuildSite(monthsOf(p));
         toast('حُذف الاستطلاع');
       } catch (e) { toast('تعذّر الحذف: ' + errText(e), true); }
     }
@@ -624,6 +673,7 @@ export default {
         ['آخر تعديل', fmtDate(p.updatedAt)],
         ['يبدأ', fmtDate(p.startAt)],
         ['ينتهي', fmtDate(p.endAt)],
+        ['أُغلق', p.status === 'closed' ? fmtDate(p.closedAt) : '—'],
         ['المقالة', p.postUrl || '—']
       ];
       const dl = $('rMeta');
