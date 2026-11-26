@@ -1,5 +1,6 @@
 /* ============================================================
    S24News — صفحة الاستطلاعات /p/polls.html (poll-page.js)
+   v1.1 — 27 نوفمبر 2026: «استطلاعات سابقة» مقسّمة بعنوان لكل شهر (تشرين الثاني 2026…) — بلا أي قراءة إضافية
    v1.0 — 26 نوفمبر 2026
    - على نسق صفحة استطلاعات روسيا اليوم: بطاقة لكل استطلاع، النسبة لكل خيار، و«عدد المشاركين»
    - «مفتوحة الآن»: التصويت من الصفحة، والنتائج بعد التصويت فقط (كما في ودجت الرئيسية)
@@ -21,6 +22,7 @@
   var ARCH_KEY = 's24_polls_arch_';         // نسخة كل شهر على الجهاز: { t: زمن آخر تغيير من الخريطة، d: العناصر }
   var esc = P.esc;
   var fmtDay = new Intl.DateTimeFormat('ar-SY-u-nu-latn', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'Asia/Damascus' });
+  var fmtMonth = new Intl.DateTimeFormat('ar-SY-u-nu-latn', { month: 'long', year: 'numeric', timeZone: 'Asia/Damascus' });
 
   var PAGE_CSS = [
     '#s24-polls-page{display:flex;flex-direction:column;gap:18px;direction:rtl}',
@@ -28,6 +30,7 @@
     '.s24pl-card{background:var(--card-bg,#fff);border:1px solid #e6e6e6;border-radius:8px;padding:20px;display:flex;flex-direction:column;gap:14px}',
     '.s24pl-badge{align-self:flex-start;font-size:12px;font-weight:700;padding:3px 10px;border-radius:12px;background:#f1f1f1;color:#666}',
     '.s24pl-badge.is-open{background:#eef7e1;color:#4f7d14}',
+    '.s24pl-month{font-family:var(--font-title);font-size:16px;font-weight:700;color:#666;margin:8px 0 0}',
     '.s24pl-q{font-family:var(--font-title);font-size:18px;font-weight:700;line-height:1.6;margin:0;color:var(--text-main,#111)}',
     '.s24pl-card .poll__options{margin-bottom:6px}',
     '.s24pl-results{display:flex;flex-direction:column;gap:18px}',
@@ -42,6 +45,7 @@
     '.s24pl-empty{text-align:center;color:#888;padding:24px 0}',
     '[data-theme="dark"] .s24pl-card{background:#1e1e1e;border-color:#333}',
     '[data-theme="dark"] .s24pl-q,[data-theme="dark"] .s24pl-h{color:#fff}',
+    '[data-theme="dark"] .s24pl-month{color:#aaa}',
     '[data-theme="dark"] .s24pl-badge{background:#2a2a2a;color:#bbb}',
     '[data-theme="dark"] .s24pl-badge.is-open{background:#26330f;color:#b6dc7a}',
     '@media (max-width:768.98px){.s24pl-card{padding:15px}.s24pl-q{font-size:17px}}'
@@ -218,7 +222,7 @@
     more.type = 'button';
     root.appendChild(more);
 
-    var queue = [], next = 0, busy = false;
+    var queue = [], next = 0, busy = false, lastMonth = '';
     function showMore() {
       if (busy) return;
       busy = true;
@@ -229,11 +233,16 @@
         var m = months[next++];
         return loadMonth(m, archive['m' + m].t).then(function (items) { queue = queue.concat(items); return fill(); });
       })().then(function () {
-        queue.splice(0, PAGE_SIZE).forEach(function (x) { list.appendChild(closedCard(x)); });
+        queue.splice(0, PAGE_SIZE).forEach(function (x) {
+          // عنوان الشهر قبل أول استطلاع منه (الترتيب الأحدث أولاً)
+          var mt = fmtMonth.format(new Date(Number(x.closedAt) || 0));
+          if (mt !== lastMonth) { lastMonth = mt; list.appendChild(el('h3', 's24pl-month', mt)); }
+          list.appendChild(closedCard(x));
+        });
         busy = false;
         more.disabled = false;
         more.hidden = !queue.length && next >= months.length;
-        if (!list.children.length) { more.hidden = true; list.appendChild(el('p', 's24pl-empty', 'لا توجد استطلاعات سابقة.')); }
+        if (!list.querySelector('.s24pl-card')) { more.hidden = true; list.appendChild(el('p', 's24pl-empty', 'لا توجد استطلاعات سابقة.')); }
       });
     }
     more.addEventListener('click', showMore);
