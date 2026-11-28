@@ -1,6 +1,6 @@
 {
   "v": 1,
-  "updated": "2026-11-27T16:06:45.094Z",
+  "updated": "2026-11-28T06:11:10.361Z",
   "source": {
     "market": "sptoday",
     "gold": "sptoday"
@@ -40,8 +40,8 @@
   "official": {},
   "gold": {
     "14": {
-      "buy": 10395,
-      "sell": 10548
+      "buy": 10473,
+      "sell": 10626
     },
     "18": {
       "buy": 13250,
@@ -56,5 +56,5 @@
       "sell": 18250
     }
   },
-  "ounceUsd": 3622.9
+  "ounceUsd": 3650
 }
